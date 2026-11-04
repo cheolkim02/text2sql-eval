@@ -1,230 +1,307 @@
-# text-to-SQL 평가 CLI 프로젝트 계획서 (토스 인턴 지원용)
+# text-to-SQL 오답 분석 CLI 프로젝트 계획서 (토스 인턴 지원용)
 
-Nov 3, 2026 · @철
+Nov 3, 2026 작성 · Nov 4, 2026 전면 개정 · @철
 
 ## 개요
 
-토스 Platform Engineer 인턴 서류 마감(11/15 일 23:59) 전에, MES text-to-SQL 연구를 **TypeScript 라이브러리 + CLI 저장소**로 만든다. 이름은 `text2sql-eval`이다(결정 D1, 11/3). 토스 서류에 GitHub 링크로 내고, 이후 SK하이닉스 경험기술서 1번(AI 활용)의 포트폴리오로도 쓴다.
+토스 Platform Engineer 인턴 서류 마감(11/15 일 23:59) 전에, text-to-SQL 연구에서 직접 겪은 **오답 분석의 병목**을 푸는 **Python 라이브러리 + CLI 저장소**를 만든다. 이름은 `text2sql-eval`이다(D1). 토스 서류에 저장소 링크로 내고, 이후 SK하이닉스 경험기술서 1번(AI 활용)의 포트폴리오로도 쓴다.
 
-**산출물 세 가지**
+**한 줄 정의**
 
-1. **평가 엔진 + CLI:** 자연어 질문을 LLM이 SQL로 바꾸면, 안전 검사 → 실행 → 정답 결과와 비교 → 오류 유형 분류 → 리포트와 실행 간 회귀 비교까지 한다. 토스 프로젝트 "LLM 스킬 성능 평가 시스템"에 대응한다.
-2. **LLM용 스펙 도구 (`llm-spec`):** 공개 API 타입에서 LLM이 읽기 좋은 스펙(`llms.txt`)을 만들고, 문서와 코드가 어긋나면 CI를 실패시킨다. 이 저장소 자체에 적용한다. 토스 프로젝트 "LLM이 읽는 스펙과 개발환경"에 대응한다.
-3. **AI 협업 개발의 증거:** AGENTS.md, 결정 기록(ADR), CI 게이트, AI 코드를 고친 리뷰 커밋.
+> text-to-SQL 실험 결과에서 **무엇이 틀렸는지를 AI 없이 근거와 함께 보여주고**, 판정을 믿기 어려운 케이스를 숨기지 않고, **두 실험의 차이가 진짜인지** 알려주는 분석 도구
+
+**구조**
+
+```text
+[내 파이프라인: 언어·구조 무관]  →  predictions.jsonl  →  [text2sql-eval]  →  run.json  →  HTML 리포트 · CSV · 비교 결과
+```
+
+도구는 LLM을 부르지 않는다(D3). 파이프라인이 무엇이든(단일 프롬프트, MCTS, agentic loop, 후보 여러 개 + 선택) 최종 SQL만 예측 파일로 받는다. BIRD 공식 평가 스크립트와 같은 방식이다.
+
+**이번 개정에서 바뀐 것 (11/3 판 대비)**
+
+| 항목 | 11/3 판 | 11/4 판 |
+| --- | --- | --- |
+| 출발점 | 토스 공고의 카테고리 15개 | 연구에서 겪은 불편 ∩ 서류 지원 가이드 |
+| 언어 | TypeScript | **Python** (D2) |
+| 도구의 역할 | LLM 호출부터 채점까지 (Provider, 프롬프트, 캐시) | **예측 파일을 받아 판정·분석만** (D3) |
+| 대표 기능 | 평가 파이프라인 전체, CI 게이트 | **결정적 오답 사실 추출** + 실행 비교 (D4) |
+| 시연 데이터 | 합성 MES 30\~40개 | **BIRD dev 3개 DB, 432문제** (D5) |
+| 결과 화면 | 터미널 표, Markdown | **정적 HTML 리포트 + CSV** (D6) |
+| 패키지 | `core`·`cli`·`llm-spec` 3개 | 패키지 1개 (`text2sql_eval`, CLI 포함) |
+| 뺀 것 | — | `llm-spec`, SQL 파서 가드, LLM 어댑터·캐시·mock, `init`·`schema`·`guard`·`cases lint` (D7) |
 
 **완료 기준 (11/14 밤)**
 
-- [ ] `pnpm install && pnpm build && pnpm test`가 깨끗한 환경에서 성공하고, GitHub Actions CI가 녹색
-- [ ] 합성 MES 샘플 데이터셋으로 `text2sql-eval run`이 mock 모델과 실제 모델 1개 이상으로 리포트를 만든다
-- [ ] `text2sql-eval compare`가 정확도 하락 시 종료 코드 1을 낸다
-- [ ] `llm-spec check`가 CI에서 돌고, 스펙이 낡으면 실패한다
+- [ ] 깨끗한 환경에서 설치·린트·타입 검사·테스트가 성공하고, GitHub Actions CI가 녹색
+- [ ] `examples/bird-mini`에서 baseline 예측 2개(같은 모델, 설정 2종)로 `text2sql-eval eval`이 실행 파일을 만든다
+- [ ] 공식 호환 모드의 EX가 같은 예측에 대한 BIRD 공식 평가 스크립트의 EX와 일치한다(확인 결과를 문서에 기록)
+- [ ] 모든 오답 케이스에 "무엇이 다른가" 사실 목록과 근거가 붙는다. 사용자 카테고리 매핑 파일이 동작한다
+- [ ] 판정 신뢰도 플래그가 근거와 함께 표시된다
+- [ ] `report`가 오프라인에서 열리는 HTML 한 파일과 엑셀에서 한글이 깨지지 않는 CSV를 만든다
+- [ ] `compare`가 분할표, 뒤집힌 케이스, 사실 분포 변화, McNemar 검정 결과를 내고, 설정한 기준보다 나빠지면 종료 코드 1을 낸다
 - [ ] README에 문제 정의, 설치, 3분 사용법, 실측 결과 표, AI 협업 방식이 있다
 - [ ] 결정 기록 10개 이상, 모두 결정자가 "사용자"
 - [ ] 모든 모듈에 대해 설명 노트와 면접식 질문 답변을 마쳤다
 
-## 토스에 보여줄 카테고리
+## 내가 겪은 문제 (README "왜 필요한가"의 원재료)
 
-공고 우대사항 7개에 8개를 더해 15개를 보여준다. 각 카테고리는 저장소에서 바로 확인할 수 있는 파일이나 CI 결과로 증명한다. 공고 원문은 [토스 Platform Engineer 인턴십](https://toss.im/career/job-detail?gh_jid=8096691003).
+연구 배경: 산학연구로 제조 MES에 text-to-SQL을 적용했고(NL-SQL 쌍 생성, 데이터 coverage 지표, 여러 후보 SQL 병렬 생성과 최종 선택), 개인 연구로 자연어의 모호성·중의성을 DB 스키마 probing으로 해소하는 방법을 연구했다. 파이프라인은 Python과 bash 스크립트로 만들었고, 단일 프롬프트부터 키워드 추출, 스키마 선택, 스키마 메타 정보 순회, 테이블·컬럼 선택, 조인 경로 탐색, MCTS, agentic loop, 실행 기반 수정까지 여러 모듈을 조합했다. 바꿔 본 것은 프롬프트 문구, 모델, few-shot 예시와 추출 방식, 모듈 구성이다. 평가는 BIRD·Spider로, 주 지표는 EX(execution accuracy)였다.
 
-| # | 카테고리 | 출처 | 저장소의 증거 | 우선순위 |
-| --- | --- | --- | --- | --- |
-| 1 | 라이브러리·CLI 형태 | 공고 | `packages/core`(라이브러리), `packages/cli`(실행 파일), `packages/llm-spec` | 필수 |
-| 2 | 문제를 설명하는 README | 공고 | 한 줄 정의, 왜 필요한가, 60초 빠른 시작, 실측 결과 표, 데모 GIF | 필수 |
-| 3 | 빌드·린트·의존성 설정 | 공고 | pnpm workspace, 빌드 도구 설정, 타입 기반 린트, `exports` 맵, `engines`, 최소 의존성 | 필수 |
-| 4 | CI와 테스트 | 공고 | GitHub Actions(린트, 타입 검사, 테스트, 빌드, 스펙 검사), 단위·통합(실제 SQLite)·스냅샷 테스트 | 필수 |
-| 5 | 레퍼런스와 가이드 | 공고 | `docs/guides/*`, `docs/reference/cli.md`, 자동 생성되는 `docs/reference/api.md` | 필수 |
-| 6 | 디렉터리 구조와 코드 품질 | 공고 | 모듈 경계 문서, 한 방향 의존, 오류를 타입으로 표현 | 필수 |
-| 7 | TypeScript를 정확하게 | 공고 | strict 계열 옵션 전부, `any` 0개, 판별 유니언 결과 타입, zod 스키마에서 타입 추론, 타입 테스트 | 필수 |
-| 8 | 패키지 배포 정합성 | 추가 | `publint`, `@arethetypeswrong/cli` CI 통과, 타입 선언 파일 포함 | 권장 |
-| 9 | 재현성 | 추가 | mock 모델, LLM 응답 캐시와 replay, 네트워크 없이 도는 테스트 | 필수 |
-| 10 | 안전성 | 추가 | 읽기 전용 SQL 검사, 실행 시간·행 수 제한, API 키는 환경변수로만, 로그에서 키 가리기 | 필수 |
-| 11 | CLI 사용성 | 추가 | `--help` 예시, 고칠 방법을 말해 주는 오류 메시지, `--json` 출력, 종료 코드 규약 | 필수 |
-| 12 | 실측 결과 | 추가 | 모델 2개 × 샘플 데이터셋 결과 표와 오류 유형 분포(README) | 권장 |
-| 13 | 릴리스 관리 | 추가 | changesets, CHANGELOG, 시맨틱 버전, 선택으로 npm 배포 | 선택 |
-| 14 | AI 협업 개발의 증거 | 추가 | `AGENTS.md`, `docs/decisions/`, `docs/ai-workflow.md`, AI 코드를 고친 리뷰 커밋 | 필수 |
-| 15 | 도그푸딩 | 추가 | `llm-spec`이 이 저장소의 `llms.txt`를 만들고 검사, `text2sql-eval compare`가 CI에서 프롬프트 회귀를 검사 | 필수 |
+1. **판단에 가장 오래 걸렸다.** 실행보다 오답 분석, 그리고 어디가 병목이고 무엇을 고쳐야 하는지 판단하는 데 시간이 많이 들었다. 주로 여러 설정을 계속 돌려 보며 경험적으로 찾았다.
+2. **비교를 손으로 했다.** EX 점수와 틀린 문제 번호를 보고, 둘 다 틀린 문제와 각자 틀린 문제를 스크립트로 텍스트 파일에 뽑아 눈으로 보고 엑셀에 정리했다.
+3. **오답 분류를 전부 수작업으로 했다.** 케이스마다 틀린 곳을 찾아 엑셀에 적고 카테고리를 붙였다. NL이나 SQL이 길면 읽기조차 힘들었다.
+4. **분류를 AI에게 맡길 수 없었다.** 평가의 무결성(integrity) 때문이다. SQL 생성과 오답 분석은 다른 태스크지만, LLM 분류에도 오류가 생긴다. 물론 사람도 100% 정확하지 않다.
+5. **카테고리가 연구마다 다르다.** 합의된 오답 분류 체계가 없다.
+6. **EX 판정 자체가 틀린다.** 학계에서도 계속 논문이 나오는 문제다.
+   - 거짓 정답: 정답 SQL의 결과가 빈 집합이면 빈 결과를 내는 모든 SQL이 정답이 된다. 정답이 집계 숫자 하나면, 우연히 그 숫자를 내는 잘못된 SQL도 정답이 된다.
+   - 거짓 오답: "사람 이름을 출력하라"는 질문에 정답 SQL과 다른 형식(컬럼 구성)으로 이름을 내면, 내용상 맞아도 틀린 것으로 처리된다.
+7. **재현이 어려웠다.** 스크립트 옵션으로 프롬프트 버전을 표시하고, Weights & Biases의 실행 명령을 보며 어떤 설정이 가장 좋았는지 찾았다.
 
-두 가지를 더 하면 토스 프로젝트 4번(LLM 저장소를 안전하게 관리)과도 이어진다: CI의 비밀값 노출 검사(gitleaks 등), 의존성 자동 업데이트 설정. 둘 다 선택이다.
+겪지 않은 것: 위험한 SQL(DELETE, DROP 등) 생성, rate limit, 실행 중 중단. 그래서 이번 범위에서 SQL 가드, 응답 캐시, 이어서 돌리기는 뺀다.
+
+## 핵심 기능
+
+### ① 결정적 오답 사실 추출 (대표 기능)
+
+정답 SQL과 예측 SQL을 파싱·정규화한 뒤 비교해, **"무엇이 다른가"를 사실로만** 보고한다. AI를 쓰지 않으므로 같은 입력에는 항상 같은 결과가 나오고, 모든 사실에 근거(어느 절의 무엇이 어떻게 다른가)가 붙는다.
+
+- **실행 수준 사실:** 문법 오류, 없는 테이블·컬럼, 시간 초과, 빈 결과, 행 수 다름, 컬럼 수 다름, 값 다름
+- **구조 수준 사실 (초안):** 사용한 테이블 집합, JOIN 구성, WHERE 조건(컬럼·연산자·값), 집계 함수, GROUP BY, ORDER BY·LIMIT, SELECT 컬럼, DISTINCT, 서브쿼리·집합 연산
+- **해석은 사용자 몫:** "왜 틀렸나" 카테고리는 매핑 파일로 사용자가 정한다(예: `where.value_mismatch → 값 연결 오류`). 합의된 체계가 없다는 문제를 도구가 카테고리를 강요하지 않는 방식으로 피한다.
+- **가장 어려운 부분:** 구조가 달라도 결과가 같은 올바른 SQL이 많다(별칭, 조인 순서, 서브쿼리 ↔ 조인, `IN` ↔ `EXISTS` 등). 정규화로 가짜 차이를 줄이고, 정답 판정된 케이스에서는 구조 차이를 오답 사실로 보고하지 않는다. 규칙은 실제 오답 케이스를 보면서 11/7 설계 세션에서 정한다(D18).
+
+### ② 판정 신뢰도 플래그
+
+판정을 바꾸지 않고, **믿기 어려운 판정을 근거와 함께 표시**한다.
+
+- 거짓 정답 의심: 정답 결과가 빈 집합, 정답 결과가 값 하나(1×1)인데 예측 SQL 구조가 크게 다름
+- 거짓 오답 의심: 예측 결과가 정답 컬럼을 모두 포함하고 컬럼만 더 있음, 값은 같은데 컬럼 순서·형식만 다름
+- 목록과 규칙은 D19에서 정한다.
+
+### ③ 실행 비교 (부대표 기능)
+
+엑셀 작업을 대체한다.
+
+- 분할표: 둘 다 맞음 / A만 맞음 / B만 맞음 / 둘 다 틀림, 칸마다 케이스 목록
+- 사실 분포 변화 (예: "WHERE 값 오류는 줄고 JOIN 누락은 늘었다")
+- DB별·난이도별 분해 (BIRD의 `difficulty` 필드)
+- **McNemar 검정:** 같은 문제에 대한 두 시스템의 맞음·틀림을 비교하는 표준 검정. 정확도 차이가 노이즈 수준인지 알려 준다.
+- 실행 조건(데이터셋 해시, 판정 모드)이 다르면 경고
+- 기준보다 나빠지면 종료 코드 1 (CI에서도 쓸 수 있음. 주 용도는 로컬 실험 비교)
+
+### ④ 결과 화면: HTML 리포트와 CSV
+
+NL과 SQL이 길면 읽기 힘들다는 불편을 직접 겨냥한다.
+
+- **정적 HTML 리포트 (파일 하나, 서버 없음, 오프라인):** 오답 목록 필터(DB, 난이도, 사실, 플래그), 케이스마다 질문·evidence, 자동 정렬된 정답·예측 SQL을 나란히 놓고 다른 절을 강조, 결과 표 차이를 행 단위로 표시
+- **CSV:** 기존 엑셀 분석 흐름을 그대로 쓰되 사실·플래그 열이 미리 채워져 있고, 빈 `my_category`·`notes` 열을 둔다. 엑셀에서 한글이 깨지지 않게 UTF-8 BOM으로 저장한다.
+
+## 서류 지원 가이드와 저장소의 증거
+
+토스 서류 지원 가이드의 항목과, 저장소에서 바로 확인할 수 있는 증거다. 공고 원문은 [토스 Platform Engineer 인턴십](https://toss.im/career/job-detail?job_id=8096691003).
+
+**지원서 문항: "자동화, 툴링, 테스팅 등으로 개발 환경을 개선한 경험"** → "연구 개발 루프에서 가장 큰 병목이던 오답 분석과 실험 비교를, 결정적이고 근거를 보여주는 도구로 바꿨다."
+
+| # | 가이드 항목 | 저장소의 증거 | 우선순위 |
+| --- | --- | --- | --- |
+| 1 | 서비스가 아닌 라이브러리 또는 CLI | `src/text2sql_eval/` 공개 API + `text2sql-eval` 명령어, PyPI 형식 패키지 | 필수 |
+| 2 | 어떤 문제를 푸는지 알 수 있는 README | 한 줄 정의, "내가 겪은 문제", 3분 빠른 시작, 실측 결과 표, HTML 리포트 스크린샷 | 필수 |
+| 3 | 빌드·린트·의존성 설정 | `pyproject.toml` 하나로 메타데이터·도구 설정, 잠금 파일, 최소 의존성(추가마다 ADR), 지원 Python 버전 명시 | 필수 |
+| 4 | 버그를 막는 CI 체크와 테스트 | GitHub Actions(린트, 포맷 검사, 타입 검사, Python 버전 매트릭스 테스트, 빌드, 패키지 검사), 단위·통합(실제 SQLite)·속성 기반·스냅샷 테스트 | 필수 |
+| 5 | 레퍼런스와 가이드 | `docs/guides/*`, `docs/reference/cli.md`, 공개 API 레퍼런스, 실행 파일 형식 문서 | 필수 |
+| 6 | 수정하기 쉬운 디렉터리 구조와 코드 품질 | 모듈 경계 문서(`architecture.md`), 한 방향 의존, 오류를 타입으로 표현 | 필수 |
+| 7 | 타입을 정확하게 쓰려는 고민 | 타입 검사기 strict 모드 0 오류, 공개 API에 `Any` 없음, `Literal` 기반 판별 유니언과 `assert_never` 전수 검사, `py.typed` 배포. (가이드 원문은 TypeScript. 언어를 Python으로 정한 이유는 D2 ADR에 쓴다) | 필수 |
+| 8 | 재현성 (추가) | 실행 파일에 도구 버전·데이터셋 해시·판정 모드·사용자 메타데이터 기록, 네트워크 없이 도는 테스트, 커밋된 예제 예측으로 리포트 재생성 | 필수 |
+| 9 | 판정의 정직성 (추가) | 공식 스크립트와 EX 일치 확인, 신뢰도 플래그, 사실과 해석의 분리 | 필수 |
+| 10 | CLI 사용성 (추가) | `--help` 예시, 고칠 방법을 말해 주는 오류 메시지, `--json` 출력, 종료 코드 규약 | 필수 |
+| 11 | AI 협업 개발의 증거 (추가) | `AGENTS.md`, `docs/decisions/`, `docs/dev-log/`, `docs/ai-workflow.md`, AI 코드를 고친 리뷰 커밋 | 필수 |
+| 12 | 도그푸딩 (추가) | CI가 커밋된 예제 예측으로 `eval → report → compare`를 실제로 돌리고 결과를 스냅샷과 비교 | 권장 |
+| 13 | 릴리스 관리 (추가) | CHANGELOG, 시맨틱 버전, `v0.1.0` 태그, 선택으로 PyPI 배포 | 선택 |
 
 ## 기능 범위
 
-SQLite 하나만 지원하고, 평가 파이프라인을 끝까지 완성하는 것이 1순위다. 기능을 넓히는 것보다 적은 기능을 제품 수준으로 만드는 쪽이 토스 기준에 맞다.
+SQLite 실행만 지원하고(BIRD·Spider의 DB가 SQLite), 위 핵심 기능을 제품 수준으로 만드는 것이 1순위다. 파서는 방언을 인식하게 두되 실행 백엔드는 SQLite 하나만 구현한다.
 
 **필수 (11/14까지)**
 
-- `core` 라이브러리
-  - 데이터셋 로더: JSONL 케이스 파일을 zod로 검증
-  - 스키마 추출: SQLite에서 테이블·컨럼·외래키를 읽고 LLM 프롬프트용 텍스트로 렌더
-  - SQL 가드: 파서 기반으로 단일 `SELECT`/`WITH`만 허용, `PRAGMA`·`ATTACH`·쓰기 문장 차단
-  - 실행기: 읽기 전용 연결, 실행 시간 제한, 행 수 제한
-  - 결과 비교기: 정답 SQL과 예측 SQL의 결과 집합 비교(순서, 컨럼 이름, 실수 오차 규칙은 결정 D9)
-  - 오류 유형 분류: 문법 오류, 없는 테이블·컨럼(스키마 환각), 가드 차단, 실행 오류, 시간 초과, 결과 불일치(행 수, 컨럼, 값), 모델 호출 실패
-  - 모델 어댑터: 공통 인터페이스 + mock + 응답 캐시·replay + 실제 모델 1개
-  - 실행기(runner): 동시 실행 수 제한, 취소(`AbortSignal`), 진행 이벤트
-  - 리포트: JSON(기계용), Markdown, 터미널 표
-  - 실행 비교: 두 실행의 정확도 차이, 나빠진 케이스 목록, 임계값 판정
-- `cli`: `init`, `schema`, `guard`, `cases lint`, `run`, `report`, `compare`
-- `llm-spec`: `generate`(공개 API → `llms.txt`, `api.md`), `check`(낡은 스펙이면 실패)
-- `examples/mes-sample`: 합성 MES 스키마(테이블 6\~8개), 시드 스크립트, 케이스 30\~40개(난이도·유형 태그)
-- CI, README, 가이드 4개, `AGENTS.md`, 결정 기록
+- 데이터셋 로더: BIRD 형식(`question_id`, `db_id`, `question`, `evidence`, `SQL`, `difficulty`)과 자체 JSONL 형식, 오류에 위치 표시
+- 예측 파일 로더: 자체 JSONL 형식(D27), 누락·중복 `id` 검사
+- 실행기: 읽기 전용 연결, 시간 제한, 병렬 실행
+- EX 판정: BIRD 공식 호환 모드 + (결정 시) 엄격 모드 (D16)
+- 사실 추출 ①, 카테고리 매핑, 신뢰도 플래그 ②
+- 실행 파일(JSON): 스키마 버전, 도구 버전, 데이터셋 해시, 판정 모드, 사용자 메타데이터, 케이스별 결과
+- 비교 ③, HTML 리포트·CSV ④
+- CLI: `eval`, `report`, `compare`
+- `examples/bird-mini`: BIRD dev 3개 DB와 문제 432개, 별도 라이선스 파일
+- `examples/baseline`: OpenAI 단일 프롬프트 baseline(Python), 예측 파일 2개와 실행 파일을 `examples/results/`에 커밋
+- CI, README, 가이드, `AGENTS.md`, 결정 기록
 
 **권장 (시간이 남으면 이 순서로)**
 
-1. `llm-spec examples`: 문서 속 TypeScript 코드 블록을 타입 검사
-2. `publint`·`@arethetypeswrong/cli` CI 단계
-3. 두 번째 실제 모델 어댑터와 모델 비교 결과 표
-4. PR에 비교 결과를 다는 GitHub Actions 예제 워크플로
-5. 데모 GIF, changesets, npm 배포
-6. HTML 리포트
+1. CI 도그푸딩 단계 (가이드 #12)
+2. `compare`의 HTML 출력
+3. BIRD 공식 예측 형식(`{"0": "SQL\t----- bird -----\tdb_id"}`) 입력 지원
+4. 패키지 검사 도구 CI 단계, PyPI 배포, CHANGELOG
+5. 공개 API 레퍼런스 자동 생성
+
+**로드맵 (README에만 적고 이번에 하지 않음)**
+
+- PostgreSQL·MySQL 실행 백엔드 (BIRD Mini-Dev는 같은 질문을 SQLite·MySQL·PostgreSQL로 제공)
+- 파이프라인 단계별 추적 (예: 스키마 선택 단계의 테이블 재현율)
+- 사람 라벨과 자동 사실의 일치도 측정
+- 후보 coverage와 선택 손실 지표
+- **beta: 결과 파일을 LLM이 읽고 분석을 제안하는 기능** (사실 추출은 결정적으로 유지하고, LLM은 그 위에서 요약만)
+- 합성 MES 예제 데이터셋
+- Weights & Biases 등 실험 추적 도구 연동
 
 **이번에 하지 않음**
 
-- PostgreSQL·MySQL 지원: 방언(dialect) 인터페이스만 열어 두고 구현은 SQLite만
-- 웹 UI, 서버, 대시보드
-- 자기 수정 루프 같은 다단계 에이전트 전략(로드맵에만 적음)
+- LLM 호출, 프롬프트 관리, 응답 캐시 (D3)
+- SQL 파서 기반 가드 (읽기 전용 연결과 시간 제한으로 대신함)
+- `llm-spec`, 웹 서버, 대시보드
 - 산학 과제의 실제 데이터·스키마·프롬프트
 
 **범위 축소 규칙**
 
-- 11/9 밤에 `run`과 `compare`가 mock으로 끝까지 돌지 않으면: 권장 항목을 모두 버리고 `llm-spec`은 `generate`와 `check`만 만든다.
-- 11/12 밤에 `llm-spec check`가 CI에서 돌지 않으면: `llm-spec`을 `generate`만 남기고 문서·품질에 시간을 쓴다.
-- 줄이지 않는 것: 테스트, CI, README, 결정 기록, 학습 노트.
+- 11/8 밤에 `eval`이 실행 파일을 만들지 못하거나 사실 추출 1차가 돌지 않으면: 신뢰도 플래그를 2개(빈 결과, 값 하나)로 줄이고, HTML의 결과 표 차이 표시를 뺀다.
+- 11/10 밤에 `compare`가 끝나지 않으면: 사실 분포 변화와 DB별 분해를 빼고 분할표·뒤집힌 케이스·McNemar만 남긴다.
+- 11/12 밤에 HTML 리포트가 끝나지 않으면: SQL 나란히 보기와 필터만 남기고 결과 표 차이를 뺀다. CSV는 줄이지 않는다.
+- 줄이지 않는 것: 테스트, CI, README, 결정 기록, 학습 노트, 사실의 근거 표시.
+
+## 데이터
+
+### 시연 데이터: `examples/bird-mini` (D5)
+
+BIRD dev(2024-06-27 판)에서 작은 DB 3개의 문제를 **전부** 쓴다. dev 전체 1,534문제, DB 11개 중에서 저장소에 넣을 수 있는 크기만 골랐다. 큰 DB(`card_games` 261.8MB, `european_football_2` 597.8MB 등)는 넣지 않고, 전체 dev가 필요한 사용자를 위해 다운로드 스크립트를 둔다.
+
+| DB | 크기 | 문제 수 | simple / moderate / challenging |
+| --- | --- | --- | --- |
+| `superhero` | 0.2MB | 129 | 81 / 33 / 15 |
+| `student_club` | 2.6MB | 158 | 101 / 48 / 9 |
+| `toxicology` | 2.7MB | 145 | 76 / 38 / 31 |
+| 합계 | 약 5.5MB | **432** | 258 / 119 / 55 |
+
+**라이선스:** BIRD 팀은 데이터 라이선스를 CC BY-SA 4.0으로 공지했고, 원 논문은 원본 DB들이 퍼블릭 도메인·CC-BY·CC-BY-SA 중 하나라고 밝힌다. 코드는 MIT로 두고, `examples/bird-mini/LICENSE`에 CC BY-SA 4.0 전문, `SOURCE.md`에 출처(논문, 사이트, 다운로드 URL, 판 날짜, 고른 DB와 이유)를 적는다. 데이터를 바꾸면 그 사실도 `SOURCE.md`에 남긴다.
+
+### 데이터셋 형식 (자체 JSONL, 한 줄에 케이스 하나)
+
+BIRD 형식을 그대로 읽을 수 있고, 다른 데이터셋은 아래 형식으로 맞춘다.
+
+```json
+{"id":"superhero-718","db_id":"superhero","question":"...","evidence":"...","gold_sql":"SELECT ...","difficulty":"simple","tags":[]}
+```
+
+### 예측 파일 형식 (JSONL, D27)
+
+```json
+{"id":"superhero-718","sql":"SELECT ...","meta":{"latency_ms":1830}}
+```
+
+실행 전체의 메타데이터(모델, 프롬프트 버전, 커밋 등)는 `eval --meta key=value` 또는 `--meta-file`로 넣고 실행 파일에 그대로 남긴다. 연구 때 스크립트 옵션과 W&B로 하던 기록을 결과 파일 안에 함께 두기 위함이다.
+
+### baseline (`examples/baseline`, D24)
+
+OpenAI API로 단일 프롬프트 baseline을 만든다. 도구 본체와 분리된 예제 코드이고, 도구가 어떤 파이프라인이든 받는다는 것을 보여 준다. 비교 구성 추천은 **같은 모델로 evidence를 줄 때 vs 안 줄 때**다(비용이 적고 결과 차이가 의미 있다). 실행 전 호출 수(432 × 구성 수)와 예상 비용을 확인하고, 결과는 `examples/results/`에 커밋해 누구나 API 키 없이 리포트를 재생성할 수 있게 한다.
 
 ## 명령어 설계
 
-CLI는 얇게 `core` 라이브러리를 감싼 것이다. 모든 로직은 `core`에 있고, CLI는 옵션 해석과 출력만 한다. 이름 `text2sql-eval`은 npm에서 비어 있는 것을 11/3에 확인했다. CLI 명령어도 같은 이름을 쓴다.
+CLI는 라이브러리를 얇게 감싼 것이다. 모든 로직은 라이브러리에 있고, CLI는 옵션 해석과 출력만 한다.
 
 ### 평가 흐름
 
-1. 데이터셋의 케이스 하나(질문 + 정답 SQL)를 읽는다.
-2. DB 스키마와 질문을 프롬프트로 만들어 모델에 보낸다(캐시에 있으면 캐시 사용).
-3. 예측 SQL을 가드에 통과시킨다. 차단되면 `blocked`로 기록하고 끝.
-4. 예측 SQL과 정답 SQL을 읽기 전용 연결에서 각각 실행한다.
-5. 두 결과 집합을 비교해 `correct` / `incorrect` / `error`로 분류한다.
-6. 모든 케이스를 모아 실행 파일(JSON)로 저장한다. `report`가 읽고, `compare`가 두 실행 파일을 비교한다.
+1. 데이터셋과 예측 파일을 읽고 `id`를 맞춘다(누락·중복은 오류).
+2. 정답 SQL과 예측 SQL을 읽기 전용 연결에서 시간 제한을 두고 실행한다.
+3. 결과를 판정 모드에 따라 비교해 `correct` / `incorrect` / `error`를 정한다.
+4. 오답·오류 케이스에서 사실을 추출하고, 모든 케이스에 신뢰도 플래그 규칙을 적용한다.
+5. 카테고리 매핑 파일이 있으면 사실에 사용자 카테고리를 붙인다.
+6. 실행 파일(JSON)로 저장한다. `report`가 읽고, `compare`가 두 실행 파일을 비교한다.
 
-### CLI 명령어
+### CLI 명령어 (초안)
 
 ```text
-text2sql-eval init [dir]                 설정 파일과 예제 데이터셋 생성
-  --template <mes-sample|empty>     기본 mes-sample
-  --force                           기존 파일 덮어쓰기
-
-text2sql-eval schema --db <path>         LLM 프롬프트용 스키마 출력
-  --format <text|ddl|json>          기본 text
-  --tables <a,b>                    일부 테이블만
-
-text2sql-eval guard <sql|-> --db <path>  SQL 안전 검사만 수행 (- 는 stdin)
-  --json
-
-text2sql-eval cases lint [--dataset <path>]
-  확인: 스키마 검증, id 중복, 정답 SQL의 가드 통과와 실행 성공
-  경고: 빈 결과, ORDER BY 없는 LIMIT(정답이 매번 달라질 수 있음)
-
-text2sql-eval run                        평가 실행
-  --config <path>                   기본 text2sql-eval.config.ts
-  --dataset <path> --db <path>      설정 파일 값을 덮어씁
-  --provider <id> --model <name>
-  --concurrency <n>                 기본 4
-  --cache <read-write|read-only|off>  read-only = 캐시만 사용(replay)
-  --filter <tag:join,difficulty:hard>
-  --limit <n>
-  --out <path>                      기본 .text2sql-eval/runs/<시각>-<모델>.json
-  --min-accuracy <0..1>             미달 시 종료 코드 1
+text2sql-eval eval                       예측 파일을 판정하고 실행 파일을 만든다
+  --dataset <path>                  BIRD JSON 또는 자체 JSONL
+  --db-dir <dir>                    <db_id>/<db_id>.sqlite 구조
+  --pred <predictions.jsonl>
+  --out <run.json>
+  --mode <bird|strict>              판정 모드 (D16)
+  --categories <map.toml>           사실 → 내 카테고리 매핑 (D20)
+  --timeout <sec> --workers <n>
+  --meta key=value ... | --meta-file <path>
   --json                            요약을 stdout에 JSON으로
 
 text2sql-eval report <run.json>
-  --format <table|md|json>          기본 table
-  --by <tag|difficulty|error>       그룹별 집계
-  --failures                        틀린 케이스만: 질문, 예측 SQL, 정답 SQL, 오류 유형
+  --html <out.html>                 오프라인 HTML 리포트
+  --csv <out.csv>                   엑셀용 CSV (UTF-8 BOM)
+  --by <db|difficulty|fact|flag>    터미널 요약의 그룹 기준
+  --json
 
 text2sql-eval compare <base.json> <head.json>
-  --max-drop <pp>                   허용하는 정확도 하락폭(%p), 기본 0
-  --fail-on-flip                    base에서 맞던 케이스가 하나라도 틀리면 실패
-  --format <table|md|json>          md = PR 코멘트용
-
-llm-spec generate --entry <file> --out <llms.txt> [--api-md <path>]
-llm-spec check    --entry <file> --out <llms.txt>   다르면 diff 출력 후 실패
-llm-spec examples <glob...>         (권장) 문서 속 ts 코드 블록 타입 검사
+  --max-drop <pp>                   허용하는 EX 하락폭(%p), 넘으면 종료 코드 1
+  --csv <out.csv>                   뒤집힌 케이스 목록
+  --html <out.html>                 (권장)
+  --json
 ```
 
 ### 종료 코드
 
 | 코드 | 의미 | 예 |
 | --- | --- | --- |
-| 0 | 성공 | 평가 완료, 가드 통과, 스펙 최신 |
-| 1 | 판정 실패 | 정확도 미달, 회귀, 가드 차단, 스펙 불일치, lint 오류 |
-| 2 | 사용법·설정 오류 | 잘못된 옵션, 설정 검증 실패, 파일 없음 |
-| 3 | 실행 환경 오류 | API 키 없음·인증 실패, 네트워크, DB 열기 실패 |
-| 130 | 사용자 중단 | Ctrl-C (진행분은 부분 실행 파일로 저장) |
+| 0 | 성공 | 판정 완료, 비교 기준 통과 |
+| 1 | 판정 실패 | `compare`에서 기준보다 나빠짐 |
+| 2 | 사용법·입력 오류 | 잘못된 옵션, 파일 없음, 형식 검증 실패, `id` 누락·중복 |
+| 3 | 실행 환경 오류 | DB 파일 열기 실패, 권한 |
+| 130 | 사용자 중단 | Ctrl-C |
 
-오류 메시지는 무엇이 잘못됐는지, 어떻게 고치는지 두 줄로 쓴다. 예: `OPENAI_API_KEY가 설정되지 않았습니다. --provider mock으로 먼저 실행해 볼 수 있습니다.`
-
-### 설정 파일
-
-```ts
-// text2sql-eval.config.ts
-import { defineConfig } from '@text2sql-eval/core';
-
-export default defineConfig({
-  dataset: './cases.jsonl',
-  db: './mes.sqlite',
-  provider: { id: 'openai-compatible', model: 'your-model-name', apiKeyEnv: 'OPENAI_API_KEY' },
-  prompt: { template: './prompt.md' },
-  guard: { timeoutMs: 5_000, maxRows: 1_000 },
-  compare: { order: 'auto', floatTolerance: 1e-6 },
-  concurrency: 4,
-});
-```
-
-모델 이름은 예시다. 실제 모델과 제공자는 결정 D10에서 정한다.
-
-### 데이터셋 형식 (JSONL, 한 줄에 케이스 하나)
-
-```json
-{"id":"wo-007","question":"지난주 라인별 완료된 작업지시 수는?","gold":"SELECT line_id, COUNT(*) AS n FROM work_orders WHERE status = 'DONE' AND finished_at >= date('2026-10-26') AND finished_at < date('2026-11-02') GROUP BY line_id","tags":["aggregation","time-window"],"difficulty":"easy","evidence":"'지난주'는 2026-10-26~2026-11-01"}
-```
-
-`evidence`는 선택 필드로, 질문만으로는 알 수 없는 도메인 힌트다. `order`를 케이스별로 덮어쓸 수 있다.
+오류 메시지는 무엇이 잘못됐는지, 어떻게 고치는지 두 줄로 쓴다. 예: `예측 파일에 없는 케이스가 12개 있습니다 (superhero-718 외 11개). --allow-missing으로 빈 예측을 오답 처리할 수 있습니다.`
 
 ### 라이브러리 공개 API (초안)
 
-```ts
-export function defineConfig(config: Text2SqlEvalConfig): Text2SqlEvalConfig;
-export function loadDataset(path: string): Promise<Dataset>;
-export function introspectSchema(db: ReadonlyDatabase): SchemaInfo;
-export function renderSchema(schema: SchemaInfo, format: 'text' | 'ddl'): string;
-export function createGuard(options?: GuardOptions): (sql: string) => GuardResult;
-export function evaluate(options: EvaluateOptions): Promise<RunResult>;
-export function compareRuns(base: RunResult, head: RunResult, options?: CompareOptions): Comparison;
-export function createMockProvider(answers: ReadonlyMap<string, string>): Provider;
-export function withCache(provider: Provider, options: CacheOptions): Provider;
+```python
+def load_dataset(path: Path) -> Dataset: ...
+def load_predictions(path: Path) -> Predictions: ...
+def evaluate(dataset: Dataset, predictions: Predictions, *, db_dir: Path, options: EvalOptions) -> RunResult: ...
+def extract_facts(gold_sql: str, pred_sql: str, *, dialect: str = "sqlite") -> list[Fact]: ...
+def compare_runs(base: RunResult, head: RunResult) -> Comparison: ...
+def write_html_report(run: RunResult, path: Path) -> None: ...
+def write_csv(run: RunResult, path: Path) -> None: ...
 
-export interface Provider {
-  readonly id: string;
-  generateSql(request: GenerateRequest, context: { signal: AbortSignal }): Promise<GenerateResponse>;
-}
+@dataclass(frozen=True)
+class Correct:
+    status: Literal["correct"]
+    case_id: str
+    flags: tuple[Flag, ...]
 
-export type GuardResult =
-  | { ok: true; sql: string }
-  | { ok: false; violation: GuardViolation; message: string };
+@dataclass(frozen=True)
+class Incorrect:
+    status: Literal["incorrect"]
+    case_id: str
+    facts: tuple[Fact, ...]
+    flags: tuple[Flag, ...]
 
-export type CaseResult =
-  | { status: 'correct'; caseId: string; predictedSql: string; latencyMs: number }
-  | { status: 'incorrect'; caseId: string; predictedSql: string; mismatch: Mismatch; latencyMs: number }
-  | { status: 'error'; caseId: string; predictedSql?: string; error: EvalError };
+@dataclass(frozen=True)
+class ExecError:
+    status: Literal["error"]
+    case_id: str
+    kind: Literal["syntax", "unknown_identifier", "timeout", "runtime"]
+    message: str
 
-export type EvalError = {
-  kind: 'syntax' | 'unknown_identifier' | 'blocked' | 'runtime' | 'timeout' | 'provider';
-  message: string;
-};
+CaseResult = Correct | Incorrect | ExecError
+
+@dataclass(frozen=True)
+class Fact:
+    kind: str          # 예: "where.value_mismatch"
+    clause: str        # 예: "WHERE"
+    gold: str          # 근거: 정답 쪽 조각
+    pred: str          # 근거: 예측 쪽 조각
 ```
 
-실행 파일(JSON)에는 `schemaVersion`, 도구 버전, 모델, 프롬프트 해시, 데이터셋 해시를 넣는다. 그래야 `compare`가 조건이 다른 두 실행을 경고할 수 있다.
+데이터 모델 방식(dataclass 또는 다른 것)은 D13에서 정한다. 실행 파일에는 `schema_version`을 넣고, 형식이 바뀌면 올린다.
 
 ## 폴더 구조
 
-pnpm workspace 모노레포로 패키지 3개를 둔다(결정 D2). 의존 방향은 `cli → core` 한 방향이고, `llm-spec`은 다른 패키지에 의존하지 않는다.
+패키지 하나, `src` 레이아웃이다. 의존 방향은 `cli → report·compare → judge·facts → execution·datasets` 한 방향이다.
 
 ```text
 text2sql-eval/
@@ -232,116 +309,106 @@ text2sql-eval/
 ├─ CLAUDE.md                  @AGENTS.md 를 불러오고 Claude Code 전용 규칙만 추가
 ├─ README.md
 ├─ CONTRIBUTING.md            개발 환경, 명령어, 커밋 규칙
-├─ LICENSE
-├─ llms.txt                   llm-spec이 생성 (직접 수정 금지)
-├─ package.json               루트 스크립트: build, test, lint, typecheck, check
-├─ pnpm-workspace.yaml
-├─ tsconfig.base.json         strict 계열 옵션 공통 설정
-├─ eslint.config.js
-├─ vitest.config.ts
-├─ .changeset/                (권장) 릴리스 기록
-├─ .github/
-│  └─ workflows/
-│     ├─ ci.yml               lint → typecheck → test → build → llm-spec check
-│     └─ eval-regression.yml  (권장) replay 캐시로 run → compare → PR 코멘트
+├─ LICENSE                    MIT (코드)
+├─ CHANGELOG.md               (선택)
+├─ pyproject.toml             메타데이터, 의존성, 린트·타입 검사·테스트 설정
+├─ <잠금 파일>                 D9에서 정한 도구의 잠금 파일
+├─ .github/workflows/ci.yml   린트 → 포맷 검사 → 타입 검사 → 테스트(버전 매트릭스) → 빌드 → (권장) 도그푸딩
 ├─ .claude/
-│  ├─ settings.json            훅 설정 (결정 기록 누락 검사)
+│  ├─ settings.json           훅 설정 (결정 기록 누락 검사)
 │  └─ skills/
-│     ├─ decide/SKILL.md       설계 결정 제시 → 사용자 선택 → ADR 기록
-│     ├─ explain/SKILL.md      코드 설명 + 면접식 질문
-│     ├─ review/SKILL.md       AI가 쓴 코드 자가 검토 체크리스트
-│     └─ devlog/SKILL.md       하루 마무리 기록
+│     ├─ decide/SKILL.md      설계 결정 제시 → 사용자 선택 → ADR 기록
+│     ├─ explain/SKILL.md     코드 설명 + 면접식 질문
+│     ├─ review/SKILL.md      AI가 쓴 코드 자가 검토 체크리스트
+│     └─ devlog/SKILL.md      하루 마무리 기록
 ├─ scripts/
-│  └─ check-decisions.mjs      훅이 호출: 의존성·설정·공개 API 변경에 ADR이 있는지 검사
+│  └─ check_decisions.py      훅이 호출: 의존성·설정·공개 API·형식 변경에 ADR이 있는지 검사
+├─ src/text2sql_eval/
+│  ├─ __init__.py             공개 API만 내보냄 (여기에 없으면 비공개)
+│  ├─ py.typed
+│  ├─ datasets/               BIRD·JSONL 데이터셋 로더, 예측 파일 로더
+│  ├─ execution/              읽기 전용 실행, 시간 제한, 병렬 실행
+│  ├─ judge/                  EX 판정(모드별), 신뢰도 플래그
+│  ├─ facts/                  SQL 파싱·정규화, 구조 비교, 사실 생성 (대표 기능)
+│  ├─ categories/             사실 → 사용자 카테고리 매핑
+│  ├─ compare/                실행 비교, McNemar 검정
+│  ├─ report/                 HTML(단일 파일), CSV, 터미널 요약
+│  ├─ runfile.py              실행 파일 스키마와 버전
+│  ├─ errors.py               오류 타입 정의
+│  └─ cli/                    진입점, eval·report·compare 명령, 종료 코드
+├─ tests/
+│  ├─ unit/                   모듈별 단위 테스트
+│  ├─ property/               속성 기반 테스트 (정규화, 판정 규칙)
+│  ├─ integration/            실제 SQLite로 eval → report → compare
+│  ├─ cli/                    실제 프로세스로 실행하는 e2e 테스트
+│  └─ fixtures/               작은 DB, 케이스, 예측, 스냅샷
+├─ examples/
+│  ├─ bird-mini/              data(문제 JSON, sqlite 3개), LICENSE(CC BY-SA 4.0), SOURCE.md, download_full_dev.py
+│  ├─ baseline/               OpenAI 단일 프롬프트 baseline, README
+│  ├─ categories.example.toml 카테고리 매핑 예시
+│  └─ results/                예측 파일 2개, 실행 파일, report.html (공개 실측)
 ├─ docs/
-│  ├─ PLAN.md                  이 문서
-│  ├─ ai-workflow.md           AI와 어떻게 개발했는지 (토스에 보여줄 문서)
-│  ├─ architecture.md          모듈 경계와 데이터 흐름
-│  ├─ decisions/
-│  │  ├─ 0000-template.md
-│  │  └─ 0001-record-decisions.md …
-│  ├─ dev-log/                 날짜별 개발 기록 (2026-11-04.md …)
+│  ├─ PLAN.md                 이 문서
+│  ├─ ai-workflow.md          AI와 어떻게 개발했는지
+│  ├─ architecture.md         모듈 경계와 데이터 흐름
+│  ├─ decisions/              0000-template.md, README.md(색인), 0001-… 
+│  ├─ dev-log/                날짜별 개발 기록
 │  ├─ guides/
-│  │  ├─ getting-started.md
-│  │  ├─ dataset-format.md
-│  │  ├─ providers.md
-│  │  ├─ safety.md
-│  │  └─ ci-regression.md
+│  │  ├─ getting-started.md   3분 시작
+│  │  ├─ prediction-format.md 내 파이프라인 결과를 예측 파일로 만들기
+│  │  ├─ facts.md             사실 목록과 근거 읽는 법, 정규화 규칙
+│  │  ├─ judgment-flags.md    신뢰도 플래그가 뜨는 조건
+│  │  ├─ custom-categories.md 내 카테고리 매핑하기
+│  │  └─ comparing-runs.md    비교 결과와 McNemar 검정 읽는 법
 │  └─ reference/
 │     ├─ cli.md
-│     └─ api.md               llm-spec이 생성
-├─ examples/
-│  └─ mes-sample/
-│     ├─ schema.sql           합성 MES 스키마
-│     ├─ seed.ts              결정적 시드 데이터 생성
-│     ├─ cases.jsonl          평가 케이스 30~40개
-│     ├─ prompt.md            프롬프트 템플릿
-│     ├─ text2sql-eval.config.ts
-│     └─ results/             공개할 실측 실행 파일
-├─ packages/
-│  ├─ core/
-│  │  ├─ src/
-│  │  │  ├─ index.ts           공개 API만 내보냄 (여기에 없으면 비공개)
-│  │  │  ├─ config/            defineConfig, 설정 스키마, 로더
-│  │  │  ├─ dataset/           케이스 스키마, JSONL 로더, lint
-│  │  │  ├─ schema/            스키마 추출, 렌더러
-│  │  │  ├─ guard/             SQL 파싱, 안전 규칙
-│  │  │  ├─ executor/          읽기 전용 실행, 시간·행 제한
-│  │  │  ├─ compare/           결과 집합 비교, 오류 분류
-│  │  │  ├─ providers/         Provider 인터페이스, mock, cache, 실제 어댑터
-│  │  │  ├─ runner/            evaluate, 동시성, 진행 이벤트
-│  │  │  ├─ report/            집계, Markdown·표 렌더, compareRuns
-│  │  │  └─ errors.ts          오류 타입 정의
-│  │  ├─ test/                  단위·통합·타입 테스트, fixtures/
-│  │  ├─ package.json
-│  │  └─ tsconfig.json
-│  ├─ cli/
-│  │  ├─ src/
-│  │  │  ├─ bin.ts             실행 진입점 (#!/usr/bin/env node)
-│  │  │  ├─ commands/          init, schema, guard, cases, run, report, compare
-│  │  │  ├─ output/            표, 색, JSON 출력
-│  │  │  └─ exit-codes.ts
-│  │  └─ test/                  실제 프로세스로 실행하는 e2e 테스트
-│  └─ llm-spec/
-│     ├─ src/
-│     │  ├─ extract/           TypeScript 컴파일러 API로 공개 심볼·JSDoc 추출
-│     │  ├─ render/            llms.txt, api.md 렌더
-│     │  ├─ check/             생성물과 파일 비교, diff
-│     │  └─ bin.ts
-│     └─ test/
+│     ├─ api.md
+│     └─ run-file.md          실행 파일 형식
 └─ .study/                    gitignore: 학습 노트와 면접 답변 (공개하지 않음)
 ```
 
-합성 MES 스키마 초안: `lines`(생산 라인), `equipment`(설비), `products`(품목), `work_orders`(작업지시), `lots`(로트), `process_steps`(공정 단계), `inspections`(검사 결과), `downtime_events`(비가동). 산학 과제의 실제 스키마를 복사하지 않고, 일반적인 MES 개념으로 새로 설계한다.
-
 ## 내가 내릴 결정
 
-아래 20개는 모두 내가 정한다. Claude는 선택지와 장단점을 제시하고, 내가 고르면 ADR로 기록한다. "추천"은 출발점일 뿐이고, 도구 버전·유지보수 상태는 결정 직전에 공식 문서로 다시 확인한다.
+모두 내가 정한다. Claude는 선택지와 장단점을 제시하고, 내가 고르면 ADR로 기록한다. "추천"은 출발점일 뿐이고, 도구 버전·유지보수 상태는 결정 직전에 공식 문서로 다시 확인한다. D1\~D7은 11/3\~4 대화에서 이미 정했으므로 첫 세션에서 묻지 않고 ADR만 쓴다.
+
+**이미 정한 것**
+
+| ID | 결정 | 내용 | 날짜 |
+| --- | --- | --- | --- |
+| D1 | 이름 | `text2sql-eval` (PyPI 이름 비어 있음 11/4 확인, import 이름 `text2sql_eval`, CLI 명령어도 `text2sql-eval`) | 11/3 |
+| D2 | 언어 | Python. 이유: 대표 기능의 핵심인 SQL 파싱·정규화 생태계, 익숙한 언어여야 깊이와 설명 가능성 확보, 사용자(text-to-SQL 연구자)가 Python을 씀, 가이드의 TypeScript 항목은 한 번만 나오는 "좋아요" 항목 | 11/4 |
+| D3 | 구조 | 예측 파일을 입력으로 받고 도구는 LLM을 부르지 않는다 | 11/4 |
+| D4 | 기능 우선순위 | 대표: 결정적 사실 추출, 부대표: 실행 비교. 후보 coverage는 제외(구현이 쉽고, multi-candidate가 필수 요소가 아님) | 11/4 |
+| D5 | 시연 데이터 | BIRD dev `superhero`·`student_club`·`toxicology` 432문제를 저장소에 포함, CC BY-SA 4.0 별도 표기 | 11/4 |
+| D6 | 결과 화면 | 정적 HTML 리포트 + CSV (터미널은 요약만) | 11/4 |
+| D7 | 범위 밖 | 합성 MES 데이터, LLM 분석 beta는 로드맵. `llm-spec`, SQL 가드, LLM 호출은 뺀다 | 11/4 |
+
+**앞으로 정할 것**
 
 | ID | 결정 | 선택지 | 추천 (출발점) | 시점 |
 | --- | --- | --- | --- | --- |
-| D1 | 프로젝트·패키지 이름 | `text2sql-eval` / `nl2sql-eval` / 다른 이름 | **결정됨: `text2sql-eval`**, npm 스코프 `@text2sql-eval/*` (첫 세션에서 ADR만 기록) | 11/4 |
-| D2 | 저장소 구조 | pnpm 모노레포 3패키지 / 단일 패키지 | 모노레포 (빌드·의존성 설정을 보여주기 좋음) | 11/4 |
-| D3 | Node 버전·모듈 형식 | Node 22+ ESM 전용 / ESM+CJS | Node 22 이상, ESM 전용 | 11/4 |
-| D4 | 빌드 도구 | tsdown / tsup / tsc | 공식 문서의 유지보수 상태를 보고 결정 | 11/4 |
-| D5 | 린트·포맷 | ESLint(typescript-eslint 타입 기반 strict) + Prettier / Biome | ESLint 타입 기반 (TypeScript 정확성을 더 잘 보여줌) | 11/4 |
-| D6 | 테스트 | Vitest / node:test | Vitest + `expectTypeOf` 타입 테스트 | 11/4 |
-| D7 | 오류 모델 | 예외 / 결과 값(판별 유니언) / 혼합 | 예상되는 실패는 결과 값, 프로그래밍 오류만 예외 | 11/5 |
-| D8 | 설정 파일 로딩 | `.ts` 직접 import / jiti / JSON만 | jiti (Node 버전에 덜 민감) | 11/5 |
-| D9 | 결과 비교 규칙 | 순서, 컨럼 이름, 중복 행, 실수 오차, NULL | 정답에 ORDER BY가 있을 때만 순서 비교, 컨럼은 이름 대신 위치, 중복 포함 다중집합, 오차 1e-6 | 11/7 |
-| D10 | 첫 실제 모델 제공자 | OpenAI 호환 API / Anthropic SDK / 둘 다 | OpenAI 호환 하나 먼저 (여러 제공자가 같은 형식), 두 번째는 권장 범위 | 11/7 |
-| D11 | SQLite 드라이버 | better-sqlite3 / node:sqlite / sql.js(wasm) | better-sqlite3 (읽기 전용 연결 지원, 안정적) | 11/5 |
-| D12 | 쿼리 시간 제한 구현 | worker thread 종료 / SQLite 진행 콜백 | worker thread (동기 드라이버는 같은 스레드에서 멈출 수 없음) | 11/6 |
-| D13 | SQL 가드 방식 | 파서(node-sql-parser 등) / 토크나이저 직접 / DB 기능만 | 2중 방어: 파서 검사 + DB 수준 읽기 전용(`readonly` 연결, `PRAGMA query_only`) | 11/6 |
-| D14 | CLI 프레임워크 | commander / cac / citty / `node:util` parseArgs | 의존성 수와 타입 지원을 비교해 결정 | 11/6 |
-| D15 | 캐시 키와 저장 | 해시 입력 항목, 저장 위치, 커밋 여부 | 해시(제공자, 모델, 렌더된 프롬프트, 파라미터) → `.text2sql-eval/cache/`; 예제 캐시는 커밋해 CI에서 replay | 11/7 |
-| D16 | 프롬프트 템플릿 | Markdown + `{{schema}}` 같은 자리표시자 / 코드 함수 | Markdown 템플릿 (비개발자도 수정 가능) | 11/7 |
-| D17 | llm-spec 추출 방식 | TypeScript 컴파일러 API 직접 / ts-morph / api-extractor | 컴파일러 API 직접 (의존성 적고 면접에서 설명하기 좋음) | 11/11 |
-| D18 | llms.txt 형식 | llmstxt.org 제안 형식 / 자체 형식 | 제안 형식 + API 상세 섹션 | 11/11 |
-| D19 | 문서 언어 | 한국어 / 영어 / 한국어+영어 요약 | README는 한국어 + 영어 한 단락, 코드·커밋·JSDoc은 영어 | 11/4 |
-| D20 | 커밋 규칙과 AI 표시 | Conventional Commits 여부, AI 참여 표시(`Co-Authored-By`) 여부 | 둘 다 사용 (AI 활용을 투명하게 드러내는 것이 어필 포인트) | 11/4 |
+| D8 | 지원 Python 버전 | 3.10+ / 3.11+ / 3.12+ | 3.11+ (표준 `tomllib`), CI 매트릭스는 하한\~최신 | 11/4 |
+| D9 | 프로젝트 관리·빌드 백엔드 | uv / Poetry / pip + hatch | uv + 표준 빌드 백엔드 (공식 문서로 확인) | 11/4 |
+| D10 | 린트·포맷 | Ruff / flake8 + black + isort | Ruff 하나로 린트·포맷 | 11/4 |
+| D11 | 타입 검사 | pyright strict / mypy strict / 둘 다 | pyright strict (가이드 #7의 핵심 증거) | 11/4 |
+| D12 | 테스트 | pytest / unittest, 속성 기반(Hypothesis), 스냅샷 방식 | pytest + Hypothesis | 11/4 |
+| D13 | 데이터 모델·입력 검증 | dataclass + 직접 검증 / pydantic / msgspec | 공개 결과 타입은 dataclass, 입력 검증 방식은 의존성 수와 오류 메시지 품질로 결정 | 11/5 |
+| D14 | CLI 프레임워크 | argparse / click / typer | 의존성 수와 `--help` 품질을 비교해 결정 | 11/6 |
+| D15 | SQL 파서 | sqlglot / sqlparse / 직접 | sqlglot (방언 파싱, 정규화·단순화, AST 비교 지원. 11/4 기준 30.x) | 11/6 |
+| D16 | EX 판정 규칙 | BIRD 공식 호환(행 집합 비교로 알려짐) / 엄격(순서·중복·컬럼 이름) / 둘 다 | 기본은 공식 호환, 공식 코드를 읽고 규칙을 확인한 뒤 엄격 모드 여부 결정 | 11/6 |
+| D17 | 시간 제한 구현 | `sqlite3` 진행 콜백 / 별도 프로세스 | 진행 콜백 (표준 라이브러리만으로 중단 가능) | 11/6 |
+| D18 | 사실 목록과 정규화 규칙 | 실제 오답 케이스를 보며 정함 | **11/7 설계 세션** (가장 깊게 고민할 결정) | 11/7 |
+| D19 | 신뢰도 플래그 목록 | 빈 결과, 값 하나, 컬럼 상위집합, 형식 차이 등 | 실제 케이스에서 발생 빈도를 보고 결정 | 11/9 |
+| D20 | 카테고리 매핑 파일 형식 | TOML / YAML / JSON | TOML (표준 라이브러리로 읽음) | 11/8 |
+| D21 | HTML 리포트 구현 | Jinja2 / 표준 라이브러리 템플릿, CSS·JS 인라인 | 단일 파일, 외부 요청 없음. 템플릿 방식은 의존성 비용으로 결정 | 11/11 |
+| D22 | 통계 검정 | McNemar 정확 검정 직접 구현 / scipy | 직접 구현 (`math.comb`로 충분, 의존성 없음) | 11/10 |
+| D23 | 문서 도구 | Markdown만 / MkDocs + API 자동 생성 | Markdown 먼저, 시간이 남으면 자동 생성 | 11/13 |
+| D24 | baseline 구성 | 모델, evidence 있음/없음 vs 프롬프트 2종 | 같은 모델 × evidence 있음/없음 | 11/6 |
+| D25 | 문서 언어 | 한국어 / 영어 / 한국어 + 영어 요약 | README는 한국어 + 영어 한 단락, 코드·커밋·docstring은 영어 | 11/4 |
+| D26 | 커밋 규칙과 AI 표시 | Conventional Commits 여부, `Co-Authored-By` 여부 | 둘 다 사용 (AI 활용을 투명하게) | 11/4 |
+| D27 | 예측 파일 형식 | 자체 JSONL / BIRD 공식 형식 / 둘 다 | 자체 JSONL 필수, BIRD 공식 형식은 권장 범위 | 11/5 |
 
-라이선스는 MIT로 정하고 0001번 ADR에 함께 적는다. 이 목록에 없는 결정이 나오면 Claude가 새 ID를 붙여 물어본다.
+라이선스는 코드 MIT, 예제 데이터 CC BY-SA 4.0으로 정하고 0001번 ADR에 함께 적는다. 이 목록에 없는 결정이 나오면 Claude가 D28부터 새 번호를 붙여 물어본다.
 
 ## AI 협업 규칙
 
@@ -352,10 +419,10 @@ text2sql-eval/
 1. **규칙 (`AGENTS.md`, `CLAUDE.md`):** Claude Code는 세션을 시작할 때 프로젝트의 `CLAUDE.md`를 읽고, `CLAUDE.md` 안의 `@AGENTS.md` 줄은 그 파일을 함께 불러온다([공식 문서](https://code.claude.com/docs/en/memory.md)). 여기에 "결정이 필요한 순간 멈추고 물어본 뒤, 답을 받으면 즉시 ADR을 쓴다"는 규칙을 둔다.
 2. **스킬 (`.claude/skills/decide/SKILL.md`):** 설계 결정이 생기면 Claude가 스스로 불러 쓰고, 내가 `/decide <주제>`로 직접 부를 수도 있다. 스킬의 `description`이 자동 호출 여부를 정한다([공식 문서](https://code.claude.com/docs/en/skills.md)).
    - 순서: 결정 주제와 맥락 한 단락 → 선택지 2\~4개를 장단점 표로 → Claude의 추천과 이유 → 내 답을 기다림 → 답을 받으면 `docs/decisions/NNNN-<slug>.md` 작성 → `docs/decisions/README.md` 색인 갱신 → 파일 경로를 한 줄로 알림
-3. **훅 (`.claude/settings.json` → `scripts/check-decisions.mjs`):** Claude가 응답을 끝낼 때마다 도는 `Stop` 훅이다. 작업 트리에 아래 변경이 있는데 `docs/decisions/`에 새 파일이나 수정이 없으면, 종료 코드 2와 안내 문구를 내서 Claude가 멈추지 않고 결정을 물어보게 한다([공식 훅 가이드](https://code.claude.com/docs/en/hooks-guide.md)).
-   - 감시 대상: `package.json`의 의존성, `tsconfig*.json`, `eslint.config.*`, `packages/*/src/index.ts`(공개 API), `.github/workflows/*`, 데이터셋·실행 파일 스키마
+3. **훅 (`.claude/settings.json` → `scripts/check_decisions.py`):** Claude가 응답을 끝낼 때마다 도는 `Stop` 훅이다. 작업 트리에 아래 변경이 있는데 `docs/decisions/`에 새 파일이나 수정이 없으면, 종료 코드 2와 안내 문구를 내서 Claude가 멈추지 않고 결정을 물어보게 한다([공식 훅 가이드](https://code.claude.com/docs/en/hooks-guide.md)).
+   - 감시 대상: `pyproject.toml`(의존성과 도구 설정), 잠금 파일, `src/text2sql_eval/__init__.py`(공개 API), `.github/workflows/*`, 데이터셋·예측·실행 파일 형식 정의, 카테고리 매핑 형식
    - 무한 반복 방지: 훅 입력의 `stop_hook_active` 값을 확인해 이미 한 번 막았으면 통과시킨다. 필드 이름과 동작은 설정 전에 공식 훅 레퍼런스에서 다시 확인한다.
-   - 예외: JSDoc만 고친 경우처럼 내가 "ADR 불필요"라고 답한 변경은 Claude가 `docs/decisions/skipped.md`에 날짜·파일·이유를 한 줄 남긴다. 이것도 `docs/decisions/` 아래 변경이라 훅을 통과하고, 생략한 기록까지 남는다.
+   - 예외: docstring만 고친 경우처럼 내가 "ADR 불필요"라고 답한 변경은 Claude가 `docs/decisions/skipped.md`에 날짜·파일·이유를 한 줄 남긴다. 이것도 `docs/decisions/` 아래 변경이라 훅을 통과하고, 생략한 기록까지 남는다.
 
 ### ADR 템플릿 (`docs/decisions/0000-template.md`)
 
@@ -387,93 +454,97 @@ text2sql-eval/
 
 ### Claude가 혼자 정해도 되는 것
 
-내부 함수 이름, 파일 안 코드 배치, 테스트 케이스 구성처럼 밖에서 보이지 않는 것만 정한다. 대신 커밋 메시지 본문에 남긴다. 공개 API, 의존성, 설정, 데이터 형식, 평가 규칙, 폴더 구조를 바꾸는 것은 전부 내 결정이다.
+내부 함수 이름, 파일 안 코드 배치, 테스트 케이스 구성처럼 밖에서 보이지 않는 것만 정한다. 대신 커밋 메시지 본문에 남긴다. 공개 API, 의존성, 설정, 데이터·실행 파일 형식, 판정·사실 규칙, 폴더 구조를 바꾸는 것은 전부 내 결정이다.
 
 ### 작업 단위와 커밋
 
 1. Claude가 기능 하나의 계획을 3\~5줄로 제시하고 내가 승인한다.
 2. 테스트를 먼저 또는 함께 쓴다. 오류 경로 테스트를 빠뜨리지 않는다.
-3. 구현 후 `pnpm check`(린트 + 타입 검사 + 테스트)를 통과시킨다.
+3. 구현 후 `check`(린트 + 포맷 검사 + 타입 검사 + 테스트, 실행 방법은 D9)를 통과시킨다.
 4. Claude가 `review` 스킬의 체크리스트로 자가 검토하고 고친 점을 보고한다.
 5. 내가 diff를 읽고, `/explain`으로 모르는 부분을 풀고, 승인한다.
-6. Claude가 Conventional Commits 형식으로 커밋한다. 내 승인 없이 커밋·푸시하지 않는다. AI 표시 방식은 결정 D20을 따른다.
+6. Claude가 Conventional Commits 형식으로 커밋한다. 내 승인 없이 커밋·푸시하지 않는다. AI 표시 방식은 D26을 따른다.
 
 **자가 검토 체크리스트 (`review` 스킬)**
 
-- [ ] `any`, 근거 없는 `as` 단언, non-null `!`가 없다
-- [ ] 공개 함수에 JSDoc과 `@example`이 있다
+- [ ] 공개 API에 `Any`가 없고, 근거 없는 `cast`·`# type: ignore`가 없다
+- [ ] 판별 유니언을 다루는 분기에 `assert_never` 전수 검사가 있다
+- [ ] 공개 함수에 docstring과 사용 예시가 있다
 - [ ] 실패 경로에 테스트가 있다
 - [ ] 새 의존성에는 ADR이 있다
 - [ ] 쓰이지 않는 추상화·옵션·코드가 없다
 - [ ] 주석은 "무엇"이 아니라 "왜"를 설명한다
 - [ ] 오류 메시지가 고칠 방법을 말해 준다
+- [ ] 사실 추출·판정에 비결정적 요소(무작위, 시간, 순서 없는 집합 순회 결과 노출)가 없다
 
 ### 모든 줄을 설명하기 위한 학습 체계
 
 - **`/explain <파일 또는 모듈>`:** Claude가 구조와 선택 이유, 버린 대안을 설명하고 면접식 질문 5개를 낸다. 내가 답하면 채점하고 부족한 부분을 보충한다. 문답은 `.study/<모듈>.md`에 저장(공개하지 않음).
 - **`/devlog`:** 하루 끝에 `docs/dev-log/YYYY-MM-DD.md`를 쓴다. 한 일, 내린 결정(ADR 링크), **AI가 틀린 것과 내가 고친 것**, 내일 할 일.
-- "AI가 틀린 것" 기록은 면접에서 "AI를 어떻게 통제했나"에 답하는 가장 구체적인 자료가 된다.
+- "AI가 틀린 것" 기록은 면접에서 "AI를 어떻게 통제했나"에 답하는 가장 구체적인 자료가 된다. 이 프로젝트의 주제(평가를 AI에 맡길 때의 무결성)와도 이어진다.
 - 마지막 날 `docs/ai-workflow.md`에 정리한다: 작업 방식, ADR 수, Claude 추천을 기각한 결정 수, AI 코드를 고친 대표 사례 3개.
 
 ## 일별 일정
 
-11/4(수)부터 12일, 총 약 57시간이다. 평일 3\~4시간, 주말 7\~8시간으로 잡았고, 토스 제출은 마감 당일 18시까지 끝낸다. 이 기간에도 코딩테스트 하루 1문제(30분)는 따로 유지한다.
+11/4(수)부터 12일, 하루 약 5시간(11/4은 계획 개정 후 남은 3시간, 11/15는 4시간)으로 총 약 57시간이다. 토스 제출은 마감 당일 18시까지 끝낸다. 이 기간에도 코딩테스트 하루 1문제(30분)는 따로 유지한다.
 
 | 날짜 | 시간 | 할 일 | 결정 | 완료 기준 |
 | --- | --- | --- | --- | --- |
-| 11/3 (화) 밤 | 1h | GitHub 빈 저장소(비공개) 생성, 이 문서를 Markdown으로 내보내 `docs/PLAN.md`로 저장, Node 22+·pnpm·Claude Code 확인 | — | 로컬에 clone, PLAN.md 커밋 |
-| 11/4 (수) | 4h | **기반:** 시작 프롬프트로 세션 시작. workspace, tsconfig, 린트, Vitest, 빌드, `ci.yml`, AGENTS.md·CLAUDE.md, ADR 템플릿, 스킬 4개, Stop 훅과 `check-decisions.mjs` | D1–D6, D19, D20 | 빈 패키지 3개로 CI 녹색, 훅이 ADR 없는 의존성 추가를 실제로 막음, ADR 8개 |
-| 11/5 (목) | 4h | **데이터:** 설정 스키마·`defineConfig`·로더, 케이스 스키마·JSONL 로더(오류에 줄 번호), 합성 MES `schema.sql`·`seed.ts`, 스키마 추출·렌더러 | D7, D8, D11 | 시드 DB가 매번 같게 생성, `introspectSchema` 테스트 통과 |
-| 11/6 (금) | 4h | **안전:** SQL 가드(차단 테스트 20개 이상: 다중 문장, 쓰기 문장, `PRAGMA`, `ATTACH`, 주석 속 세미콜론 등), worker 기반 실행기(시간·행 제한), CLI 뼈대와 `text2sql-eval guard` | D12, D13, D14 | 악성 SQL 전부 차단, 무한 재귀 CTE가 시간 제한으로 끊김 |
-| 11/7 (토) | 8h | **평가 핵심:** 결과 비교기, 오류 분류, Provider 인터페이스, mock, 캐시·replay, OpenAI 호환 어댑터, 프롬프트 렌더, `cases lint`, 케이스 작성 시작 | D9, D10, D15, D16 | mock으로 케이스 1개가 끝까지 평가됨 |
-| 11/8 (일) | 7h | **실행:** runner(동시성, 취소, 진행 이벤트), 실행 파일 스키마, `text2sql-eval run`, 케이스 30\~40개 완성. **SKT FLY AI 지원서 마감(2h 별도)** | — | mock 전체 실행 + 실제 모델 1회 실행 성공, 비용 기록 |
-| 11/9 (월) | 3h | **리포트:** `report`(표·md·json, `--by`, `--failures`), `compareRuns`와 `compare`. **17시 토스 채용설명회** (질문 하나 준비). 범위 점검 1 | — | 프롬프트를 일부러 나쁘게 바꾸면 `compare`가 종료 코드 1 |
-| 11/10 (화) | 3h | **CLI 마무리:** `init`, `schema`, 오류 메시지 정리, `--help` 예시, 실제 프로세스 e2e 테스트, `docs/reference/cli.md` | — | 새 폴더에서 `init → run --provider mock → report`가 3분 안에 됨 |
-| 11/11 (수) | 4h | **llm-spec 1:** 공개 심볼·타입·JSDoc 추출, `llms.txt`·`api.md` 렌더 | D17, D18 | `core`의 `llms.txt`가 생성됨 |
-| 11/12 (목) | 4h | **llm-spec 2:** `check`(diff, 종료 코드 1), CI 연결, 이 저장소에 적용. (권장) `examples`. 범위 점검 2 | — | JSDoc을 바꾸고 재생성하지 않으면 CI 실패 |
-| 11/13 (금) | 4h | **문서:** README, 가이드 5개, `architecture.md`, CONTRIBUTING. (권장) publint·attw, `eval-regression.yml` | — | 처음 보는 사람이 README만 보고 실행 가능 |
-| 11/14 (토) | 8h | **품질·결과:** 실제 모델 2개(또는 모델 1개 × 프롬프트 2종) 실측과 README 표, `any`·단언 전수 검사, 리팩터, `ai-workflow.md`, 전 모듈 `/explain` 복습. (권장) 데모 GIF | — | 개요의 완료 기준 전부 체크 |
+| 11/3 (화) 밤 | 1h | GitHub 저장소 생성, 초판 `docs/PLAN.md` 커밋 | — | 완료 |
+| 11/4 (수) | 3h | **계획 개정**(이 문서). **기반:** `pyproject.toml`, 린트·포맷·타입 검사·테스트 설정, 빈 패키지와 `py.typed`, `ci.yml`, `.gitignore` | D1–D12, D25, D26 (D1–D7은 ADR만) | 빈 패키지로 CI 녹색 |
+| 11/5 (목) | 5h | **AI 협업 체계:** AGENTS.md·CLAUDE.md, ADR 템플릿·색인, 스킬 4개, Stop 훅과 `check_decisions.py`. **데이터:** `examples/bird-mini` 반입(LICENSE, SOURCE.md, 다운로드 스크립트), 데이터셋·예측 파일 로더(오류에 위치 표시) | D13, D27 | 훅이 ADR 없는 의존성 추가를 실제로 막음, 432문제 로드 테스트 통과 |
+| 11/6 (금) | 5h | **판정:** 읽기 전용 실행기(시간 제한, 병렬), EX 판정(공식 코드 확인 후 구현), 실행 파일 스키마, CLI 뼈대와 `eval`. **baseline:** `examples/baseline`으로 예측 2개 생성(비용 확인 후) | D14, D15, D16, D17, D24 | `eval`이 실행 파일 생성, 공식 스크립트와 EX 일치, 실제 오답 케이스 확보 |
+| 11/7 (토) | 5h | **사실 설계 세션:** 실제 오답 케이스를 함께 읽으며 "구조가 달라도 정답인 SQL" 문제, 정규화 규칙, 사실 목록을 정함. 정규화와 구조 비교 1차 구현 | **D18** | 오답 케이스 20개 이상에서 사실이 근거와 함께 나옴, 정답 케이스에서 가짜 차이 0 |
+| 11/8 (일) | 5h | **사실 완성:** 실행 수준 사실, 구조 수준 사실 전체, 속성 기반 테스트, 카테고리 매핑. **SKT FLY AI 지원서 마감(2h 별도)**. 범위 점검 1 | D20 | 432문제 전체에서 사실 추출이 예외 없이 끝남 |
+| 11/9 (월) | 5h | **신뢰도 플래그:** 규칙 구현, 실제 데이터에서 발생 건수 확인, 거짓 정답·거짓 오답 예시 수집. **17시 토스 채용설명회** (질문 하나 준비) | D19 | 플래그마다 테스트와 실제 사례 1개 이상 |
+| 11/10 (화) | 5h | **비교:** 분할표, 뒤집힌 케이스, 사실 분포 변화, DB별·난이도별 분해, McNemar, 조건 불일치 경고, 종료 코드, `compare --csv`. 범위 점검 2 | D22 | baseline 2개 비교 결과가 손으로 계산한 값과 일치 |
+| 11/11 (수) | 5h | **리포트:** HTML(단일 파일, SQL 자동 정렬과 나란히 보기, 다른 절 강조, 결과 표 차이, 필터), CSV(UTF-8 BOM) | D21 | 오프라인에서 HTML 열림, 엑셀에서 CSV 한글 정상 |
+| 11/12 (목) | 5h | **CLI 마무리:** 오류 메시지, `--help` 예시, 종료 코드, e2e 테스트, `docs/reference/cli.md`. (권장) CI 도그푸딩. 범위 점검 3 | — | 새 환경에서 설치 → `eval` → `report`가 3분 안에 됨 |
+| 11/13 (금) | 5h | **문서:** README, 가이드 6개, `architecture.md`, `run-file.md`, `api.md`, CONTRIBUTING | D23 | 처음 보는 사람이 README만 보고 실행 가능 |
+| 11/14 (토) | 5h | **품질·결과:** README 실측 결과 표와 HTML 스크린샷, 타입 검사·`Any`·`ignore` 전수 점검, 리팩터, `ai-workflow.md`, 전 모듈 `/explain` 복습 | — | 개요의 완료 기준 전부 체크 |
 | 11/15 (일) | 4h | **제출:** 깨끗한 clone에서 재현 확인, 저장소 공개 전환, README 첫 화면 점검, 지원서 작성, **18시까지 제출**, 코드 동결 | — | 제출 완료 (마감 23:59) |
 
-**그 뒤 일정:** 11/16(월) 10시 IBK 인턴 마감 · 11/18(수) 11시 토스 과제 대상자 발표 · 11/20(금)\~26(목) 토스 과제 기간 · 11/21(토) FLY AI 면접·코딩역량평가(서류 통과 시). 과제 기간에는 저장소를 고치지 않고 `.study/` 복습에 집중한다.
+**그 뒤 일정:** 11/16(월) 10시 IBK 인턴 마감 · 11/16\~19 (권장) TypeScript 기초 학습 (과제가 TypeScript일 경우 대비) · 11/18(수) 11시 토스 과제 대상자 발표 · 11/20(금)\~26(목) 토스 과제 기간 · 11/21(토) FLY AI 면접·코딩역량평가(서류 통과 시). 과제 기간에는 저장소를 고치지 않고 `.study/` 복습에 집중한다.
 
 ## Claude Code 시작 프롬프트
 
-이 문서를 Markdown으로 내보내 저장소의 `docs/PLAN.md`로 저장한 뒤, 저장소 폴더에서 Claude Code를 열고 아래 블록 전체를 첫 메시지로 붙여 넣는다. 두 번째 세션부터는 이 프롬프트가 필요 없다. 첫 세션에서 만든 `CLAUDE.md`와 `AGENTS.md`가 매 세션 자동으로 읽힌다.
+저장소 폴더에서 Claude Code를 열고 아래 블록 전체를 첫 메시지로 붙여 넣는다. 두 번째 세션부터는 이 프롬프트가 필요 없다. 첫 세션에서 만든 `CLAUDE.md`와 `AGENTS.md`가 매 세션 자동으로 읽힌다.
 
 ```text
-너는 이 저장소에서 나와 함께 TypeScript 라이브러리와 CLI를 만드는 페어 프로그래머다.
+너는 이 저장소에서 나와 함께 Python 라이브러리와 CLI를 만드는 페어 프로그래머다.
 프로젝트 계획은 docs/PLAN.md에 있다. 무엇이든 하기 전에 그 파일을 끝까지 읽어라.
 이 프롬프트와 PLAN.md가 충돌하면 이 프롬프트를 따르고, 충돌한 점을 나에게 알려라.
 
 ## 배경
-- 나: 성균관대 소프트웨어학과 4학년. 제조업 MES에 agentic AI text-to-SQL을 적용하는 산학연구를 했다.
-- 목표: 2026-11-15(일) 23:59 마감인 토스 Platform Engineer 인턴 서류에 이 저장소를 GitHub 링크로 낸다.
+- 나: 성균관대 소프트웨어학과 4학년. 제조 MES text-to-SQL 산학연구와, 자연어 모호성을
+  스키마 probing으로 해소하는 개인 연구를 했다. 평가는 BIRD·Spider, 주 지표는 EX였다.
+- 목표: 2026-11-15(일) 23:59 마감인 토스 Platform Engineer 인턴 서류에 이 저장소 링크를 낸다.
   내 제출 목표는 11/15 18:00이다.
-- 토스 우대사항: 서비스가 아닌 라이브러리·CLI, 문제를 설명하는 README, 올바른 빌드·린트·의존성 설정,
-  CI와 테스트, 레퍼런스·가이드, 디렉터리 구조와 코드 품질, TypeScript를 정확하게 쓰기.
-- 만들 것: (1) text2sql-eval: text-to-SQL 평가 엔진(core)과 CLI(cli)
-  (2) llm-spec: 공개 API에서 llms.txt를 생성·검사하는 도구
-  (3) AI와 협업한 개발 과정의 기록(ADR, dev-log, ai-workflow.md)
+- 서류 지원 가이드: 서비스가 아닌 라이브러리·CLI, 문제를 설명하는 README, 올바른 빌드·린트·의존성 설정,
+  CI와 테스트, 레퍼런스·가이드, 디렉터리 구조와 코드 품질, 타입을 정확하게 쓰기(원문은 TypeScript).
+- 만들 것: text2sql-eval. 예측 파일을 받아 EX를 판정하고, 오답에서 "무엇이 다른가"를 AI 없이
+  근거와 함께 추출하고, 판정 신뢰도 플래그를 붙이고, 두 실행을 비교(McNemar 포함)하고,
+  HTML 리포트와 CSV를 만든다. 도구는 LLM을 부르지 않는다.
 - 나는 면접에서 이 저장소의 모든 줄을 설명해야 한다. 빨리 많이 쓰는 것보다,
   내가 이해할 수 있게 작게 나눠 쓰는 것을 우선한다.
 
 ## 절대 규칙
-1. 설계 결정은 내가 한다. 공개 API, 의존성 추가·변경, 설정 파일, 데이터·실행 파일 형식, 평가 규칙,
-   폴더 구조, 도구 선택은 모두 결정 대상이다. 결정이 필요하면 구현을 멈추고 decide 절차를 따른다.
-   내 답 없이 추천안으로 진행하지 않는다.
+1. 설계 결정은 내가 한다. 공개 API, 의존성 추가·변경, 설정 파일, 데이터·예측·실행 파일 형식,
+   판정·사실·플래그 규칙, 폴더 구조, 도구 선택은 모두 결정 대상이다. 결정이 필요하면 구현을 멈추고
+   decide 절차를 따른다. 내 답 없이 추천안으로 진행하지 않는다.
 2. 내가 결정하면 그 자리에서 ADR을 쓴다. "기록할까요?"라고 묻지 않는다.
 3. 내 승인 없이 커밋, 푸시, 패키지 배포, 저장소 공개 전환을 하지 않는다.
-4. 산학 과제의 실제 데이터·스키마·프롬프트를 쓰지 않는다. 예제는 일반적인 MES 개념으로 새로 만든 합성 데이터다.
-5. API 키는 환경변수로만 읽는다. 키를 파일·로그·테스트 스냅샷에 남기지 않는다.
-6. TypeScript: strict 계열 옵션 전부, any 금지, 근거 없는 as 단언·non-null ! 금지.
+4. 산학 과제의 실제 데이터·스키마·프롬프트를 쓰지 않는다. 예제 데이터는 examples/bird-mini(BIRD dev, CC BY-SA 4.0)다.
+5. API 키는 환경변수로만 읽는다. 키를 파일·로그·테스트 스냅샷에 남기지 않는다. 도구 본체는 API 키를 쓰지 않는다.
+6. 타입: 타입 검사기 strict 모드 0 오류, 공개 API에 Any 금지, 근거 없는 cast·# type: ignore 금지.
    불가피하면 이유를 주석으로 남기고 나에게 알린다.
-7. 모르는 것(라이브러리 API, 도구의 현재 권장 사항, Claude Code 기능)은 추측하지 말고 공식 문서를 확인한다.
-   확인할 수 없으면 그렇다고 말하고 확인 방법을 제안한다.
+7. 사실 추출과 판정은 결정적이어야 한다. LLM이나 무작위성을 쓰지 않는다.
+8. 모르는 것(라이브러리 API, 도구의 현재 권장 사항, BIRD 공식 평가 규칙, Claude Code 기능)은
+   추측하지 말고 공식 문서나 원본 코드를 확인한다. 확인할 수 없으면 그렇다고 말하고 확인 방법을 제안한다.
 
 ## decide 절차
 결정이 필요하면 이 형식으로 묻는다.
-- 결정 ID(PLAN.md의 D1~D20, 목록에 없으면 D21부터 새 번호)와 제목
+- 결정 ID(PLAN.md의 D8~D27, 목록에 없으면 D28부터 새 번호)와 제목
 - 맥락 2~3문장
 - 선택지 2~4개를 표로: 안 | 장점 | 단점 | 이 프로젝트에 미치는 영향
 - 너의 추천과 이유 한 문장 (도구 선택이면 확인한 공식 문서 링크)
@@ -482,46 +553,46 @@ text2sql-eval/
 내 답을 받으면:
 - docs/decisions/NNNN-<slug>.md를 템플릿(docs/decisions/0000-template.md)대로 쓴다
 - docs/decisions/README.md 색인에 한 줄을 추가한다
-- "ADR 0007 기록: docs/decisions/0007-sqlite-driver.md"처럼 한 줄로 보고한다
+- "ADR 0009 기록: docs/decisions/0009-type-checker.md"처럼 한 줄로 보고한다
 - "이유"에는 내가 한 말을 그대로 인용한다. 내가 너의 추천을 고르지 않았으면 "AI 관여"에 그 사실을 적는다
 
 ## 작업 단위
-기능 하나마다: 계획 3~5줄 제시 → 내 승인 → 테스트와 구현 → pnpm check 통과
+기능 하나마다: 계획 3~5줄 제시 → 내 승인 → 테스트와 구현 → check 통과
 → review 체크리스트로 자가 검토하고 고친 점 보고 → 내가 diff 검토 → 내 승인 후 커밋.
-- 커밋은 Conventional Commits 형식으로 작게. AI 참여 표시는 D20 결정을 따른다.
+- 커밋은 Conventional Commits 형식으로 작게. AI 참여 표시는 D26 결정을 따른다.
 - 한 번에 바꾸는 파일은 되도록 5개 이하. 커지면 나눈다.
 - 구현을 마치면 "이 변경에서 면접에 나올 만한 질문" 2개를 덧붙인다.
 
 ## 첫 세션에서 할 일 (순서대로)
 1. docs/PLAN.md를 읽고 목표·범위·일정을 10줄 이내로 요약한다. 모호하거나 모순된 부분은 질문한다.
-2. D1(이름)은 text2sql-eval로 이미 정했다(npm 스코프 @text2sql-eval/*, CLI 명령어도 text2sql-eval).
-   묻지 말고 ADR만 쓴다. 결정 D2–D6, D19, D20을 decide 절차로 묻는다. 도구 선택(D4 빌드 도구 등)은
-   묻기 전에 공식 문서로 현재 유지보수 상태를 확인하고 출처를 붙인다.
+2. D1~D7은 이미 정했다. 묻지 말고 PLAN.md의 내용과 이유로 ADR만 쓴다(0001은 ADR을 쓴다는 결정과
+   라이선스: 코드 MIT, 예제 데이터 CC BY-SA 4.0). D8~D12, D25, D26을 decide 절차로 묻는다.
+   도구 선택은 묻기 전에 공식 문서로 현재 유지보수 상태와 권장 사항을 확인하고 출처를 붙인다.
 3. 결정을 받는 대로 기반 파일을 만든다.
-   - pnpm workspace, packages/core·cli·llm-spec 빈 패키지, tsconfig.base.json,
-     린트·테스트·빌드 설정, 루트 스크립트(build, test, lint, typecheck, check)
-   - .github/workflows/ci.yml: lint → typecheck → test → build. llm-spec check 단계는 자리만 만든다
-   - AGENTS.md: 이 프롬프트의 절대 규칙, decide 절차, 작업 단위, 명령어, 폴더 구조 요약.
-     사람이 읽어도 자연스러운 협업 규약으로 쓴다. 200줄 이내
-   - CLAUDE.md: 첫 줄에 @AGENTS.md, 그 아래에는 Claude Code 전용 사항만
-   - docs/decisions/0000-template.md(PLAN.md의 템플릿), README.md(색인),
-     0001-record-architecture-decisions.md(결정을 ADR로 기록한다는 결정 + MIT 라이선스)
-   - .claude/skills/ 아래 decide, explain, review, devlog 네 스킬. 각 SKILL.md에 name과 description을 쓴다.
-     decide는 네가 설계 결정을 만났을 때 스스로 불러 쓸 수 있게 description을 구체적으로 쓴다.
-     explain과 devlog는 내가 부를 때만 실행되게 한다.
-     필드 이름은 https://code.claude.com/docs/en/skills.md 에서 확인한다
-   - scripts/check-decisions.mjs와 .claude/settings.json의 Stop 훅.
-     감시 대상(package.json 의존성, tsconfig*.json, eslint.config.*, packages/*/src/index.ts,
-     .github/workflows/*, 데이터셋·실행 파일 스키마)이 바뀌었는데 docs/decisions/에 변경이 없으면
-     stderr에 "어떤 파일 때문에 어떤 결정을 물어야 하는지"를 쓰고 종료 코드 2로 끝낸다.
-     같은 경고로 끊임없이 막지 않도록, Stop 훅 입력 필드를
-     https://code.claude.com/docs/en/hooks.md 에서 확인해 처리한다.
-     내가 "ADR 불필요"라고 답한 변경은 docs/decisions/skipped.md에 날짜·파일·이유를 한 줄 남긴다
-     (docs/decisions/ 아래 변경이라 훅을 통과한다). git 커밋이 하나도 없는 상태도 처리한다.
-     훅을 일부러 한 번 발동시켜 동작하는 것을 보여 준다
-   - .gitignore에 .study/, .text2sql-eval/cache/의 비예제 캐시, .env
+   - pyproject.toml, src/text2sql_eval/(__init__.py, py.typed), tests/, 린트·포맷·타입 검사·테스트 설정,
+     check를 한 번에 실행하는 방법
+   - .github/workflows/ci.yml: 린트 → 포맷 검사 → 타입 검사 → 테스트(지원 버전 매트릭스) → 빌드
+   - .gitignore에 .study/, .env, 실행 산출물(examples/results 제외)
    - docs/dev-log/<오늘 날짜>.md
 4. CI가 녹색인지 확인하고, 오늘 만든 것과 남은 것을 보고한다.
+   AI 협업 체계(AGENTS.md, CLAUDE.md, ADR 템플릿·색인, 스킬 4개, Stop 훅)는 다음 날(11/5) 일정이다.
+
+## 11/5에 만들 AI 협업 체계
+- AGENTS.md: 이 프롬프트의 절대 규칙, decide 절차, 작업 단위, 명령어, 폴더 구조 요약.
+  사람이 읽어도 자연스러운 협업 규약으로 쓴다. 200줄 이내
+- CLAUDE.md: 첫 줄에 @AGENTS.md, 그 아래에는 Claude Code 전용 사항만
+- docs/decisions/0000-template.md(PLAN.md의 템플릿), README.md(색인)
+- .claude/skills/ 아래 decide, explain, review, devlog 네 스킬. 각 SKILL.md에 name과 description을 쓴다.
+  decide는 네가 설계 결정을 만났을 때 스스로 불러 쓸 수 있게 description을 구체적으로 쓴다.
+  explain과 devlog는 내가 부를 때만 실행되게 한다.
+  필드 이름은 https://code.claude.com/docs/en/skills.md 에서 확인한다
+- scripts/check_decisions.py와 .claude/settings.json의 Stop 훅.
+  감시 대상(PLAN.md의 "결정 기록 자동화" 목록)이 바뀌었는데 docs/decisions/에 변경이 없으면
+  stderr에 "어떤 파일 때문에 어떤 결정을 물어야 하는지"를 쓰고 종료 코드 2로 끝낸다.
+  같은 경고로 끊임없이 막지 않도록, Stop 훅 입력 필드를
+  https://code.claude.com/docs/en/hooks.md 에서 확인해 처리한다.
+  내가 "ADR 불필요"라고 답한 변경은 docs/decisions/skipped.md에 날짜·파일·이유를 한 줄 남긴다.
+  훅을 일부러 한 번 발동시켜 동작하는 것을 보여 준다
 
 ## 스킬 내용
 - decide: 위 decide 절차 그대로.
@@ -537,25 +608,31 @@ PLAN.md 일별 일정에서 오늘 날짜의 행과 가장 최근 dev-log를 읽
 (이 항목은 AGENTS.md에도 넣어 다음 세션부터 자동으로 적용되게 한다.)
 
 ## 말투
-나에게는 한국어로 짧게. 코드·커밋·JSDoc 언어는 D19 결정을 따른다.
+나에게는 한국어로 짧게. 코드·커밋·docstring 언어는 D25 결정을 따른다.
 
 지금 첫 세션을 시작한다. 1번부터 진행해라.
 ```
 
 ## 주의사항
 
-- **기밀:** 산학 과제의 데이터·스키마·프롬프트, 삼성SDS ERP 과제 내용은 저장소에 넣지 않는다. README의 연구 배경은 "제조 MES에 text-to-SQL을 적용한 경험에서 출발"한 정도로만 쓴다. 미게재 논문의 내용을 옮길 때는 공동 연구자와 지도교수에게 먼저 확인한다.
+- **기밀:** 산학 과제의 데이터·스키마·프롬프트, 삼성SDS ERP 과제 내용은 저장소에 넣지 않는다. README의 연구 배경은 이 문서의 "내가 겪은 문제" 수준(방법론 일반론과 겪은 불편)까지만 쓴다. 미게재 논문의 내용을 옮길 때는 공동 연구자와 지도교수에게 먼저 확인한다.
+- **데이터 라이선스:** `examples/bird-mini`는 CC BY-SA 4.0이다. 출처 표기를 빠뜨리지 않고, 코드 라이선스(MIT)와 섞이지 않게 README와 폴더 `LICENSE`에서 분명히 구분한다.
+- **판정 결과의 정직성:** 공식 스크립트와 EX가 다르게 나오면 숨기지 말고 원인을 문서에 적는다. 신뢰도 플래그가 판정을 뒤집는 것처럼 보이지 않게, 플래그는 "의심"이라는 표현만 쓴다.
 - **토스 과제의 AI 사용 규정:** 11/20\~26 과제에서 AI 도구를 써도 되는지 과제 안내를 먼저 확인한다. 금지라면 직접 짠다. 이 저장소의 규칙과는 별개다.
-- **API 비용과 키:** 실제 모델 실행은 캐시를 켜고 돌려 재실행 비용을 없앤다. 실행 전에 케이스 수 × 모델 수로 호출 횟수를 확인한다. 키가 커밋되면 기록을 지우는 것보다 키를 바로 폐기하는 것이 먼저다.
-- **공개 전환 전 점검 (11/15):** git 기록 전체의 비밀값 검사, `.env`·`.study/`가 빠졌는지, 공개해도 되는 예제 캐시만 있는지 확인한다.
+- **API 비용과 키:** baseline 실행 전에 호출 수(432 × 구성 수)와 예상 비용을 확인한다. 키는 `.env`에만 두고 커밋하지 않는다. 키가 커밋되면 기록을 지우는 것보다 키를 바로 폐기하는 것이 먼저다.
+- **공개 전환 전 점검 (11/15):** git 기록 전체의 비밀값 검사, `.env`·`.study/`가 빠졌는지, 공개해도 되는 예제 결과만 있는지 확인한다.
 - **제출본 고정:** 제출 직전 커밋에 `v0.1.0` 태그를 달고 README에 "서류 제출 시점: v0.1.0"을 적는다. 마감 뒤 커밋이 있어도 제출 시점을 구분할 수 있다.
 - **커밋 기록은 있는 그대로:** 날짜를 고치거나 AI 표시를 지우지 않는다. "AI를 어떻게 통제했나"라는 어필이 기록의 일관성에 달려 있다.
 - **학업과의 충돌:** 이번 학기 12학점의 과제·시험 일정을 일정표에 겹쳐 보고, 겹치는 날은 미리 범위 축소 규칙을 적용한다.
-- **다음 쓰임:** 토스 결과와 관계없이 이 저장소는 SK하이닉스 경험기술서 1번(AI 활용 경험)의 핵심 소재다. "연구 → 평가 도구화 → AI 협업 개발 체계"의 흐름으로 쓴다.
+- **다음 쓰임:** 토스 결과와 관계없이 이 저장소는 SK하이닉스 경험기술서 1번(AI 활용 경험)의 핵심 소재다. "연구에서 겪은 분석 병목 → 결정적 분석 도구화 → AI 협업 개발 체계"의 흐름으로 쓴다.
 
 ## 출처
 
-- [토스: Platform Engineer 인턴십 공고](https://toss.im/career/job-detail?gh_jid=8096691003)
+- [토스: Platform Engineer 인턴십 공고](https://toss.im/career/job-detail?job_id=8096691003)
+- [BIRD-bench 공식 사이트 (CC BY-SA 4.0 공지, dev set)](https://bird-bench.github.io/)
+- [BIRD 논문 (arXiv 2305.03111)](https://arxiv.org/abs/2305.03111)
+- [BIRD Mini-Dev (SQLite·MySQL·PostgreSQL)](https://huggingface.co/datasets/birdsql/bird_mini_dev)
+- [sqlglot (PyPI)](https://pypi.org/project/sqlglot/)
 - [Claude Code: CLAUDE.md와 AGENTS.md, @ 가져오기](https://code.claude.com/docs/en/memory.md)
 - [Claude Code: 스킬](https://code.claude.com/docs/en/skills.md)
 - [Claude Code: 훅 가이드](https://code.claude.com/docs/en/hooks-guide.md)
