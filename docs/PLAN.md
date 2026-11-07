@@ -265,17 +265,23 @@ text2sql-eval compare <base.json> <head.json>
 ```python
 def load_dataset(path: Path) -> Dataset: ...
 def load_predictions(path: Path) -> Predictions: ...
-def evaluate(dataset: Dataset, predictions: Predictions, *, db_dir: Path, options: EvalOptions) -> RunResult: ...
-def extract_facts(gold_sql: str, pred_sql: str, *, dialect: str = "sqlite") -> list[Fact]: ...
+def evaluate(
+    dataset: Dataset, predictions: Predictions, *, db_dir: Path, options: EvalOptions
+) -> RunResult: ...
+def extract_facts(
+    gold_sql: str, pred_sql: str, *, dialect: str = "sqlite"
+) -> list[Fact]: ...
 def compare_runs(base: RunResult, head: RunResult) -> Comparison: ...
 def write_html_report(run: RunResult, path: Path) -> None: ...
 def write_csv(run: RunResult, path: Path) -> None: ...
+
 
 @dataclass(frozen=True)
 class Correct:
     status: Literal["correct"]
     case_id: str
     flags: tuple[Flag, ...]
+
 
 @dataclass(frozen=True)
 class Incorrect:
@@ -284,6 +290,7 @@ class Incorrect:
     facts: tuple[Fact, ...]
     flags: tuple[Flag, ...]
 
+
 @dataclass(frozen=True)
 class ExecError:
     status: Literal["error"]
@@ -291,14 +298,16 @@ class ExecError:
     kind: Literal["syntax", "unknown_identifier", "timeout", "runtime"]
     message: str
 
+
 CaseResult = Correct | Incorrect | ExecError
+
 
 @dataclass(frozen=True)
 class Fact:
-    kind: str          # 예: "where.value_mismatch"
-    clause: str        # 예: "WHERE"
-    gold: str          # 근거: 정답 쪽 조각
-    pred: str          # 근거: 예측 쪽 조각
+    kind: str  # 예: "where.value_mismatch"
+    clause: str  # 예: "WHERE"
+    gold: str  # 근거: 정답 쪽 조각
+    pred: str  # 근거: 예측 쪽 조각
 ```
 
 데이터 모델 방식(dataclass 또는 다른 것)은 D13에서 정한다. 실행 파일에는 `schema_version`을 넣고, 형식이 바뀌면 올린다.
@@ -392,8 +401,8 @@ text2sql-eval/
 | D8 | 지원 Python 버전 | 3.10+ / 3.11+ / 3.12+ | **결정됨: 3.11+ (ADR 0009)** | 11/7 |
 | D9 | 프로젝트 관리·빌드 백엔드 | uv / Poetry / pip + hatch | **결정됨: uv + uv_build (ADR 0010)** | 11/7 |
 | D10 | 린트·포맷 | Ruff / flake8 + black + isort | **결정됨: Ruff 하나 (ADR 0011)** | 11/7 |
-| D11 | 타입 검사 | pyright strict / mypy strict / 둘 다 | pyright strict (가이드 #7의 핵심 증거) | 11/7 |
-| D12 | 테스트 | pytest / unittest, 속성 기반(Hypothesis), 스냅샷 방식 | pytest + Hypothesis | 11/7 |
+| D11 | 타입 검사 | pyright strict / mypy strict / 둘 다 | **결정됨: pyright strict + 규칙 1개 (ADR 0013)** | 11/7 |
+| D12 | 테스트 | pytest / unittest, 속성 기반(Hypothesis), 스냅샷 방식 | **결정됨: pytest + Hypothesis + syrupy (ADR 0014)** | 11/7 |
 | D13 | 데이터 모델·입력 검증 | dataclass + 직접 검증 / pydantic / msgspec | 공개 결과 타입은 dataclass, 입력 검증 방식은 의존성 수와 오류 메시지 품질로 결정 | 11/8 |
 | D14 | CLI 프레임워크 | argparse / click / typer | 의존성 수와 `--help` 품질을 비교해 결정 | 11/8 |
 | D15 | SQL 파서 | sqlglot / sqlparse / 직접 | sqlglot (방언 파싱, 정규화·단순화, AST 비교 지원. 11/4 기준 30.x) | 11/9 |
@@ -409,7 +418,7 @@ text2sql-eval/
 | D25 | 문서 언어 | 한국어 / 영어 / 한국어 + 영어 요약 | README는 한국어 + 영어 한 단락, 코드·커밋·docstring은 영어 | 11/7 |
 | D26 | 커밋 규칙과 AI 표시 | Conventional Commits 여부, `Co-Authored-By` 여부 | 둘 다 사용 (AI 활용을 투명하게) | 11/7 |
 | D27 | 예측 파일 형식 | 자체 JSONL / BIRD 공식 형식 / 둘 다 | 자체 JSONL 필수, BIRD 공식 형식은 권장 범위 | 11/8 |
-| D28 | Ruff 규칙 세트 | 기본 / 넓게 고른 세트 / 전부 켜고 일부 끄기 | 실수를 잡는 규칙 위주로 넓게 고르고, 고른 이유를 설정 주석에 남김 | 11/7 |
+| D28 | Ruff 규칙 세트 | 기본 / 넓게 고른 세트 / 전부 켜고 일부 끄기 | **결정됨: 기본 규칙, 88자 (ADR 0015, Claude 추천 기각)** | 11/7 |
 
 라이선스는 코드 MIT, 예제 데이터 CC BY-SA 4.0으로 정하고 0001번 ADR에 함께 적는다. 이 목록에 없는 결정이 나오면 Claude가 D29부터 새 번호를 붙여 물어본다.
 
