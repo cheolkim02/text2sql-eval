@@ -12,3 +12,7 @@
 | [0006](0006-demo-dataset-bird-subset.md) | 시연 데이터 BIRD dev 3개 DB, 432문제 | D5 | 2026-11-04 | 채택 |
 | [0007](0007-report-outputs-html-csv.md) | 결과 화면 HTML 리포트 + CSV | D6 | 2026-11-04 | 채택 |
 | [0008](0008-out-of-scope-and-roadmap.md) | 범위에서 뺄 것과 로드맵 | D7 | 2026-11-04 | 채택 |
+| [0009](0009-python-version.md) | 지원 Python 3.11+ | D8 | 2026-11-07 | 채택 |
+| [0010](0010-uv-and-uv-build.md) | 프로젝트 관리 uv, 빌드 백엔드 uv_build | D9 | 2026-11-07 | 채택 |
+| [0011](0011-ruff.md) | 린트·포맷 Ruff | D10 | 2026-11-07 | 채택 |
+| [0012](0012-schedule-adjustment-1107.md) | 일정 지연에 따른 일정·범위 조정 | — | 2026-11-07 | 채택 |
