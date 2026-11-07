@@ -1,0 +1,59 @@
+[project]
+name = "text2sql-eval"
+version = "0.1.0"
+description = "Deterministic, evidence-backed error analysis and run comparison for text-to-SQL experiments"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "cheolkim02" }]
+requires-python = ">=3.11"
+keywords = ["text-to-sql", "nl2sql", "evaluation", "error-analysis", "bird"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
+    "Topic :: Database",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Typing :: Typed",
+]
+dependencies = []
+
+[project.urls]
+Repository = "https://github.com/cheolkim02/text2sql-eval"
+
+[build-system]
+requires = ["uv_build>=0.13.7,<0.14.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "hypothesis>=6.170.15",
+    "pyright>=1.1.414",
+    "pytest>=9.2.0",
+    "ruff>=0.17.4",
+    "syrupy>=6.1.1",
+]
+
+[tool.ruff]
+# ADR 0015: default rule set (syntax errors and obvious mistakes only).
+line-length = 88
+
+[tool.pyright]
+# ADR 0013: strict mode plus one rule that strict leaves off.
+include = ["src", "tests", "examples"]
+pythonVersion = "3.11"
+typeCheckingMode = "strict"
+reportUnnecessaryTypeIgnoreComment = "error"
+venvPath = "."
+venv = ".venv"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = ["-ra", "--strict-markers", "--strict-config"]
+xfail_strict = true

@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+dist/
+build/
+*.egg-info/
+
+# Tool caches
+.pytest_cache/
+.ruff_cache/
+.hypothesis/
+.coverage
+htmlcov/
+
+# Secrets
+.env
+.env.*
+
+# Private study notes (see docs/PLAN.md)
+.study/
+
+# Local run outputs (committed example results live in examples/results/)
+/runs/
+/reports/
