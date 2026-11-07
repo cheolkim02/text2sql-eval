@@ -415,8 +415,8 @@ text2sql-eval/
 | D22 | 통계 검정 | McNemar 정확 검정 직접 구현 / scipy | 직접 구현 (`math.comb`로 충분, 의존성 없음) | 11/10 |
 | D23 | 문서 도구 | Markdown만 / MkDocs + API 자동 생성 | Markdown 먼저, 시간이 남으면 자동 생성 | 11/13 |
 | D24 | baseline 구성 | 모델, evidence 있음/없음 vs 프롬프트 2종 | 같은 모델 × evidence 있음/없음 | 11/9 |
-| D25 | 문서 언어 | 한국어 / 영어 / 한국어 + 영어 요약 | README는 한국어 + 영어 한 단락, 코드·커밋·docstring은 영어 | 11/7 |
-| D26 | 커밋 규칙과 AI 표시 | Conventional Commits 여부, `Co-Authored-By` 여부 | 둘 다 사용 (AI 활용을 투명하게) | 11/7 |
+| D25 | 문서 언어 | 한국어 / 영어 / 한국어 + 영어 요약 | **결정됨: README 한국어 + 영어 요약, 코드·커밋·docstring 영어 (ADR 0016)** | 11/7 |
+| D26 | 커밋 규칙과 AI 표시 | Conventional Commits 여부, `Co-Authored-By` 여부 | **결정됨: 둘 다 사용 (ADR 0017)** | 11/7 |
 | D27 | 예측 파일 형식 | 자체 JSONL / BIRD 공식 형식 / 둘 다 | 자체 JSONL 필수, BIRD 공식 형식은 권장 범위 | 11/8 |
 | D28 | Ruff 규칙 세트 | 기본 / 넓게 고른 세트 / 전부 켜고 일부 끄기 | **결정됨: 기본 규칙, 88자 (ADR 0015, Claude 추천 기각)** | 11/7 |
 

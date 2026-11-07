@@ -19,3 +19,5 @@
 | [0013](0013-pyright-strict.md) | 타입 검사 pyright strict + 규칙 1개 | D11 | 2026-11-07 | 채택 |
 | [0014](0014-pytest-hypothesis-syrupy.md) | 테스트 pytest + Hypothesis + syrupy | D12 | 2026-11-07 | 채택 |
 | [0015](0015-ruff-default-rules.md) | Ruff 기본 규칙, 줄 길이 88자 | D28 | 2026-11-07 | 채택 |
+| [0016](0016-documentation-language.md) | 문서 언어: README 한국어 + 영어 요약, 코드·커밋 영어 | D25 | 2026-11-07 | 채택 |
+| [0017](0017-commit-conventions.md) | Conventional Commits + AI 참여 표시 | D26 | 2026-11-07 | 채택 |
