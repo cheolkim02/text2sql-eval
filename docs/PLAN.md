@@ -126,7 +126,7 @@ SQLite 실행만 지원하고(BIRD·Spider의 DB가 SQLite), 위 핵심 기능�
 **필수 (11/14까지)**
 
 - 데이터셋 로더: BIRD 형식(`question_id`, `db_id`, `question`, `evidence`, `SQL`, `difficulty`)과 자체 JSONL 형식, 오류에 위치 표시
-- 예측 파일 로더: 자체 JSONL 형식(D27), 누락·중복 `id` 검사
+- 예측 파일 로더: 한 줄 한 SQL 텍스트와 자체 JSONL(ADR 0018), 개수·누락·중복 `id` 검사
 - 실행기: 읽기 전용 연결, 시간 제한, 병렬 실행
 - EX 판정: BIRD 공식 호환 모드 + (결정 시) 엄격 모드 (D16)
 - 사실 추출 ①, 카테고리 매핑, 신뢰도 플래그 ②
@@ -196,10 +196,21 @@ BIRD 형식을 그대로 읽을 수 있고, 다른 데이터셋은 아래 형식
 {"id":"superhero-718","db_id":"superhero","question":"...","evidence":"...","gold_sql":"SELECT ...","difficulty":"simple","tags":[]}
 ```
 
-### 예측 파일 형식 (JSONL, D27)
+### 예측 파일 형식 (D27, ADR 0018)
+
+두 형식을 받는다.
+
+**한 줄 한 SQL 텍스트 파일.** N번째 줄이 데이터셋 N번째 케이스의 예측이다. 줄 수가 케이스 수와 다르면 오류이고, 빈 줄은 빈 예측으로 센다.
+
+```text
+SELECT T2.power_name FROM hero_power AS T1 INNER JOIN superpower AS T2 ON ...
+SELECT COUNT(*) FROM superhero WHERE ...
+```
+
+**자체 JSONL.** 한 줄에 JSON 객체 하나다. `id`·`sql`은 필수이고 `meta`는 선택이다. `id`가 데이터셋에 없거나 중복되면 줄 번호와 함께 오류를 낸다.
 
 ```json
-{"id":"superhero-718","sql":"SELECT ...","meta":{"latency_ms":1830}}
+{"id":718,"sql":"SELECT ...","meta":{"latency_ms":1830}}
 ```
 
 실행 전체의 메타데이터(모델, 프롬프트 버전, 커밋 등)는 `eval --meta key=value` 또는 `--meta-file`로 넣고 실행 파일에 그대로 남긴다. 연구 때 스크립트 옵션과 W&B로 하던 기록을 결과 파일 안에 함께 두기 위함이다.
@@ -403,11 +414,11 @@ text2sql-eval/
 | D10 | 린트·포맷 | Ruff / flake8 + black + isort | **결정됨: Ruff 하나 (ADR 0011)** | 11/7 |
 | D11 | 타입 검사 | pyright strict / mypy strict / 둘 다 | **결정됨: pyright strict + 규칙 1개 (ADR 0013)** | 11/7 |
 | D12 | 테스트 | pytest / unittest, 속성 기반(Hypothesis), 스냅샷 방식 | **결정됨: pytest + Hypothesis + syrupy (ADR 0014)** | 11/7 |
-| D13 | 데이터 모델·입력 검증 | dataclass + 직접 검증 / pydantic / msgspec | 공개 결과 타입은 dataclass, 입력 검증 방식은 의존성 수와 오류 메시지 품질로 결정 | 11/8 |
+| D13 | 데이터 모델·입력 검증 | dataclass + 직접 검증 / pydantic / msgspec | **결정됨: dataclass + 직접 검증 (ADR 0019)** | 11/8 |
 | D14 | CLI 프레임워크 | argparse / click / typer | 의존성 수와 `--help` 품질을 비교해 결정 | 11/8 |
 | D15 | SQL 파서 | sqlglot / sqlparse / 직접 | sqlglot (방언 파싱, 정규화·단순화, AST 비교 지원. 11/4 기준 30.x) | 11/9 |
 | D16 | EX 판정 규칙 | BIRD 공식 호환(행 집합 비교로 알려짐) / 엄격(순서·중복·컬럼 이름) / 둘 다 | 기본은 공식 호환, 공식 코드를 읽고 규칙을 확인한 뒤 엄격 모드 여부 결정 | 11/8 |
-| D17 | 시간 제한 구현 | `sqlite3` 진행 콜백 / 별도 프로세스 | 진행 콜백 (표준 라이브러리만으로 중단 가능) | 11/8 |
+| D17 | 시간 제한 구현 | `sqlite3` 진행 콜백 / 별도 프로세스 | **결정됨: 진행 콜백 + 스레드 병렬 (ADR 0020)** | 11/8 |
 | D18 | 사실 목록과 정규화 규칙 | 실제 오답 케이스를 보며 정함 | **11/7 설계 세션** (가장 깊게 고민할 결정) | 11/9 |
 | D19 | 신뢰도 플래그 목록 | 빈 결과, 값 하나, 컬럼 상위집합, 형식 차이 등 | 실제 케이스에서 발생 빈도를 보고 결정 | 11/9 |
 | D20 | 카테고리 매핑 파일 형식 | TOML / YAML / JSON | TOML (표준 라이브러리로 읽음) | 11/8 |
@@ -417,7 +428,7 @@ text2sql-eval/
 | D24 | baseline 구성 | 모델, evidence 있음/없음 vs 프롬프트 2종 | 같은 모델 × evidence 있음/없음 | 11/9 |
 | D25 | 문서 언어 | 한국어 / 영어 / 한국어 + 영어 요약 | **결정됨: README 한국어 + 영어 요약, 코드·커밋·docstring 영어 (ADR 0016)** | 11/7 |
 | D26 | 커밋 규칙과 AI 표시 | Conventional Commits 여부, `Co-Authored-By` 여부 | **결정됨: 둘 다 사용 (ADR 0017)** | 11/7 |
-| D27 | 예측 파일 형식 | 자체 JSONL / BIRD 공식 형식 / 둘 다 | 자체 JSONL 필수, BIRD 공식 형식은 권장 범위 | 11/8 |
+| D27 | 예측 파일 형식 | 자체 JSONL / BIRD 공식 형식 / 둘 다 | **결정됨: 한 줄 한 SQL 텍스트 + 자체 JSONL (ADR 0018)** | 11/8 |
 | D28 | Ruff 규칙 세트 | 기본 / 넓게 고른 세트 / 전부 켜고 일부 끄기 | **결정됨: 기본 규칙, 88자 (ADR 0015, Claude 추천 기각)** | 11/7 |
 
 라이선스는 코드 MIT, 예제 데이터 CC BY-SA 4.0으로 정하고 0001번 ADR에 함께 적는다. 이 목록에 없는 결정이 나오면 Claude가 D29부터 새 번호를 붙여 물어본다.

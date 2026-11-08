@@ -21,3 +21,6 @@
 | [0015](0015-ruff-default-rules.md) | Ruff 기본 규칙, 줄 길이 88자 | D28 | 2026-11-07 | 채택 |
 | [0016](0016-documentation-language.md) | 문서 언어: README 한국어 + 영어 요약, 코드·커밋 영어 | D25 | 2026-11-07 | 채택 |
 | [0017](0017-commit-conventions.md) | Conventional Commits + AI 참여 표시 | D26 | 2026-11-07 | 채택 |
+| [0018](0018-prediction-file-formats.md) | 예측 파일: 한 줄 한 SQL 텍스트 + 자체 JSONL | D27 | 2026-11-08 | 채택 |
+| [0019](0019-dataclasses-and-manual-validation.md) | 데이터 모델 dataclass, 입력 검증 직접 구현 | D13 | 2026-11-08 | 채택 |
+| [0020](0020-progress-handler-timeout-and-threads.md) | 시간 제한 진행 콜백, 병렬 실행 스레드 | D17 | 2026-11-08 | 채택 |
