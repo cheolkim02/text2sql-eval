@@ -91,6 +91,48 @@ def load_bird(path: Path) -> Dataset:
     return Dataset(path=path, cases=tuple(cases))
 
 
+def load_bird_tied(path: Path, dataset: Dataset) -> dict[str, str]:
+    """Read BIRD's tied-rows alternative gold file (``dev_tied_append.json``).
+
+    The file has the same shape as the question file. Each entry gives, for an
+    existing question, a gold SQL that returns every tied row instead of one.
+    It is used only for flags, never for the verdict (ADR 0024).
+
+    Returns:
+        Alternative gold SQL by case id.
+
+    Raises:
+        InputError: for any problem ``load_bird`` reports, or an entry whose
+            question is not in ``dataset`` or belongs to a different database.
+
+    Example:
+        >>> tied = load_bird_tied(Path("examples/bird-mini/dev_tied_append.json"), dataset)
+        >>> len(tied)
+        13
+    """
+    known = {case.id: case for case in dataset.cases}
+    alternatives: dict[str, str] = {}
+    for index, entry in enumerate(load_bird(path).cases):
+        location = f"item {index}"
+        original = known.get(entry.id)
+        if original is None:
+            raise InputError(
+                path,
+                f"question_id {entry.id} is not in the dataset {dataset.path}",
+                location=location,
+                hint="use the tied file that belongs to the same dataset split",
+            )
+        if original.db_id != entry.db_id:
+            raise InputError(
+                path,
+                f"question_id {entry.id} is for database '{entry.db_id}', "
+                f"but the dataset has it for '{original.db_id}'",
+                location=location,
+            )
+        alternatives[entry.id] = entry.gold_sql
+    return alternatives
+
+
 def _parse_case(item: object, path: Path, location: str) -> Case:
     obj = as_object(item)
     if obj is None:
