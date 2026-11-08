@@ -24,3 +24,4 @@
 | [0018](0018-prediction-file-formats.md) | 예측 파일: 한 줄 한 SQL 텍스트 + 자체 JSONL | D27 | 2026-11-08 | 채택 |
 | [0019](0019-dataclasses-and-manual-validation.md) | 데이터 모델 dataclass, 입력 검증 직접 구현 | D13 | 2026-11-08 | 채택 |
 | [0020](0020-progress-handler-timeout-and-threads.md) | 시간 제한 진행 콜백, 병렬 실행 스레드 | D17 | 2026-11-08 | 채택 |
+| [0021](0021-execution-defaults.md) | 실행 기본값: 쿼리당 30초, 행 수 제한 없음, 읽기 전용 | D17 후속 | 2026-11-08 | 채택 |
