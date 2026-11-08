@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from text2sql_eval.datasets.bird import Case, load_bird
+from text2sql_eval.datasets.bird import Case, load_bird, load_bird_tied
 from text2sql_eval.errors import InputError
 
 BIRD_MINI_DEV = Path(__file__).resolve().parents[1] / "examples/bird-mini/dev.json"
@@ -127,3 +127,43 @@ def test_reports_non_utf8_files(tmp_path: Path) -> None:
 
     with pytest.raises(InputError, match="not valid UTF-8"):
         load_bird(path)
+
+
+# --- tied-rows alternative gold --------------------------------------------
+
+
+def test_loads_the_committed_tied_alternatives() -> None:
+    dataset = load_bird(BIRD_MINI_DEV)
+
+    tied = load_bird_tied(BIRD_MINI_DEV.with_name("dev_tied_append.json"), dataset)
+
+    assert len(tied) == 13
+    assert set(tied) <= set(dataset.ids)
+    assert "LIMIT 1" in next(c.gold_sql for c in dataset.cases if c.id == "810")
+    assert "LIMIT 1" not in tied["810"]
+
+
+@pytest.mark.parametrize(
+    ("entry", "expected"),
+    [
+        (_question(99), "question_id 99 is not in the dataset"),
+        (
+            _question(1, db_id="toxicology"),
+            (
+                "question_id 1 is for database 'toxicology', but the dataset has it "
+                "for 'superhero'"
+            ),
+        ),
+    ],
+)
+def test_rejects_tied_entries_that_do_not_match_the_dataset(
+    tmp_path: Path, entry: dict[str, object], expected: str
+) -> None:
+    dataset = load_bird(_write(tmp_path, [_question(1)]))
+    tied_path = tmp_path / "tied.json"
+    tied_path.write_text(json.dumps([entry]), encoding="utf-8")
+
+    with pytest.raises(InputError) as excinfo:
+        load_bird_tied(tied_path, dataset)
+
+    assert expected in str(excinfo.value)
