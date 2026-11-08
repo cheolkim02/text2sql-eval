@@ -25,3 +25,6 @@
 | [0019](0019-dataclasses-and-manual-validation.md) | 데이터 모델 dataclass, 입력 검증 직접 구현 | D13 | 2026-11-08 | 채택 |
 | [0020](0020-progress-handler-timeout-and-threads.md) | 시간 제한 진행 콜백, 병렬 실행 스레드 | D17 | 2026-11-08 | 채택 |
 | [0021](0021-execution-defaults.md) | 실행 기본값: 쿼리당 30초, 행 수 제한 없음, 읽기 전용 | D17 후속 | 2026-11-08 | 채택 |
+| [0022](0022-ex-set-comparison.md) | EX 판정: 공식과 똑같은 집합 비교 하나만 | D16 | 2026-11-08 | 채택 |
+| [0023](0023-empty-prediction-flag.md) | 빈 예측: 공식과 똑같이 판정 + 플래그 | D29 | 2026-11-08 | 채택 |
+| [0024](0024-tied-alternative-flag.md) | 동점 대체 정답: 판정에 쓰지 않고 플래그 | D30 | 2026-11-08 | 채택 |
