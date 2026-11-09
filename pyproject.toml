@@ -42,6 +42,9 @@ dev = [
     "ruff>=0.17.4",
     "syrupy>=6.1.1",
 ]
+examples = [
+    "openai>=3.46.0",
+]
 
 [tool.ruff]
 # ADR 0015: default rule set (syntax errors and obvious mistakes only).

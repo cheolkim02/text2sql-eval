@@ -217,6 +217,7 @@ def _prediction_format(path: Path, override: str | None) -> PredictionFormat:
 def _print_summary(run: Run, out_path: Path, out: TextIO, *, as_json: bool) -> None:
     summary = run.summary
     flags = Counter(flag.kind for case in run.cases for flag in case.verdict.flags)
+    states = Counter(case.prediction_state for case in run.cases)
     if as_json:
         document = {
             "run_file": str(out_path),
@@ -225,6 +226,8 @@ def _print_summary(run: Run, out_path: Path, out: TextIO, *, as_json: bool) -> N
             "incorrect": summary.incorrect,
             "error": summary.error,
             "ex": summary.ex,
+            "missing_predictions": states["missing"],
+            "empty_predictions": states["empty"],
             "flags": dict(sorted(flags.items())),
         }
         print(json.dumps(document), file=out)
@@ -235,6 +238,14 @@ def _print_summary(run: Run, out_path: Path, out: TextIO, *, as_json: bool) -> N
         f"{summary.error} errors)",
         file=out,
     )
+    if states["missing"] or states["empty"]:
+        # Both are judged as empty SQL (ADR 0023); say so, or the incorrect
+        # count looks like model mistakes.
+        print(
+            f"Predictions: {states['missing']} missing, {states['empty']} empty "
+            "(judged as empty SQL)",
+            file=out,
+        )
     if flags:
         listing = ", ".join(f"{count} {kind}" for kind, count in sorted(flags.items()))
         print(f"Flags: {listing}", file=out)

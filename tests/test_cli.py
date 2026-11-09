@@ -74,6 +74,7 @@ def test_eval_with_text_predictions_writes_a_run_file(
     assert result.returncode == 0, result.stderr
     assert "Evaluated 432 cases: EX 100.0% (432 correct" in result.stdout
     assert "13 tied_alternative_exists" in result.stdout
+    assert "Predictions:" not in result.stdout  # nothing missing or empty
     run = read_run(out)
     assert run.summary.correct == 432
     assert run.prediction_format == "text"
@@ -101,6 +102,8 @@ def test_eval_with_jsonl_predictions_and_allow_missing_prints_json(
     summary = json.loads(result.stdout)
     assert summary["total"] == 432
     assert summary["correct"] == len(half)
+    assert summary["missing_predictions"] == 432 - len(half)
+    assert summary["empty_predictions"] == 0
     run = read_run(tmp_path / "half.json")
     assert sum(case.prediction_state == "missing" for case in run.cases) == 432 - len(
         half
@@ -191,3 +194,18 @@ def test_unwritable_output_is_an_environment_error(
 
     assert result.returncode == 3
     assert "error:" in result.stderr
+
+
+def test_text_summary_explains_missing_predictions(
+    tmp_path: Path, gold_rows: list[dict[str, object]]
+) -> None:
+    pred = tmp_path / "few.jsonl"
+    pred.write_text(
+        json.dumps({"id": gold_rows[0]["question_id"], "sql": ""}) + "\n",
+        encoding="utf-8",
+    )
+
+    result = run_cli(*eval_args(pred, tmp_path / "few.json", "--allow-missing"))
+
+    assert result.returncode == 0, result.stderr
+    assert "Predictions: 431 missing, 1 empty (judged as empty SQL)" in result.stdout

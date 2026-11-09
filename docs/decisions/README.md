@@ -31,3 +31,6 @@
 | [0025](0025-argparse.md) | CLI는 argparse | D14 | 2026-11-09 | 채택 |
 | [0026](0026-run-file-json.md) | 실행 파일은 JSON 하나 | D31 | 2026-11-09 | 채택 |
 | [0027](0027-prediction-format-detection.md) | 예측 파일 형식: 확장자 판별 + 덮어쓰기 옵션 | D32 | 2026-11-09 | 채택 |
+| [0028](0028-baseline-evidence-ablation.md) | baseline: 같은 모델 × evidence 있음/없음 | D24 | 2026-11-09 | 채택 |
+| [0029](0029-openai-sdk-for-examples.md) | baseline 예제는 openai SDK, examples 그룹에만 | D34 | 2026-11-09 | 채택 |
+| [0030](0030-baseline-model-gpt-4o-mini.md) | baseline 모델 gpt-4o-mini (지원 중단 예정) | D33 | 2026-11-09 | 채택 |
