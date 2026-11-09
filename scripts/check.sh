@@ -3,5 +3,5 @@
 set -eu
 uv run ruff check .
 uv run ruff format --check .
-uv run pyright
+uv run --group examples pyright
 uv run pytest
