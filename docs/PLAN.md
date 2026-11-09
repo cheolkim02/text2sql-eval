@@ -425,7 +425,7 @@ text2sql-eval/
 | D21 | HTML 리포트 구현 | Jinja2 / 표준 라이브러리 템플릿, CSS·JS 인라인 | 단일 파일, 외부 요청 없음. 템플릿 방식은 의존성 비용으로 결정 | 11/11 |
 | D22 | 통계 검정 | McNemar 정확 검정 직접 구현 / scipy | 직접 구현 (`math.comb`로 충분, 의존성 없음) | 11/10 |
 | D23 | 문서 도구 | Markdown만 / MkDocs + API 자동 생성 | Markdown 먼저, 시간이 남으면 자동 생성 | 11/13 |
-| D24 | baseline 구성 | 모델, evidence 있음/없음 vs 프롬프트 2종 | 같은 모델 × evidence 있음/없음 | 11/9 |
+| D24 | baseline 구성 | 모델, evidence 있음/없음 vs 프롬프트 2종 | **결정됨: 같은 모델 × evidence 있음/없음 (ADR 0028)** | 11/9 |
 | D25 | 문서 언어 | 한국어 / 영어 / 한국어 + 영어 요약 | **결정됨: README 한국어 + 영어 요약, 코드·커밋·docstring 영어 (ADR 0016)** | 11/7 |
 | D26 | 커밋 규칙과 AI 표시 | Conventional Commits 여부, `Co-Authored-By` 여부 | **결정됨: 둘 다 사용 (ADR 0017)** | 11/7 |
 | D27 | 예측 파일 형식 | 자체 JSONL / BIRD 공식 형식 / 둘 다 | **결정됨: 한 줄 한 SQL 텍스트 + 자체 JSONL (ADR 0018)** | 11/8 |
@@ -434,8 +434,10 @@ text2sql-eval/
 | D30 | 동점 대체 정답 처리 | 무시 / 둘 중 하나와 맞으면 정답 / 원래 정답 + 플래그 | **결정됨: 원래 정답으로 판정 + 플래그 (ADR 0024)** | 11/8 |
 | D31 | 실행 파일 형식 | JSON 하나 / JSONL / 파일 두 개 | **결정됨: JSON 하나 (ADR 0026)** | 11/9 |
 | D32 | 예측 파일 형식 판별 | 확장자 + 덮어쓰기 / 옵션 필수 / 내용 추측 | **결정됨: 확장자 + `--pred-format` (ADR 0027)** | 11/9 |
+| D33 | baseline 모델 | gpt-6.1-sol / gpt-5.4-mini / gpt-5-mini / 기타 | 사용자 선택 gpt-4o-mini, 지원 중단 예정 사실 확인 중 | 11/9 |
+| D34 | baseline API 호출 방식 | 공식 SDK(examples 그룹) / urllib | **결정됨: 공식 SDK, examples 그룹 (ADR 0029)** | 11/9 |
 
-라이선스는 코드 MIT, 예제 데이터 CC BY-SA 4.0으로 정하고 0001번 ADR에 함께 적는다. 이 목록에 없는 결정이 나오면 Claude가 D33부터 새 번호를 붙여 물어본다.
+라이선스는 코드 MIT, 예제 데이터 CC BY-SA 4.0으로 정하고 0001번 ADR에 함께 적는다. 이 목록에 없는 결정이 나오면 Claude가 D35부터 새 번호를 붙여 물어본다.
 
 ## AI 협업 규칙
 
