@@ -24,6 +24,9 @@ classifiers = [
 ]
 dependencies = []
 
+[project.scripts]
+text2sql-eval = "text2sql_eval.cli.main:main"
+
 [project.urls]
 Repository = "https://github.com/cheolkim02/text2sql-eval"
 
