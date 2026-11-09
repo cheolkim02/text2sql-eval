@@ -434,7 +434,7 @@ text2sql-eval/
 | D30 | 동점 대체 정답 처리 | 무시 / 둘 중 하나와 맞으면 정답 / 원래 정답 + 플래그 | **결정됨: 원래 정답으로 판정 + 플래그 (ADR 0024)** | 11/8 |
 | D31 | 실행 파일 형식 | JSON 하나 / JSONL / 파일 두 개 | **결정됨: JSON 하나 (ADR 0026)** | 11/9 |
 | D32 | 예측 파일 형식 판별 | 확장자 + 덮어쓰기 / 옵션 필수 / 내용 추측 | **결정됨: 확장자 + `--pred-format` (ADR 0027)** | 11/9 |
-| D33 | baseline 모델 | gpt-6.1-sol / gpt-5.4-mini / gpt-5-mini / 기타 | 사용자 선택 gpt-4o-mini, 지원 중단 예정 사실 확인 중 | 11/9 |
+| D33 | baseline 모델 | gpt-6.1-sol / gpt-5.4-mini / gpt-5-mini / 기타 | **결정됨: gpt-4o-mini, 2027-01-14 종료 예정 (ADR 0030, Claude 추천 기각)** | 11/9 |
 | D34 | baseline API 호출 방식 | 공식 SDK(examples 그룹) / urllib | **결정됨: 공식 SDK, examples 그룹 (ADR 0029)** | 11/9 |
 
 라이선스는 코드 MIT, 예제 데이터 CC BY-SA 4.0으로 정하고 0001번 ADR에 함께 적는다. 이 목록에 없는 결정이 나오면 Claude가 D35부터 새 번호를 붙여 물어본다.
