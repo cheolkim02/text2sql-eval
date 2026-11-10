@@ -218,6 +218,15 @@ def _print_summary(run: Run, out_path: Path, out: TextIO, *, as_json: bool) -> N
     summary = run.summary
     flags = Counter(flag.kind for case in run.cases for flag in case.verdict.flags)
     states = Counter(case.prediction_state for case in run.cases)
+    categories = Counter(
+        case.diff.result.category for case in run.cases if case.diff is not None
+    )
+    facts = Counter(
+        fact.kind
+        for case in run.cases
+        if case.diff is not None
+        for fact in case.diff.structure.facts
+    )
     if as_json:
         document = {
             "run_file": str(out_path),
@@ -229,6 +238,8 @@ def _print_summary(run: Run, out_path: Path, out: TextIO, *, as_json: bool) -> N
             "missing_predictions": states["missing"],
             "empty_predictions": states["empty"],
             "flags": dict(sorted(flags.items())),
+            "categories": dict(sorted(categories.items())),
+            "facts": dict(sorted(facts.items())),
         }
         print(json.dumps(document), file=out)
         return
@@ -246,6 +257,14 @@ def _print_summary(run: Run, out_path: Path, out: TextIO, *, as_json: bool) -> N
             "(judged as empty SQL)",
             file=out,
         )
+    if categories:
+        listing = ", ".join(
+            f"{count} {kind}" for kind, count in categories.most_common()
+        )
+        print(f"Wrong by category: {listing}", file=out)
+    if facts:
+        listing = ", ".join(f"{count} {kind}" for kind, count in facts.most_common())
+        print(f"Structural facts: {listing}", file=out)
     if flags:
         listing = ", ".join(f"{count} {kind}" for kind, count in sorted(flags.items()))
         print(f"Flags: {listing}", file=out)

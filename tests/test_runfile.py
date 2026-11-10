@@ -7,6 +7,9 @@ import pytest
 
 from text2sql_eval.errors import InputError
 from text2sql_eval.execution.executor import QueryFailure
+from text2sql_eval.facts import CaseDiff
+from text2sql_eval.facts.result import ResultDiff
+from text2sql_eval.facts.structure import Fact, StructureReport
 from text2sql_eval.judge.ex import Correct, ExecError, Flag, Incorrect
 from text2sql_eval.runfile import (
     CaseRecord,
@@ -66,14 +69,37 @@ RUN = _run(
             row_count=7,
         ),
         pred_meta={"latency_ms": 1830, "tokens": [1, 2]},
+        diff=CaseDiff(
+            result=ResultDiff(
+                "column_mismatch",
+                gold_columns=1,
+                pred_columns=4,
+                gold_rows=41,
+                pred_rows=7,
+                gold_contained=True,
+            ),
+            structure=StructureReport(
+                facts=(Fact("where_value", "a = 'X'", "a = 'x'"),)
+            ),
+        ),
     ),
     replace(
         BASE,
         id="3",
         prediction_state="missing",
         pred_sql="",
-        verdict=ExecError("gold", "timeout", "did not finish within 30 s"),
-        gold=QueryFailure("timeout", "did not finish within 30 s"),
+        verdict=ExecError("pred", "timeout", "did not finish within 30 s"),
+        pred=QueryFailure("timeout", "did not finish within 30 s"),
+        diff=CaseDiff(
+            result=ResultDiff(
+                "execution_failed",
+                gold_columns=1,
+                pred_columns=0,
+                gold_rows=1,
+                pred_rows=0,
+            ),
+            structure=StructureReport(facts=(), parse_failed="pred"),
+        ),
     ),
 )
 
@@ -94,7 +120,7 @@ def test_writes_a_summary_and_standard_json(tmp_path: Path) -> None:
     text = path.read_text(encoding="utf-8")
     assert "Infinity" not in text and "NaN" not in text
     document = json.loads(text)
-    assert document["schema_version"] == 1
+    assert document["schema_version"] == 2
     assert document["summary"] == {
         "total": 3,
         "correct": 1,
@@ -118,7 +144,7 @@ def test_rejects_another_schema_version(tmp_path: Path) -> None:
     document["schema_version"] = 99
     path.write_text(json.dumps(document), encoding="utf-8")
 
-    with pytest.raises(InputError, match="schema_version is 99, but this tool reads 1"):
+    with pytest.raises(InputError, match="schema_version is 99, but this tool reads 2"):
         read_run(path)
 
 
@@ -129,6 +155,16 @@ def test_rejects_another_schema_version(tmp_path: Path) -> None:
         (("cases", 0, "question"), None, "cases[0].question must be a string"),
         (("settings", "max_rows"), "10", "settings.max_rows must be an integer"),
         (("cases", 1, "pred", "rows", 0, 0), [1], "cases[1].pred.rows[0] must be"),
+        (
+            ("cases", 1, "diff", "result", "category"),
+            "typo",
+            "cases[1].diff.result.category must be one of",
+        ),
+        (
+            ("cases", 1, "diff", "structure", "facts", 0, "kind"),
+            "typo",
+            "cases[1].diff.structure.facts[0].kind must be one of",
+        ),
     ],
 )
 def test_reports_where_a_damaged_file_is_wrong(

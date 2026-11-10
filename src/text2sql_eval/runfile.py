@@ -18,6 +18,9 @@ from typing import Literal, TypeVar, get_args
 from text2sql_eval.datasets._json import as_array, as_object, parse_json, read_utf8
 from text2sql_eval.errors import InputError
 from text2sql_eval.execution.executor import QueryFailure, Rows, SqlValue
+from text2sql_eval.facts import CaseDiff
+from text2sql_eval.facts.result import Relation, ResultCategory, ResultDiff
+from text2sql_eval.facts.structure import Fact, FactKind, StructureReport
 from text2sql_eval.judge.ex import (
     Correct,
     ExecError,
@@ -28,12 +31,14 @@ from text2sql_eval.judge.ex import (
     status_of,
 )
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 SAMPLE_ROWS = 20
 """Rows kept per query result; ``row_count`` still says how many there were."""
 
 # A bound TypeVar instead of 3.12's ``def f[T: str]`` (ADR 0009).
 _Choice = TypeVar("_Choice", bound=str)
+
+Side = Literal["gold", "pred"]
 
 PredictionState = Literal["given", "empty", "missing"]
 PredictionFormat = Literal["text", "jsonl"]
@@ -75,6 +80,8 @@ class CaseRecord:
     gold: QuerySummary
     pred: QuerySummary
     pred_meta: dict[str, object] = field(default_factory=dict[str, object])
+    diff: CaseDiff | None = None
+    """Why the case is not correct; ``None`` for correct cases (ADR 0031)."""
 
 
 @dataclass(frozen=True)
@@ -209,6 +216,29 @@ def _case_to_json(case: CaseRecord) -> dict[str, object]:
         "flags": [{"kind": flag.kind, "detail": flag.detail} for flag in verdict.flags],
         "gold": _summary_to_json(case.gold),
         "pred": _summary_to_json(case.pred),
+        "diff": None if case.diff is None else _diff_to_json(case.diff),
+    }
+
+
+def _diff_to_json(diff: CaseDiff) -> dict[str, object]:
+    result, structure = diff.result, diff.structure
+    return {
+        "result": {
+            "category": result.category,
+            "gold_columns": result.gold_columns,
+            "pred_columns": result.pred_columns,
+            "gold_rows": result.gold_rows,
+            "pred_rows": result.pred_rows,
+            "gold_contained": result.gold_contained,
+            "relation": result.relation,
+        },
+        "structure": {
+            "facts": [
+                {"kind": fact.kind, "gold": fact.gold, "pred": fact.pred}
+                for fact in structure.facts
+            ],
+            "parse_failed": structure.parse_failed,
+        },
     }
 
 
@@ -375,6 +405,73 @@ class _Reader:
             gold=self.summary(obj.get("gold"), f"{where}.gold"),
             pred=self.summary(obj.get("pred"), f"{where}.pred"),
             pred_meta=self.obj(obj.get("pred_meta"), f"{where}.pred_meta"),
+            diff=self.diff(obj.get("diff"), f"{where}.diff"),
+        )
+
+    def diff(self, value: object, where: str) -> CaseDiff | None:
+        if value is None:
+            return None
+        obj = self.obj(value, where)
+        result = self.obj(obj.get("result"), f"{where}.result")
+        structure = self.obj(obj.get("structure"), f"{where}.structure")
+        relation_value = result.get("relation")
+        relation: Relation | None = (
+            None
+            if relation_value is None
+            else self.choice(
+                relation_value, f"{where}.result.relation", get_args(Relation)
+            )
+        )
+        contained = result.get("gold_contained")
+        parse_failed: Side | None = None
+        if (parse_failed_value := structure.get("parse_failed")) is not None:
+            parse_failed = self.choice(
+                parse_failed_value, f"{where}.structure.parse_failed", get_args(Side)
+            )
+        return CaseDiff(
+            result=ResultDiff(
+                category=self.choice(
+                    result.get("category"),
+                    f"{where}.result.category",
+                    get_args(ResultCategory),
+                ),
+                gold_columns=self.int_(
+                    result.get("gold_columns"), f"{where}.result.gold_columns"
+                ),
+                pred_columns=self.int_(
+                    result.get("pred_columns"), f"{where}.result.pred_columns"
+                ),
+                gold_rows=self.int_(
+                    result.get("gold_rows"), f"{where}.result.gold_rows"
+                ),
+                pred_rows=self.int_(
+                    result.get("pred_rows"), f"{where}.result.pred_rows"
+                ),
+                gold_contained=None
+                if contained is None
+                else self.bool_(contained, f"{where}.result.gold_contained"),
+                relation=relation,
+            ),
+            structure=StructureReport(
+                facts=tuple(
+                    self.fact(item, f"{where}.structure.facts[{index}]")
+                    for index, item in enumerate(
+                        self.array(structure.get("facts"), f"{where}.structure.facts")
+                    )
+                ),
+                parse_failed=parse_failed,
+            ),
+        )
+
+    def fact(self, value: object, where: str) -> Fact:
+        obj = self.obj(value, where)
+        kind: FactKind = self.choice(
+            obj.get("kind"), f"{where}.kind", get_args(FactKind)
+        )
+        return Fact(
+            kind=kind,
+            gold=self.str_(obj.get("gold"), f"{where}.gold"),
+            pred=self.str_(obj.get("pred"), f"{where}.pred"),
         )
 
     def flag(self, value: object, where: str) -> Flag:
