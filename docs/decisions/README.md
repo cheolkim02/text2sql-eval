@@ -34,3 +34,5 @@
 | [0028](0028-baseline-evidence-ablation.md) | baseline: 같은 모델 × evidence 있음/없음 | D24 | 2026-11-09 | 채택 |
 | [0029](0029-openai-sdk-for-examples.md) | baseline 예제는 openai SDK, examples 그룹에만 | D34 | 2026-11-09 | 채택 |
 | [0030](0030-baseline-model-gpt-4o-mini.md) | baseline 모델 gpt-4o-mini (지원 중단 예정) | D33 | 2026-11-09 | 채택 |
+| [0031](0031-error-facts-v1.md) | 오답 사실 1차: 결과 카테고리 5개 + 구조 사실 4종 | D18 | 2026-11-10 | 채택 |
+| [0032](0032-sqlglot.md) | SQL 파서 sqlglot | D15 | 2026-11-10 | 채택 |
