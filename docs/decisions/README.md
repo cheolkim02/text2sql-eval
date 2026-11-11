@@ -38,3 +38,4 @@
 | [0032](0032-sqlglot.md) | SQL 파서 sqlglot | D15 | 2026-11-10 | 채택 |
 | [0033](0033-multi-label-differences.md) | 다중 라벨 출력 차이, `columns` 구조 차이, 명칭 변경 | D18 후속 | 2026-11-11 | 채택 |
 | [0034](0034-reliability-flags.md) | 판정 신뢰도 플래그 6개 | D19 | 2026-11-11 | 채택 |
+| [0035](0035-no-significance-test.md) | 실행 비교에 통계 검정(McNemar)을 넣지 않음 | D22 | 2026-11-11 | 채택 |
