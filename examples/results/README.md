@@ -47,6 +47,25 @@ evidence 있음 설정의 오답 161개 중 38개(24%)에 거짓 오답 의심 �
 - evidence를 빼면 `empty_result`가 34건에서 100건으로, `where_value`가 25건에서 132건으로 늘어난다. evidence는 주로 WHERE에 들어갈 값(철자, 대소문자, 코드값)을 알려 주므로, 없으면 모델이 값을 틀리고 결과가 비는 경우가 늘어난다.
 - 오답 수(165, 270)가 incorrect 판정 수(161, 261)보다 큰 이유는 예측 SQL이 실패한 `error` 판정(4, 9)도 오답 분석 대상이기 때문이다.
 
+## 두 실행 비교 (`compare`)
+
+evidence 없음을 기준(base)으로, evidence 있음(head)과 케이스 단위로 비교한 결과다.
+
+```text
+$ text2sql-eval compare examples/results/gpt-4o-mini-no-evidence.run.json \
+    examples/results/gpt-4o-mini-evidence.run.json
+Comparing examples/results/gpt-4o-mini-no-evidence.run.json -> examples/results/gpt-4o-mini-evidence.run.json (432 common cases)
+EX: 37.5% -> 61.8% (+24.3 pp)
+Both correct 144 | Fixed 123 | Regressed 18 | Both wrong 147
+By difficulty: challenging 29.1% -> 47.3%, moderate 27.7% -> 54.6%, simple 43.8% -> 68.2%
+By database: student_club 43.0% -> 57.0%, superhero 57.4% -> 79.8%, toxicology 13.8% -> 51.0%
+Output difference: empty_result 100 -> 34, single_value_differs 94 -> 44, column_mismatch 78 -> 62, row_set_differs 46 -> 58, row_count_differs 26 -> 31, execution_failed 9 -> 4
+SQL structure difference: columns 155 -> 79, where_value 132 -> 25, tables_joins 130 -> 72, aggregation 121 -> 66, order_limit 40 -> 23
+```
+
+- evidence를 넣자 123건이 맞게 바뀌었고(Fixed), 18건은 오히려 틀리게 바뀌었다(Regressed).
+- `--csv`를 주면 케이스마다 한 줄씩(변화, 양쪽 판정, 출력 차이, 질문, 정답·예측 SQL) 엑셀용 CSV로 쓴다. 뒤집힌 케이스만 골라 보기 쉽다.
+
 ## BIRD 공식 스크립트와의 일치 (2026-11-09)
 
 같은 예측을 BIRD 공식 평가 스크립트로도 채점했다. 스크립트는 AlibabaResearch/DAMO-ConvAI의 `bird/llm/src/evaluation.py`이고, 수정하지 않고 그대로 실행했다(`--meta_time_out 30`, `--num_cpus 8`). 공식 스크립트는 DB를 쓰기 가능하게 열기 때문에 DB 복사본에서 돌렸다.

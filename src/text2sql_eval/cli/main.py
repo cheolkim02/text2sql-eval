@@ -1,6 +1,6 @@
 """The ``text2sql-eval`` command (ADR 0025).
 
-Exit codes: 0 success, 1 judgement failure (used by ``compare`` later),
+Exit codes: 0 success, 1 a check failed (``compare --max-drop``),
 2 usage or input error, 3 environment error, 130 interrupted.
 """
 
@@ -8,14 +8,16 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from collections import Counter
 from collections.abc import Sequence
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import TextIO
+from typing import Literal, TextIO
 
 from text2sql_eval import __version__
+from text2sql_eval.compare.runs import Comparison, compare_runs, write_csv
 from text2sql_eval.datasets.bird import load_bird, load_bird_tied
 from text2sql_eval.datasets.predictions import (
     load_jsonl_predictions,
@@ -29,11 +31,13 @@ from text2sql_eval.runfile import (
     PredictionFormat,
     Run,
     RunSettings,
+    read_run,
     sha256_of,
     write_run,
 )
 
 EXIT_OK = 0
+EXIT_FAILED_CHECK = 1
 EXIT_USAGE = 2
 EXIT_ENVIRONMENT = 3
 EXIT_INTERRUPTED = 130
@@ -50,6 +54,14 @@ examples:
 """
 
 
+_COMPARE_EXAMPLES = """\
+examples:
+  text2sql-eval compare runs/prompt-v2.json runs/prompt-v3.json
+  text2sql-eval compare runs/main.json runs/branch.json --max-drop 1.0 \\
+      --csv runs/flips.csv
+"""
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     """Run the command line. Returns the process exit code."""
     parser = _build_parser()
@@ -57,10 +69,16 @@ def main(argv: Sequence[str] | None = None) -> int:
     try:
         if args.command == "eval":
             return _run_eval(args, sys.stdout)
+        if args.command == "compare":
+            return _run_compare(args, sys.stdout)
         parser.error(f"unknown command {args.command!r}")
     except InputError as error:
         print(f"error: {error}", file=sys.stderr)
         return EXIT_USAGE
+    except BrokenPipeError:
+        # The reader went away (e.g. `| head`); that is not our error.
+        _silence_stdout()
+        return EXIT_OK
     except OSError as error:
         print(f"error: {error}", file=sys.stderr)
         return EXIT_ENVIRONMENT
@@ -141,6 +159,31 @@ def _build_parser() -> argparse.ArgumentParser:
     run.add_argument(
         "--json", action="store_true", help="print the summary as JSON on stdout"
     )
+
+    compare = commands.add_parser(
+        "compare",
+        help="compare two run files case by case",
+        description="Compare two run files over the cases they share: which "
+        "cases both got right, which only one got right, and how the kinds of "
+        "differences changed.",
+        epilog=_COMPARE_EXAMPLES,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    compare.add_argument("base", type=Path, help="run file to compare from")
+    compare.add_argument("head", type=Path, help="run file to compare to")
+    compare.add_argument(
+        "--max-drop",
+        type=_non_negative_float,
+        metavar="PP",
+        help="exit with code 1 if EX drops by more than PP percentage points "
+        "(default: never fail)",
+    )
+    compare.add_argument(
+        "--csv", type=Path, help="write one row per common case to this CSV file"
+    )
+    compare.add_argument(
+        "--json", action="store_true", help="print the summary as JSON on stdout"
+    )
     return parser
 
 
@@ -199,6 +242,131 @@ def _run_eval(args: argparse.Namespace, out: TextIO) -> int:
     write_run(run, out_path)
     _print_summary(run, out_path, out, as_json=args.json)
     return EXIT_OK
+
+
+def _run_compare(args: argparse.Namespace, out: TextIO) -> int:
+    base_path: Path = args.base
+    head_path: Path = args.head
+    comparison = compare_runs(read_run(base_path), read_run(head_path))
+    if not comparison.cases:
+        raise InputError(
+            head_path,
+            f"shares no case ids with {base_path}",
+            hint="compare runs made on the same dataset",
+        )
+    csv_path: Path | None = args.csv
+    if csv_path is not None:
+        write_csv(comparison, csv_path)
+
+    max_drop: float | None = args.max_drop
+    failed = max_drop is not None and comparison.delta_pp < -max_drop
+    try:
+        if args.json:
+            _print_comparison_json(comparison, out, failed=failed)
+        else:
+            _print_comparison(comparison, base_path, head_path, out)
+            if csv_path is not None:
+                print(f"CSV: {csv_path}", file=out)
+    except BrokenPipeError:
+        # Output cut short (e.g. `| head`) must not hide a failed --max-drop.
+        _silence_stdout()
+    if failed:
+        print(
+            f"FAILED: EX dropped by {-comparison.delta_pp:.1f} pp, "
+            f"more than --max-drop {max_drop:g}",
+            file=sys.stderr,
+        )
+        return EXIT_FAILED_CHECK
+    return EXIT_OK
+
+
+def _print_comparison(
+    comparison: Comparison, base_path: Path, head_path: Path, out: TextIO
+) -> None:
+    if comparison.dataset_mismatch:
+        print(
+            "WARNING: the runs used different dataset files (SHA-256 differs); "
+            "comparing only the cases both have",
+            file=out,
+        )
+    for label, ids in (
+        ("base", comparison.only_in_base),
+        ("head", comparison.only_in_head),
+    ):
+        if ids:
+            print(f"WARNING: {len(ids)} cases only in {label}, left out", file=out)
+    counts = comparison.counts()
+    print(
+        f"Comparing {base_path} -> {head_path} ({len(comparison.cases)} common cases)",
+        file=out,
+    )
+    print(
+        f"EX: {comparison.base_ex:.1%} -> {comparison.head_ex:.1%} "
+        f"({comparison.delta_pp:+.1f} pp)",
+        file=out,
+    )
+    print(
+        f"Both correct {counts['both_correct']} | Fixed {counts['fixed']} | "
+        f"Regressed {counts['regressed']} | Both wrong {counts['both_wrong']}",
+        file=out,
+    )
+    groupings: tuple[tuple[Literal["difficulty", "db_id"], str], ...] = (
+        ("difficulty", "By difficulty"),
+        ("db_id", "By database"),
+    )
+    for key, title in groupings:
+        listing = ", ".join(
+            f"{g.name} {g.base_ex:.1%} -> {g.head_ex:.1%}" for g in comparison.by(key)
+        )
+        print(f"{title}: {listing}", file=out)
+    for title, (base, head) in (
+        ("Output difference", comparison.output_differences()),
+        ("SQL structure difference", comparison.structure_differences()),
+    ):
+        kinds = sorted(set(base) | set(head), key=lambda k: (-base[k], k))
+        if kinds:
+            listing = ", ".join(f"{k} {base[k]} -> {head[k]}" for k in kinds)
+            print(f"{title}: {listing}", file=out)
+
+
+def _print_comparison_json(
+    comparison: Comparison, out: TextIO, *, failed: bool
+) -> None:
+    counts = comparison.counts()
+    output_base, output_head = comparison.output_differences()
+    structure_base, structure_head = comparison.structure_differences()
+    document = {
+        "common_cases": len(comparison.cases),
+        "dataset_mismatch": comparison.dataset_mismatch,
+        "only_in_base": list(comparison.only_in_base),
+        "only_in_head": list(comparison.only_in_head),
+        "base_ex": comparison.base_ex,
+        "head_ex": comparison.head_ex,
+        "delta_pp": comparison.delta_pp,
+        "both_correct": counts["both_correct"],
+        "fixed": counts["fixed"],
+        "regressed": counts["regressed"],
+        "both_wrong": counts["both_wrong"],
+        "fixed_ids": [c.base.id for c in comparison.cases if c.change == "fixed"],
+        "regressed_ids": [
+            c.base.id for c in comparison.cases if c.change == "regressed"
+        ],
+        "output_differences": {
+            "base": dict(sorted(output_base.items())),
+            "head": dict(sorted(output_head.items())),
+        },
+        "sql_structure_differences": {
+            "base": dict(sorted(structure_base.items())),
+            "head": dict(sorted(structure_head.items())),
+        },
+        "failed_max_drop": failed,
+    }
+    print(json.dumps(document), file=out)
+
+
+def _silence_stdout() -> None:
+    """Point stdout at devnull so the interpreter's final flush does not raise."""
+    os.dup2(os.open(os.devnull, os.O_WRONLY), sys.stdout.fileno())
 
 
 def _prediction_format(path: Path, override: str | None) -> PredictionFormat:
@@ -280,6 +448,16 @@ def _positive_float(text: str) -> float:
         raise argparse.ArgumentTypeError(f"not a number: {text!r}") from None
     if not value > 0:
         raise argparse.ArgumentTypeError(f"must be greater than 0, got {text}")
+    return value
+
+
+def _non_negative_float(text: str) -> float:
+    try:
+        value = float(text)
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"not a number: {text!r}") from None
+    if not value >= 0:
+        raise argparse.ArgumentTypeError(f"must be 0 or more, got {text}")
     return value
 
 
