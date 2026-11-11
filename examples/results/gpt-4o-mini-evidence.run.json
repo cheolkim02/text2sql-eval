@@ -4,7 +4,7 @@
     "name": "text2sql-eval",
     "version": "0.1.0"
   },
-  "created_at": "2026-11-11T05:47:09Z",
+  "created_at": "2026-11-11T09:03:51Z",
   "inputs": {
     "dataset": {
       "path": "examples/bird-mini/dev.json",
@@ -370,7 +370,12 @@
       },
       "status": "incorrect",
       "error": null,
-      "flags": [],
+      "flags": [
+        {
+          "kind": "gold_rows_with_extra_columns",
+          "detail": "the prediction returns every gold row plus extra columns; it may be a correct answer judged wrong"
+        }
+      ],
       "gold": {
         "columns": [
           "molecule_id"
@@ -2245,7 +2250,12 @@
       },
       "status": "incorrect",
       "error": null,
-      "flags": [],
+      "flags": [
+        {
+          "kind": "gold_rows_with_extra_columns",
+          "detail": "the prediction returns every gold row plus extra columns; it may be a correct answer judged wrong"
+        }
+      ],
       "gold": {
         "columns": [
           "atom_id"
@@ -2801,7 +2811,12 @@
       },
       "status": "incorrect",
       "error": null,
-      "flags": [],
+      "flags": [
+        {
+          "kind": "gold_rows_with_extra_columns",
+          "detail": "the prediction returns every gold row plus extra columns; it may be a correct answer judged wrong"
+        }
+      ],
       "gold": {
         "columns": [
           "bond_type"
@@ -3471,7 +3486,12 @@
       },
       "status": "incorrect",
       "error": null,
-      "flags": [],
+      "flags": [
+        {
+          "kind": "gold_rows_with_extra_columns",
+          "detail": "the prediction returns every gold row plus extra columns; it may be a correct answer judged wrong"
+        }
+      ],
       "gold": {
         "columns": [
           "molecule_id"
@@ -7136,7 +7156,12 @@
       },
       "status": "incorrect",
       "error": null,
-      "flags": [],
+      "flags": [
+        {
+          "kind": "gold_rows_with_extra_columns",
+          "detail": "the prediction returns every gold row plus extra columns; it may be a correct answer judged wrong"
+        }
+      ],
       "gold": {
         "columns": [
           "element"
@@ -8335,7 +8360,12 @@
       },
       "status": "incorrect",
       "error": null,
-      "flags": [],
+      "flags": [
+        {
+          "kind": "gold_rows_with_extra_columns",
+          "detail": "the prediction returns every gold row plus extra columns; it may be a correct answer judged wrong"
+        }
+      ],
       "gold": {
         "columns": [
           "atom_id"
@@ -8709,7 +8739,12 @@
       },
       "status": "incorrect",
       "error": null,
-      "flags": [],
+      "flags": [
+        {
+          "kind": "gold_rows_with_extra_columns",
+          "detail": "the prediction returns every gold row plus extra columns; it may be a correct answer judged wrong"
+        }
+      ],
       "gold": {
         "columns": [
           "molecule_id",
@@ -9890,7 +9925,12 @@
       },
       "status": "incorrect",
       "error": null,
-      "flags": [],
+      "flags": [
+        {
+          "kind": "gold_rows_with_extra_columns",
+          "detail": "the prediction returns every gold row plus extra columns; it may be a correct answer judged wrong"
+        }
+      ],
       "gold": {
         "columns": [
           "molecule_id"
@@ -10085,7 +10125,12 @@
       },
       "status": "incorrect",
       "error": null,
-      "flags": [],
+      "flags": [
+        {
+          "kind": "gold_rows_with_extra_columns",
+          "detail": "the prediction returns every gold row plus extra columns; it may be a correct answer judged wrong"
+        }
+      ],
       "gold": {
         "columns": [
           "molecule_id"
@@ -10513,7 +10558,12 @@
       },
       "status": "incorrect",
       "error": null,
-      "flags": [],
+      "flags": [
+        {
+          "kind": "gold_rows_with_extra_columns",
+          "detail": "the prediction returns every gold row plus extra columns; it may be a correct answer judged wrong"
+        }
+      ],
       "gold": {
         "columns": [
           "molecule_id"
@@ -10986,7 +11036,12 @@
       },
       "status": "incorrect",
       "error": null,
-      "flags": [],
+      "flags": [
+        {
+          "kind": "gold_rows_with_extra_columns",
+          "detail": "the prediction returns every gold row plus extra columns; it may be a correct answer judged wrong"
+        }
+      ],
       "gold": {
         "columns": [
           "molecule_id"
@@ -11313,7 +11368,12 @@
       },
       "status": "incorrect",
       "error": null,
-      "flags": [],
+      "flags": [
+        {
+          "kind": "gold_rows_with_extra_columns",
+          "detail": "the prediction returns every gold row plus extra columns; it may be a correct answer judged wrong"
+        }
+      ],
       "gold": {
         "columns": [
           "molecule_id"
@@ -13931,7 +13991,12 @@
       },
       "status": "incorrect",
       "error": null,
-      "flags": [],
+      "flags": [
+        {
+          "kind": "gold_rows_with_extra_columns",
+          "detail": "the prediction returns every gold row plus extra columns; it may be a correct answer judged wrong"
+        }
+      ],
       "gold": {
         "columns": [
           "superhero_name"
@@ -20001,7 +20066,12 @@
       },
       "status": "incorrect",
       "error": null,
-      "flags": [],
+      "flags": [
+        {
+          "kind": "gold_rows_with_extra_columns",
+          "detail": "the prediction returns every gold row plus extra columns; it may be a correct answer judged wrong"
+        }
+      ],
       "gold": {
         "columns": [
           "superhero_name"
@@ -21346,7 +21416,12 @@
       },
       "status": "incorrect",
       "error": null,
-      "flags": [],
+      "flags": [
+        {
+          "kind": "gold_rows_with_extra_columns",
+          "detail": "the prediction returns every gold row plus extra columns; it may be a correct answer judged wrong"
+        }
+      ],
       "gold": {
         "columns": [
           "major_name"
@@ -21807,7 +21882,12 @@
       },
       "status": "incorrect",
       "error": null,
-      "flags": [],
+      "flags": [
+        {
+          "kind": "gold_rows_with_extra_columns",
+          "detail": "the prediction returns every gold row plus extra columns; it may be a correct answer judged wrong"
+        }
+      ],
       "gold": {
         "columns": [
           "college"
@@ -22302,7 +22382,12 @@
       },
       "status": "incorrect",
       "error": null,
-      "flags": [],
+      "flags": [
+        {
+          "kind": "gold_rows_with_extra_columns",
+          "detail": "the prediction returns every gold row plus extra columns; it may be a correct answer judged wrong"
+        }
+      ],
       "gold": {
         "columns": [
           "expense_description"
@@ -22419,7 +22504,12 @@
       },
       "status": "incorrect",
       "error": null,
-      "flags": [],
+      "flags": [
+        {
+          "kind": "gold_columns_concatenated",
+          "detail": "the prediction joins the gold columns into one text column; it may be a correct answer in a different format"
+        }
+      ],
       "gold": {
         "columns": [
           "first_name",
@@ -23776,7 +23866,12 @@
       },
       "status": "incorrect",
       "error": null,
-      "flags": [],
+      "flags": [
+        {
+          "kind": "gold_rows_with_extra_columns",
+          "detail": "the prediction returns every gold row plus extra columns; it may be a correct answer judged wrong"
+        }
+      ],
       "gold": {
         "columns": [
           "major_name"
@@ -23926,7 +24021,12 @@
       },
       "status": "incorrect",
       "error": null,
-      "flags": [],
+      "flags": [
+        {
+          "kind": "gold_rows_with_extra_columns",
+          "detail": "the prediction returns every gold row plus extra columns; it may be a correct answer judged wrong"
+        }
+      ],
       "gold": {
         "columns": [
           "major_name"
@@ -24161,7 +24261,12 @@
       },
       "status": "incorrect",
       "error": null,
-      "flags": [],
+      "flags": [
+        {
+          "kind": "gold_columns_concatenated",
+          "detail": "the prediction joins the gold columns into one text column; it may be a correct answer in a different format"
+        }
+      ],
       "gold": {
         "columns": [
           "first_name",
@@ -25406,7 +25511,12 @@
       },
       "status": "incorrect",
       "error": null,
-      "flags": [],
+      "flags": [
+        {
+          "kind": "gold_columns_concatenated",
+          "detail": "the prediction joins the gold columns into one text column; it may be a correct answer in a different format"
+        }
+      ],
       "gold": {
         "columns": [
           "first_name",
@@ -25497,7 +25607,12 @@
       },
       "status": "incorrect",
       "error": null,
-      "flags": [],
+      "flags": [
+        {
+          "kind": "gold_rows_with_extra_columns",
+          "detail": "the prediction returns every gold row plus extra columns; it may be a correct answer judged wrong"
+        }
+      ],
       "gold": {
         "columns": [
           "event_name"
@@ -25746,7 +25861,12 @@
       },
       "status": "incorrect",
       "error": null,
-      "flags": [],
+      "flags": [
+        {
+          "kind": "gold_columns_concatenated",
+          "detail": "the prediction joins the gold columns into one text column; it may be a correct answer in a different format"
+        }
+      ],
       "gold": {
         "columns": [
           "first_name",
@@ -25990,7 +26110,12 @@
       },
       "status": "incorrect",
       "error": null,
-      "flags": [],
+      "flags": [
+        {
+          "kind": "gold_columns_concatenated",
+          "detail": "the prediction joins the gold columns into one text column; it may be a correct answer in a different format"
+        }
+      ],
       "gold": {
         "columns": [
           "first_name",
@@ -26103,7 +26228,12 @@
       },
       "status": "incorrect",
       "error": null,
-      "flags": [],
+      "flags": [
+        {
+          "kind": "gold_columns_concatenated",
+          "detail": "the prediction joins the gold columns into one text column; it may be a correct answer in a different format"
+        }
+      ],
       "gold": {
         "columns": [
           "first_name",
@@ -26343,7 +26473,12 @@
       },
       "status": "incorrect",
       "error": null,
-      "flags": [],
+      "flags": [
+        {
+          "kind": "gold_columns_concatenated",
+          "detail": "the prediction joins the gold columns into one text column; it may be a correct answer in a different format"
+        }
+      ],
       "gold": {
         "columns": [
           "first_name",
@@ -26702,7 +26837,12 @@
       },
       "status": "incorrect",
       "error": null,
-      "flags": [],
+      "flags": [
+        {
+          "kind": "gold_rows_with_extra_columns",
+          "detail": "the prediction returns every gold row plus extra columns; it may be a correct answer judged wrong"
+        }
+      ],
       "gold": {
         "columns": [
           "source"
@@ -27318,7 +27458,12 @@
       },
       "status": "incorrect",
       "error": null,
-      "flags": [],
+      "flags": [
+        {
+          "kind": "gold_rows_with_extra_columns",
+          "detail": "the prediction returns every gold row plus extra columns; it may be a correct answer judged wrong"
+        }
+      ],
       "gold": {
         "columns": [
           "t_shirt_size"
@@ -27638,7 +27783,12 @@
       },
       "status": "incorrect",
       "error": null,
-      "flags": [],
+      "flags": [
+        {
+          "kind": "gold_rows_with_extra_columns",
+          "detail": "the prediction returns every gold row plus extra columns; it may be a correct answer judged wrong"
+        }
+      ],
       "gold": {
         "columns": [
           "budget_id"
@@ -29796,7 +29946,12 @@
       },
       "status": "incorrect",
       "error": null,
-      "flags": [],
+      "flags": [
+        {
+          "kind": "gold_rows_with_extra_columns",
+          "detail": "the prediction returns every gold row plus extra columns; it may be a correct answer judged wrong"
+        }
+      ],
       "gold": {
         "columns": [
           "link_to_member",
@@ -30677,7 +30832,12 @@
       },
       "status": "incorrect",
       "error": null,
-      "flags": [],
+      "flags": [
+        {
+          "kind": "gold_columns_concatenated",
+          "detail": "the prediction joins the gold columns into one text column; it may be a correct answer in a different format"
+        }
+      ],
       "gold": {
         "columns": [
           "first_name",
@@ -31958,7 +32118,12 @@
       },
       "status": "incorrect",
       "error": null,
-      "flags": [],
+      "flags": [
+        {
+          "kind": "gold_rows_with_extra_columns",
+          "detail": "the prediction returns every gold row plus extra columns; it may be a correct answer judged wrong"
+        }
+      ],
       "gold": {
         "columns": [
           "major_name",

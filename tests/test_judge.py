@@ -223,3 +223,63 @@ def test_tied_alternatives_as_predictions_are_flagged() -> None:
         for v in verdicts
         if isinstance(v, Incorrect)
     )
+
+
+# --- flags added by ADR 0034 -----------------------------------------------
+
+
+def test_any_empty_result_against_an_empty_gold_is_flagged() -> None:
+    verdict = judge_case(rows(), Rows(columns=("id",), rows=()), pred_is_empty=False)
+
+    assert isinstance(verdict, Correct)
+    assert flag_kinds(verdict) == ["gold_empty_correct"]
+
+
+def test_empty_prediction_gets_only_its_own_flag() -> None:
+    verdict = judge_case(rows(), Rows(columns=(), rows=()), pred_is_empty=True)
+
+    assert flag_kinds(verdict) == ["empty_prediction_correct"]
+
+
+def test_gold_rows_with_extra_columns_is_flagged() -> None:
+    # #300: the prediction adds `element` next to the gold atom ids.
+    gold = rows(("TR186_1",), ("TR186_10",), columns=("atom_id",))
+    pred = rows(("c", "TR186_1"), ("c", "TR186_10"), columns=("element", "atom_id"))
+
+    verdict = judge_case(gold, pred, pred_is_empty=False)
+
+    assert isinstance(verdict, Incorrect)
+    assert flag_kinds(verdict) == ["gold_rows_with_extra_columns"]
+
+
+def test_extra_columns_without_the_gold_rows_are_not_flagged() -> None:
+    gold = rows(("TR186_1",), columns=("atom_id",))
+    pred = rows(("c", "TR999_1"), columns=("element", "atom_id"))
+
+    assert flag_kinds(judge_case(gold, pred, pred_is_empty=False)) == []
+
+
+@pytest.mark.parametrize("joined", ["Grant Gilmour", "Grant, Gilmour", "GrantGilmour"])
+def test_concatenated_gold_columns_are_flagged(joined: str) -> None:
+    # #1445: first and last name joined into one column.
+    gold = rows(("Grant", "Gilmour"), columns=("first_name", "last_name"))
+    pred = rows((joined,), columns=("full_name",))
+
+    verdict = judge_case(gold, pred, pred_is_empty=False)
+
+    assert isinstance(verdict, Incorrect)
+    assert flag_kinds(verdict) == ["gold_columns_concatenated"]
+
+
+def test_concatenation_needs_one_separator_for_every_row() -> None:
+    gold = rows(("A", "B"), ("C", "D"), columns=("x", "y"))
+    pred = rows(("A B",), ("C, D",), columns=("xy",))
+
+    assert flag_kinds(judge_case(gold, pred, pred_is_empty=False)) == []
+
+
+def test_concatenation_ignores_gold_rows_with_nulls() -> None:
+    gold = rows(("A", None), columns=("x", "y"))
+    pred = rows(("A None",), columns=("xy",))
+
+    assert flag_kinds(judge_case(gold, pred, pred_is_empty=False)) == []

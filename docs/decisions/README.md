@@ -15,7 +15,7 @@
 | [0009](0009-python-version.md) | 지원 Python 3.11+ | D8 | 2026-11-07 | 채택 |
 | [0010](0010-uv-and-uv-build.md) | 프로젝트 관리 uv, 빌드 백엔드 uv_build | D9 | 2026-11-07 | 채택 |
 | [0011](0011-ruff.md) | 린트·포맷 Ruff | D10 | 2026-11-07 | 채택 |
-| [0012](0012-schedule-adjustment-1107.md) | 일정 지연에 따른 일정·범위 조정 | — | 2026-11-07 | 채택 |
+| [0012](0012-schedule-adjustment-1107.md) | 일정 지연에 따른 일정·범위 조정 | — | 2026-11-07 | 일부 대체됨(0034) |
 | [0013](0013-pyright-strict.md) | 타입 검사 pyright strict + 규칙 1개 | D11 | 2026-11-07 | 채택 |
 | [0014](0014-pytest-hypothesis-syrupy.md) | 테스트 pytest + Hypothesis + syrupy | D12 | 2026-11-07 | 채택 |
 | [0015](0015-ruff-default-rules.md) | Ruff 기본 규칙, 줄 길이 88자 | D28 | 2026-11-07 | 채택 |
@@ -37,3 +37,4 @@
 | [0031](0031-error-facts-v1.md) | 오답 사실 1차: 결과 카테고리 5개 + 구조 사실 4종 | D18 | 2026-11-10 | 일부 대체됨(0033) |
 | [0032](0032-sqlglot.md) | SQL 파서 sqlglot | D15 | 2026-11-10 | 채택 |
 | [0033](0033-multi-label-differences.md) | 다중 라벨 출력 차이, `columns` 구조 차이, 명칭 변경 | D18 후속 | 2026-11-11 | 채택 |
+| [0034](0034-reliability-flags.md) | 판정 신뢰도 플래그 6개 | D19 | 2026-11-11 | 채택 |

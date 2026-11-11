@@ -101,7 +101,7 @@ def compare_outputs(gold: QueryResult, pred: QueryResult) -> OutputDiff:
     else:
         if gold_width != pred_width:
             found.append("column_mismatch")
-            contained = _projects_onto(pred, gold_set)
+            contained = gold_rows_in_projection(gold_set, pred)
         else:
             relation = _relation(gold_set, pred_set)
             contained = relation == "superset"
@@ -148,8 +148,13 @@ def _relation(
     return "disjoint"
 
 
-def _projects_onto(pred: Rows, gold_set: set[tuple[SqlValue, ...]]) -> bool | None:
-    """Whether some subset and order of ``pred``'s columns gives exactly the gold rows."""
+def gold_rows_in_projection(
+    gold_set: set[tuple[SqlValue, ...]], pred: Rows
+) -> bool | None:
+    """Whether some subset and order of ``pred``'s columns gives exactly the gold rows.
+
+    ``None`` when ``pred`` is too wide to try every projection.
+    """
     width = len(pred.columns)
     gold_width = len(next(iter(gold_set), ()))
     if gold_width == 0 or gold_width > width:
@@ -161,6 +166,34 @@ def _projects_onto(pred: Rows, gold_set: set[tuple[SqlValue, ...]]) -> bool | No
         if projected == gold_set:
             return True
     return False
+
+
+# Separators tried when checking whether one predicted column joins several
+# gold columns, as in first_name || ' ' || last_name.
+_CONCAT_SEPARATORS = (" ", ", ", "")
+
+
+def concatenates_gold_columns(gold: Rows, pred: Rows) -> bool:
+    """Whether ``pred``'s single column is each gold row's values joined into one string.
+
+    The same separator must work for every row; gold rows with NULLs are not
+    considered, since SQL concatenation with NULL yields NULL.
+
+    Example:
+        >>> gold = Rows(("first_name", "last_name"), (("Grant", "Gilmour"),))
+        >>> concatenates_gold_columns(gold, Rows(("full_name",), (("Grant Gilmour",),)))
+        True
+    """
+    if len(gold.columns) < 2 or len(pred.columns) != 1 or not gold.rows:
+        return False
+    if any(value is None for row in gold.rows for value in row):
+        return False
+    pred_values = {str(row[0]) for row in pred.rows}
+    return any(
+        pred_values
+        == {separator.join(str(value) for value in row) for row in gold.rows}
+        for separator in _CONCAT_SEPARATORS
+    )
 
 
 def _width(result: QueryResult) -> int:
