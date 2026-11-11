@@ -26,6 +26,7 @@ from text2sql_eval.datasets.predictions import (
 from text2sql_eval.errors import InputError
 from text2sql_eval.evaluate import evaluate
 from text2sql_eval.execution.executor import DEFAULT_TIMEOUT_SECONDS
+from text2sql_eval.report import csv_report
 from text2sql_eval.runfile import (
     FileRef,
     PredictionFormat,
@@ -54,6 +55,12 @@ examples:
 """
 
 
+_REPORT_EXAMPLES = """\
+examples:
+  text2sql-eval report runs/v3.json --csv runs/v3.csv
+"""
+
+
 _COMPARE_EXAMPLES = """\
 examples:
   text2sql-eval compare runs/prompt-v2.json runs/prompt-v3.json
@@ -66,9 +73,13 @@ def main(argv: Sequence[str] | None = None) -> int:
     """Run the command line. Returns the process exit code."""
     parser = _build_parser()
     args = parser.parse_args(argv)  # exits with code 2 on usage errors
+    if args.command == "report" and args.csv is None:
+        parser.error("report: nothing to write; pass --csv PATH")
     try:
         if args.command == "eval":
             return _run_eval(args, sys.stdout)
+        if args.command == "report":
+            return _run_report(args, sys.stdout)
         if args.command == "compare":
             return _run_compare(args, sys.stdout)
         parser.error(f"unknown command {args.command!r}")
@@ -160,6 +171,21 @@ def _build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="print the summary as JSON on stdout"
     )
 
+    report = commands.add_parser(
+        "report",
+        help="write a CSV report of a run file",
+        description="Write the cases of a run file as a CSV file for "
+        "spreadsheet analysis.",
+        epilog=_REPORT_EXAMPLES,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    report.add_argument("run", type=Path, help="run file written by eval")
+    report.add_argument(
+        "--csv",
+        type=Path,
+        help="write one row per case to this CSV file (UTF-8 with BOM for Excel)",
+    )
+
     compare = commands.add_parser(
         "compare",
         help="compare two run files case by case",
@@ -241,6 +267,19 @@ def _run_eval(args: argparse.Namespace, out: TextIO) -> int:
     )
     write_run(run, out_path)
     _print_summary(run, out_path, out, as_json=args.json)
+    return EXIT_OK
+
+
+def _run_report(args: argparse.Namespace, out: TextIO) -> int:
+    run_path: Path = args.run
+    csv_path: Path | None = args.csv
+    run = read_run(run_path)
+    if csv_path is not None:
+        csv_report.write_csv(run, csv_path)
+    summary = run.summary
+    print(f"Report of {run_path}: {summary.total} cases, EX {summary.ex:.1%}", file=out)
+    if csv_path is not None:
+        print(f"CSV: {csv_path}", file=out)
     return EXIT_OK
 
 

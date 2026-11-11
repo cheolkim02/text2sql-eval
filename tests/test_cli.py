@@ -217,11 +217,44 @@ def test_text_summary_explains_missing_predictions(
     assert "Predictions: 431 missing, 1 empty (judged as empty SQL)" in result.stdout
 
 
-# --- compare -----------------------------------------------------------------
-
 RESULTS = BIRD_MINI.parent / "results"
 NO_EVIDENCE = RESULTS / "gpt-4o-mini-no-evidence.run.json"
 EVIDENCE = RESULTS / "gpt-4o-mini-evidence.run.json"
+
+
+# --- report ------------------------------------------------------------------
+
+
+def test_report_writes_a_csv_of_the_committed_run(tmp_path: Path) -> None:
+    out = tmp_path / "evidence.csv"
+
+    result = run_cli("report", EVIDENCE, "--csv", out)
+
+    assert result.returncode == 0, result.stderr
+    assert "432 cases, EX 61.8%" in result.stdout
+    assert f"CSV: {out}" in result.stdout
+    with out.open(encoding="utf-8-sig", newline="") as file:
+        rows = list(csv.DictReader(file))
+    assert len(rows) == 432
+    assert sum(row["status"] == "correct" for row in rows) == 267
+
+
+def test_report_without_an_output_is_a_usage_error() -> None:
+    result = run_cli("report", EVIDENCE)
+
+    assert result.returncode == 2
+    assert "nothing to write" in result.stderr
+
+
+def test_report_of_a_file_that_is_not_a_run_is_an_input_error(tmp_path: Path) -> None:
+    result = run_cli("report", DEV, "--csv", tmp_path / "out.csv")
+
+    assert result.returncode == 2
+    assert "error:" in result.stderr
+    assert not (tmp_path / "out.csv").exists()
+
+
+# --- compare -----------------------------------------------------------------
 
 
 def test_compare_summarizes_the_committed_baselines(tmp_path: Path) -> None:
