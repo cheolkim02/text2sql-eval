@@ -59,8 +59,9 @@ jobs:
         with:
           version: ${{ env.UV_VERSION }}
       - run: uv build
-      - name: Check that the wheel ships the type marker and license
+      - name: Check that the wheel ships the type marker, template and license
         run: |
           unzip -l dist/*.whl | tee wheel-contents.txt
           grep -q "text2sql_eval/py.typed" wheel-contents.txt
+          grep -q "text2sql_eval/report/templates/report.html.j2" wheel-contents.txt
           grep -q "licenses/LICENSE" wheel-contents.txt

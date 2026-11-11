@@ -26,7 +26,7 @@ from text2sql_eval.datasets.predictions import (
 from text2sql_eval.errors import InputError
 from text2sql_eval.evaluate import evaluate
 from text2sql_eval.execution.executor import DEFAULT_TIMEOUT_SECONDS
-from text2sql_eval.report import csv_report
+from text2sql_eval.report import csv_report, html_report
 from text2sql_eval.runfile import (
     FileRef,
     PredictionFormat,
@@ -57,7 +57,8 @@ examples:
 
 _REPORT_EXAMPLES = """\
 examples:
-  text2sql-eval report runs/v3.json --csv runs/v3.csv
+  text2sql-eval report runs/v3.json --html runs/v3.html
+  text2sql-eval report runs/v3.json --html runs/v3.html --csv runs/v3.csv
 """
 
 
@@ -73,8 +74,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     """Run the command line. Returns the process exit code."""
     parser = _build_parser()
     args = parser.parse_args(argv)  # exits with code 2 on usage errors
-    if args.command == "report" and args.csv is None:
-        parser.error("report: nothing to write; pass --csv PATH")
+    if args.command == "report" and args.html is None and args.csv is None:
+        parser.error("report: nothing to write; pass --html PATH, --csv PATH or both")
     try:
         if args.command == "eval":
             return _run_eval(args, sys.stdout)
@@ -173,13 +174,14 @@ def _build_parser() -> argparse.ArgumentParser:
 
     report = commands.add_parser(
         "report",
-        help="write a CSV report of a run file",
-        description="Write the cases of a run file as a CSV file for "
-        "spreadsheet analysis.",
+        help="write an HTML and/or CSV report of a run file",
+        description="Write a run file as a single-file HTML report that opens "
+        "offline, and/or as a CSV file for spreadsheet analysis.",
         epilog=_REPORT_EXAMPLES,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     report.add_argument("run", type=Path, help="run file written by eval")
+    report.add_argument("--html", type=Path, help="write the HTML report to this file")
     report.add_argument(
         "--csv",
         type=Path,
@@ -272,12 +274,17 @@ def _run_eval(args: argparse.Namespace, out: TextIO) -> int:
 
 def _run_report(args: argparse.Namespace, out: TextIO) -> int:
     run_path: Path = args.run
+    html_path: Path | None = args.html
     csv_path: Path | None = args.csv
     run = read_run(run_path)
+    if html_path is not None:
+        html_report.write_html(run, html_path, run_name=run_path.name)
     if csv_path is not None:
         csv_report.write_csv(run, csv_path)
     summary = run.summary
     print(f"Report of {run_path}: {summary.total} cases, EX {summary.ex:.1%}", file=out)
+    if html_path is not None:
+        print(f"HTML: {html_path}", file=out)
     if csv_path is not None:
         print(f"CSV: {csv_path}", file=out)
     return EXIT_OK

@@ -225,14 +225,18 @@ EVIDENCE = RESULTS / "gpt-4o-mini-evidence.run.json"
 # --- report ------------------------------------------------------------------
 
 
-def test_report_writes_a_csv_of_the_committed_run(tmp_path: Path) -> None:
+def test_report_writes_html_and_csv_of_the_committed_run(tmp_path: Path) -> None:
     out = tmp_path / "evidence.csv"
+    page = tmp_path / "evidence.html"
 
-    result = run_cli("report", EVIDENCE, "--csv", out)
+    result = run_cli("report", EVIDENCE, "--html", page, "--csv", out)
 
     assert result.returncode == 0, result.stderr
     assert "432 cases, EX 61.8%" in result.stdout
+    assert f"HTML: {page}" in result.stdout
     assert f"CSV: {out}" in result.stdout
+    html = page.read_text(encoding="utf-8")
+    assert "gpt-4o-mini-evidence.run.json" in html
     with out.open(encoding="utf-8-sig", newline="") as file:
         rows = list(csv.DictReader(file))
     assert len(rows) == 432
