@@ -75,6 +75,8 @@ def test_eval_with_text_predictions_writes_a_run_file(
     assert "Evaluated 432 cases: EX 100.0% (432 correct" in result.stdout
     assert "13 tied_alternative_exists" in result.stdout
     assert "Predictions:" not in result.stdout  # nothing missing or empty
+    assert "Output difference:" not in result.stdout  # nothing wrong
+    assert "SQL structure difference:" not in result.stdout
     run = read_run(out)
     assert run.summary.correct == 432
     assert run.prediction_format == "text"
@@ -104,6 +106,9 @@ def test_eval_with_jsonl_predictions_and_allow_missing_prints_json(
     assert summary["correct"] == len(half)
     assert summary["missing_predictions"] == 432 - len(half)
     assert summary["empty_predictions"] == 0
+    # Every missing prediction returns no rows against a non-empty gold result.
+    assert summary["output_differences"] == {"empty_result": 432 - len(half)}
+    assert summary["sql_structure_differences"] == {}
     run = read_run(tmp_path / "half.json")
     assert sum(case.prediction_state == "missing" for case in run.cases) == 432 - len(
         half

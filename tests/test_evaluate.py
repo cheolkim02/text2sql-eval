@@ -45,6 +45,7 @@ def test_records_every_kind_of_outcome(db_dir: Path) -> None:
             _case("3", "SELECT x FROM t WHERE x < 0"),  # gold result is empty
             _case("4", "SELECT nope FROM t"),  # broken gold SQL
             _case("5", "SELECT x FROM t WHERE x < 0"),
+            _case("6", "SELECT MAX(x) FROM t"),
         ),
     )
     predictions = {
@@ -53,11 +54,12 @@ def test_records_every_kind_of_outcome(db_dir: Path) -> None:
         "3": Prediction("3", ""),
         "4": Prediction("4", "SELECT 1"),
         # "5" is missing
+        "6": Prediction("6", ""),
     }
 
     records = evaluate(dataset, predictions, db_dir=db_dir)
 
-    assert [r.id for r in records] == ["1", "2", "3", "4", "5"]
+    assert [r.id for r in records] == ["1", "2", "3", "4", "5", "6"]
     assert records[0].verdict == Correct()
     assert records[1].verdict == Incorrect()
     assert isinstance(records[2].verdict, Correct)
@@ -68,6 +70,39 @@ def test_records_every_kind_of_outcome(db_dir: Path) -> None:
     assert records[4].prediction_state == "missing"
     assert records[4].pred_sql == ""
     assert [f.kind for f in records[4].verdict.flags] == ["empty_prediction_correct"]
+    assert isinstance(records[5].verdict, Incorrect)
+
+
+def test_wrong_cases_carry_facts_and_correct_ones_do_not(db_dir: Path) -> None:
+    dataset = Dataset(
+        path=Path("toy.json"),
+        cases=(
+            _case("1", "SELECT COUNT(*) FROM t"),
+            _case("2", "SELECT MAX(x) FROM t WHERE x < 10"),
+            _case("3", "SELECT nope FROM t"),
+            _case("4", "SELECT MAX(x) FROM t"),
+        ),
+    )
+    predictions = {
+        "1": Prediction("1", "SELECT COUNT(x) FROM t"),
+        "2": Prediction("2", "SELECT MIN(x) FROM t WHERE x < 20"),
+        "3": Prediction("3", "SELECT 1"),
+        "4": Prediction("4", ""),
+    }
+
+    records = evaluate(dataset, predictions, db_dir=db_dir)
+
+    assert records[0].diff is None  # correct
+    diff = records[1].diff
+    assert diff is not None
+    assert diff.output.differences == ("single_value_differs",)
+    assert [(f.kind, f.gold, f.pred) for f in diff.structure.facts] == [
+        ("where_value", "x < 10", "x < 20"),
+        ("aggregation", "MAX(x)", "MIN(x)"),
+    ]
+    assert records[2].diff is None  # the gold query failed: not the model's fault
+    assert records[3].diff is not None
+    assert records[3].diff.output.differences == ("empty_result",)
 
 
 def test_keeps_only_a_sample_of_long_results(db_dir: Path) -> None:

@@ -14,7 +14,10 @@ from text2sql_eval.execution.executor import (
     QueryResult,
     execute_all,
 )
-from text2sql_eval.judge.ex import judge_case
+from text2sql_eval.facts import CaseDiff
+from text2sql_eval.facts.output import compare_outputs
+from text2sql_eval.facts.structure import structural_facts
+from text2sql_eval.judge.ex import Correct, ExecError, Verdict, judge_case
 from text2sql_eval.runfile import CaseRecord, PredictionState, sample_of
 
 
@@ -107,6 +110,8 @@ def _record(plan: _Plan, results: list[QueryResult]) -> CaseRecord:
         state = "empty"
     else:
         state = "given"
+    pred_sql = "" if prediction is None else prediction.sql
+    verdict = judge_case(gold, pred, pred_is_empty=state != "given", tied=tied)
     return CaseRecord(
         id=case.id,
         db_id=case.db_id,
@@ -114,10 +119,33 @@ def _record(plan: _Plan, results: list[QueryResult]) -> CaseRecord:
         question=case.question,
         evidence=case.evidence,
         gold_sql=case.gold_sql,
-        pred_sql="" if prediction is None else prediction.sql,
+        pred_sql=pred_sql,
         prediction_state=state,
-        verdict=judge_case(gold, pred, pred_is_empty=state != "given", tied=tied),
+        verdict=verdict,
         gold=sample_of(gold),
         pred=sample_of(pred),
         pred_meta={} if prediction is None else prediction.meta,
+        diff=_diff(verdict, gold, pred, case.gold_sql, pred_sql),
+    )
+
+
+def _diff(
+    verdict: Verdict,
+    gold: QueryResult,
+    pred: QueryResult,
+    gold_sql: str,
+    pred_sql: str,
+) -> CaseDiff | None:
+    """Facts for cases the model got wrong (ADR 0031).
+
+    None for correct cases, and for a gold query that failed: that is the
+    dataset's problem, not the prediction's.
+    """
+    if isinstance(verdict, Correct):
+        return None
+    if isinstance(verdict, ExecError) and verdict.side == "gold":
+        return None
+    return CaseDiff(
+        output=compare_outputs(gold, pred),
+        structure=structural_facts(gold_sql, pred_sql),
     )
