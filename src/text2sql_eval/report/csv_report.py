@@ -10,6 +10,7 @@ from __future__ import annotations
 import csv
 from pathlib import Path
 
+from text2sql_eval.csv_safety import excel_safe
 from text2sql_eval.judge.ex import ExecError, Verdict, status_of
 from text2sql_eval.runfile import CaseRecord, Run
 
@@ -38,6 +39,8 @@ def write_csv(run: Run, path: Path) -> None:
     Written as UTF-8 with a byte order mark so Excel shows Korean text and
     other non-ASCII characters correctly. Multiple differences or flags are
     joined with ``;``. ``prediction`` is ``given``, ``empty`` or ``missing``.
+    A cell that starts like a formula (``=``, ``-`` ...) gets a leading ``'``
+    so Excel shows it as text (ADR 0040).
 
     Example:
         >>> write_csv(read_run(Path("runs/v3.json")), Path("runs/v3.csv"))
@@ -47,7 +50,7 @@ def write_csv(run: Run, path: Path) -> None:
         writer = csv.writer(file)
         writer.writerow(CSV_COLUMNS)
         for case in run.cases:
-            writer.writerow(_row(case))
+            writer.writerow(excel_safe(cell) for cell in _row(case))
 
 
 def _row(case: CaseRecord) -> tuple[str, ...]:

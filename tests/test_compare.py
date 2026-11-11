@@ -170,3 +170,17 @@ def test_csv_has_one_row_per_common_case_and_a_bom(tmp_path: Path) -> None:
         ("2", "fixed", ""),
     ]
     assert rows[0]["question"] == "질문"
+
+
+def test_csv_cells_that_start_like_a_formula_are_written_as_text(
+    tmp_path: Path,
+) -> None:
+    hostile = case("1", False, pred_sql="@SUM(A1:A9)", question="+82 phone?")
+    path = tmp_path / "flips.csv"
+
+    write_csv(compare_runs(run(hostile), run(hostile)), path)
+
+    with path.open(encoding="utf-8-sig", newline="") as file:
+        (row,) = list(csv.DictReader(file))
+    assert (row["base_pred_sql"], row["head_pred_sql"]) == ("'@SUM(A1:A9)",) * 2
+    assert row["question"] == "'+82 phone?"
