@@ -16,11 +16,18 @@ from dataclasses import dataclass
 from typing import Literal, assert_never
 
 from text2sql_eval.execution.executor import QueryFailure, QueryResult, Rows, SqlValue
+from text2sql_eval.facts.output import (
+    concatenates_gold_columns,
+    gold_rows_in_projection,
+)
 
 FlagKind = Literal[
     "empty_prediction_correct",
-    "tied_alternative_exists",
+    "gold_empty_correct",
     "matches_tied_alternative_only",
+    "gold_rows_with_extra_columns",
+    "gold_columns_concatenated",
+    "tied_alternative_exists",
 ]
 
 
@@ -66,6 +73,20 @@ _EMPTY_PREDICTION_CORRECT = Flag(
     "empty_prediction_correct",
     "the model gave no SQL; it counts as correct only because the gold result "
     "is empty too",
+)
+_GOLD_EMPTY_CORRECT = Flag(
+    "gold_empty_correct",
+    "the gold result is empty, so any query returning no rows counts as correct",
+)
+_GOLD_ROWS_WITH_EXTRA_COLUMNS = Flag(
+    "gold_rows_with_extra_columns",
+    "the prediction returns every gold row plus extra columns; it may be a "
+    "correct answer judged wrong",
+)
+_GOLD_COLUMNS_CONCATENATED = Flag(
+    "gold_columns_concatenated",
+    "the prediction joins the gold columns into one text column; it may be a "
+    "correct answer in a different format",
 )
 _TIED_ALTERNATIVE_EXISTS = Flag(
     "tied_alternative_exists",
@@ -121,10 +142,21 @@ def judge_case(
     if official_match(pred.rows, gold.rows):
         if pred_is_empty:
             flags.append(_EMPTY_PREDICTION_CORRECT)
+        elif not gold.rows:
+            flags.append(_GOLD_EMPTY_CORRECT)
         return Correct(flags=tuple(flags))
 
     if isinstance(tied, Rows) and official_match(pred.rows, tied.rows):
         flags.append(_MATCHES_TIED_ALTERNATIVE_ONLY)
+    gold_set = set(gold.rows)
+    if (
+        gold_set
+        and len(pred.columns) > len(gold.columns)
+        and gold_rows_in_projection(gold_set, pred) is True
+    ):
+        flags.append(_GOLD_ROWS_WITH_EXTRA_COLUMNS)
+    if concatenates_gold_columns(gold, pred):
+        flags.append(_GOLD_COLUMNS_CONCATENATED)
     return Incorrect(flags=tuple(flags))
 
 
