@@ -218,8 +218,11 @@ def _print_summary(run: Run, out_path: Path, out: TextIO, *, as_json: bool) -> N
     summary = run.summary
     flags = Counter(flag.kind for case in run.cases for flag in case.verdict.flags)
     states = Counter(case.prediction_state for case in run.cases)
-    categories = Counter(
-        case.diff.result.category for case in run.cases if case.diff is not None
+    outputs = Counter(
+        difference
+        for case in run.cases
+        if case.diff is not None
+        for difference in case.diff.output.differences
     )
     facts = Counter(
         fact.kind
@@ -238,8 +241,8 @@ def _print_summary(run: Run, out_path: Path, out: TextIO, *, as_json: bool) -> N
             "missing_predictions": states["missing"],
             "empty_predictions": states["empty"],
             "flags": dict(sorted(flags.items())),
-            "categories": dict(sorted(categories.items())),
-            "facts": dict(sorted(facts.items())),
+            "output_differences": dict(sorted(outputs.items())),
+            "sql_structure_differences": dict(sorted(facts.items())),
         }
         print(json.dumps(document), file=out)
         return
@@ -257,14 +260,13 @@ def _print_summary(run: Run, out_path: Path, out: TextIO, *, as_json: bool) -> N
             "(judged as empty SQL)",
             file=out,
         )
-    if categories:
-        listing = ", ".join(
-            f"{count} {kind}" for kind, count in categories.most_common()
-        )
-        print(f"Wrong by category: {listing}", file=out)
+    # Counts are per kind; one wrong case can have several of each.
+    if outputs:
+        listing = ", ".join(f"{count} {kind}" for kind, count in outputs.most_common())
+        print(f"Output difference: {listing}", file=out)
     if facts:
         listing = ", ".join(f"{count} {kind}" for kind, count in facts.most_common())
-        print(f"Structural facts: {listing}", file=out)
+        print(f"SQL structure difference: {listing}", file=out)
     if flags:
         listing = ", ".join(f"{count} {kind}" for kind, count in sorted(flags.items()))
         print(f"Flags: {listing}", file=out)

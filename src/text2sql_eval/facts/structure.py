@@ -1,7 +1,7 @@
-"""Structural facts: what differs between gold and predicted SQL (ADR 0031).
+"""SQL structure differences between gold and predicted SQL (ADR 0031, 0033).
 
 Both queries are parsed with sqlglot (ADR 0032) and reduced to a small
-``Shape``; the four v1 facts come from comparing shapes. Normalization is
+``Shape``; the differences come from comparing shapes. Normalization is
 deliberately minimal: identifier case, whitespace, a trailing semicolon and
 table aliases. String literals keep their case, because a value that differs
 only by case is exactly the kind of fact worth reporting.
@@ -22,11 +22,14 @@ from sqlglot.expressions.core import Expr
 
 DIALECT = "sqlite"
 
-FactKind = Literal["where_value", "tables_joins", "aggregation", "order_limit"]
+FactKind = Literal[
+    "where_value", "tables_joins", "columns", "aggregation", "order_limit"
+]
 
-FACT_LABELS_KO: dict[FactKind, str] = {
+STRUCTURE_LABELS_KO: dict[FactKind, str] = {
     "where_value": "WHERE 조건의 값이 다름",
     "tables_joins": "테이블·JOIN 구성이 다름",
+    "columns": "사용한 컬럼이 다름",
     "aggregation": "집계 함수가 다름",
     "order_limit": "ORDER BY/LIMIT이 다름",
 }
@@ -63,6 +66,7 @@ class Condition:
 class Shape:
     tables: frozenset[str]
     joins: int
+    columns: frozenset[str]  # unqualified, lower-cased, select aliases removed
     conditions: tuple[Condition, ...]
     aggregates: frozenset[str]
     order: str | None
@@ -107,6 +111,14 @@ def shape_of(query: Expr) -> Shape:
         if table.name and table.name.lower() not in cte_names
     )
     joins = sum(1 for _ in query.find_all(exp.Join))
+    # A select alias used later (ORDER BY percentage) parses as a column; it
+    # names an output, not a table column, so it is not counted.
+    aliases = {alias.alias.lower() for alias in query.find_all(exp.Alias)}
+    columns = frozenset(
+        column.name.lower()
+        for column in query.find_all(exp.Column)
+        if column.name and column.name.lower() not in aliases
+    )
     conditions = tuple(
         condition
         for where in query.find_all(exp.Where)
@@ -118,6 +130,7 @@ def shape_of(query: Expr) -> Shape:
     return Shape(
         tables=tables,
         joins=joins,
+        columns=columns,
         conditions=conditions,
         aggregates=aggregates,
         order=_unqualified(order) if isinstance(order, Expr) else None,
@@ -135,6 +148,15 @@ def compare(gold: Shape, pred: Shape) -> list[Fact]:
                 "tables_joins",
                 gold=_describe_tables(gold),
                 pred=_describe_tables(pred),
+            )
+        )
+    if gold.columns != pred.columns:
+        # Only the columns one side uses and the other does not.
+        facts.append(
+            Fact(
+                "columns",
+                gold=", ".join(sorted(gold.columns - pred.columns)) or "(none)",
+                pred=", ".join(sorted(pred.columns - gold.columns)) or "(none)",
             )
         )
     if gold.aggregates != pred.aggregates:

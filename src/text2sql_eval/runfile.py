@@ -19,7 +19,7 @@ from text2sql_eval.datasets._json import as_array, as_object, parse_json, read_u
 from text2sql_eval.errors import InputError
 from text2sql_eval.execution.executor import QueryFailure, Rows, SqlValue
 from text2sql_eval.facts import CaseDiff
-from text2sql_eval.facts.result import Relation, ResultCategory, ResultDiff
+from text2sql_eval.facts.output import OutputDiff, OutputDifference, Relation
 from text2sql_eval.facts.structure import Fact, FactKind, StructureReport
 from text2sql_eval.judge.ex import (
     Correct,
@@ -31,7 +31,7 @@ from text2sql_eval.judge.ex import (
     status_of,
 )
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 SAMPLE_ROWS = 20
 """Rows kept per query result; ``row_count`` still says how many there were."""
 
@@ -221,19 +221,19 @@ def _case_to_json(case: CaseRecord) -> dict[str, object]:
 
 
 def _diff_to_json(diff: CaseDiff) -> dict[str, object]:
-    result, structure = diff.result, diff.structure
+    output, structure = diff.output, diff.structure
     return {
-        "result": {
-            "category": result.category,
-            "gold_columns": result.gold_columns,
-            "pred_columns": result.pred_columns,
-            "gold_rows": result.gold_rows,
-            "pred_rows": result.pred_rows,
-            "gold_contained": result.gold_contained,
-            "relation": result.relation,
+        "output": {
+            "differences": list(output.differences),
+            "gold_columns": output.gold_columns,
+            "pred_columns": output.pred_columns,
+            "gold_distinct_rows": output.gold_distinct_rows,
+            "pred_distinct_rows": output.pred_distinct_rows,
+            "gold_contained": output.gold_contained,
+            "relation": output.relation,
         },
-        "structure": {
-            "facts": [
+        "sql_structure": {
+            "differences": [
                 {"kind": fact.kind, "gold": fact.gold, "pred": fact.pred}
                 for fact in structure.facts
             ],
@@ -412,52 +412,53 @@ class _Reader:
         if value is None:
             return None
         obj = self.obj(value, where)
-        result = self.obj(obj.get("result"), f"{where}.result")
-        structure = self.obj(obj.get("structure"), f"{where}.structure")
-        relation_value = result.get("relation")
-        relation: Relation | None = (
-            None
-            if relation_value is None
-            else self.choice(
-                relation_value, f"{where}.result.relation", get_args(Relation)
+        out_where, sql_where = f"{where}.output", f"{where}.sql_structure"
+        output = self.obj(obj.get("output"), out_where)
+        structure = self.obj(obj.get("sql_structure"), sql_where)
+        relation: Relation | None = None
+        if (relation_value := output.get("relation")) is not None:
+            relation = self.choice(
+                relation_value, f"{out_where}.relation", get_args(Relation)
             )
-        )
-        contained = result.get("gold_contained")
+        contained: bool | None = None
+        if (contained_value := output.get("gold_contained")) is not None:
+            contained = self.bool_(contained_value, f"{out_where}.gold_contained")
         parse_failed: Side | None = None
         if (parse_failed_value := structure.get("parse_failed")) is not None:
             parse_failed = self.choice(
-                parse_failed_value, f"{where}.structure.parse_failed", get_args(Side)
+                parse_failed_value, f"{sql_where}.parse_failed", get_args(Side)
             )
+        differences = self.array(output.get("differences"), f"{out_where}.differences")
+        facts = self.array(structure.get("differences"), f"{sql_where}.differences")
         return CaseDiff(
-            result=ResultDiff(
-                category=self.choice(
-                    result.get("category"),
-                    f"{where}.result.category",
-                    get_args(ResultCategory),
+            output=OutputDiff(
+                differences=tuple(
+                    self.choice(
+                        item,
+                        f"{out_where}.differences[{index}]",
+                        get_args(OutputDifference),
+                    )
+                    for index, item in enumerate(differences)
                 ),
                 gold_columns=self.int_(
-                    result.get("gold_columns"), f"{where}.result.gold_columns"
+                    output.get("gold_columns"), f"{out_where}.gold_columns"
                 ),
                 pred_columns=self.int_(
-                    result.get("pred_columns"), f"{where}.result.pred_columns"
+                    output.get("pred_columns"), f"{out_where}.pred_columns"
                 ),
-                gold_rows=self.int_(
-                    result.get("gold_rows"), f"{where}.result.gold_rows"
+                gold_distinct_rows=self.int_(
+                    output.get("gold_distinct_rows"), f"{out_where}.gold_distinct_rows"
                 ),
-                pred_rows=self.int_(
-                    result.get("pred_rows"), f"{where}.result.pred_rows"
+                pred_distinct_rows=self.int_(
+                    output.get("pred_distinct_rows"), f"{out_where}.pred_distinct_rows"
                 ),
-                gold_contained=None
-                if contained is None
-                else self.bool_(contained, f"{where}.result.gold_contained"),
+                gold_contained=contained,
                 relation=relation,
             ),
             structure=StructureReport(
                 facts=tuple(
-                    self.fact(item, f"{where}.structure.facts[{index}]")
-                    for index, item in enumerate(
-                        self.array(structure.get("facts"), f"{where}.structure.facts")
-                    )
+                    self.fact(item, f"{sql_where}.differences[{index}]")
+                    for index, item in enumerate(facts)
                 ),
                 parse_failed=parse_failed,
             ),

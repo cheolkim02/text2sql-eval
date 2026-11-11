@@ -17,28 +17,30 @@
 
 evidence 있음 설정의 오답 161개 중 5개는 동점 대체 정답과 일치한다. 공식 규칙으로는 오답이지만 올바른 답일 수 있다.
 
-## 오답 분석 (2026-11-10, ADR 0031)
+## 오답 분석 (ADR 0031, 0033)
 
-오답마다 실행 결과로 정한 카테고리 하나와, 정답·예측 SQL을 파싱해 비교한 구조 사실이 붙는다. 정답 케이스와 정답 SQL 자체가 실패한 케이스에는 붙지 않는다. 숫자는 `text2sql-eval eval`의 요약 출력이다.
+오답에는 출력 차이(실행 결과 비교)와 SQL 구조 차이(정답·예측 SQL 비교)가 붙는다. 둘 다 한 오답에 여러 개 붙을 수 있어서, 합계가 오답 수보다 크다. 정답 케이스와 정답 SQL 자체가 실패한 케이스에는 붙지 않는다. 숫자는 `text2sql-eval eval`의 요약 출력이다.
 
-| 결과 카테고리 | evidence 있음 (165건) | evidence 없음 (270건) |
+| 출력 차이 (Output difference) | evidence 있음 | evidence 없음 |
 | --- | --- | --- |
-| `column_mismatch` (컬럼 구성 차이) | 52 | 48 |
+| `column_mismatch` (컬럼 수가 다름) | 62 | 78 |
+| `row_set_differs` (행 내용이 다름) | 58 | 46 |
 | `single_value_differs` (값 하나가 다름) | 44 | 94 |
 | `empty_result` (빈 결과) | 34 | 100 |
-| `row_set_differs` (행 집합 차이) | 31 | 19 |
+| `row_count_differs` (행 수가 다름) | 31 | 26 |
 | `execution_failed` (실행 실패) | 4 | 9 |
 
-| 구조 사실 (한 오답에 여러 개 가능) | evidence 있음 | evidence 없음 |
+| SQL 구조 차이 (SQL structure difference) | evidence 있음 | evidence 없음 |
 | --- | --- | --- |
+| `columns` (사용한 컬럼이 다름) | 79 | 155 |
 | `tables_joins` (테이블·JOIN 구성이 다름) | 72 | 130 |
 | `aggregation` (집계 함수가 다름) | 66 | 121 |
 | `where_value` (WHERE 조건의 값이 다름) | 25 | 132 |
 | `order_limit` (ORDER BY/LIMIT이 다름) | 23 | 40 |
 
-evidence를 빼면 `empty_result`가 34건에서 100건으로, `where_value`가 25건에서 132건으로 늘어난다. evidence는 주로 WHERE에 들어갈 값(철자, 대소문자, 코드값)을 알려 주므로, 없으면 모델이 값을 틀리고 결과가 비는 경우가 늘어난다는 뜻이다.
-
-카테고리 건수의 합(165, 270)이 오답 수(161, 261)보다 큰 이유는 예측 SQL이 실패한 `error` 판정(4, 9)도 `execution_failed`로 분류되기 때문이다.
+- evidence 있음 오답 165건 중 61건(37%)이 출력 차이를 2개 이상 가진다. 가장 흔한 조합은 `row_count_differs + row_set_differs`(23건)와 `column_mismatch + row_set_differs`(20건)다.
+- evidence를 빼면 `empty_result`가 34건에서 100건으로, `where_value`가 25건에서 132건으로 늘어난다. evidence는 주로 WHERE에 들어갈 값(철자, 대소문자, 코드값)을 알려 주므로, 없으면 모델이 값을 틀리고 결과가 비는 경우가 늘어난다.
+- 오답 수(165, 270)가 incorrect 판정 수(161, 261)보다 큰 이유는 예측 SQL이 실패한 `error` 판정(4, 9)도 오답 분석 대상이기 때문이다.
 
 ## BIRD 공식 스크립트와의 일치 (2026-11-09)
 
@@ -79,7 +81,7 @@ evidence를 빼면 `empty_result`가 34건에서 100건으로, `where_value`가 
 | --- | --- |
 | `gpt-4o-mini-evidence.jsonl` | 예측 (evidence 있음). `meta`에 스냅샷, 토큰 수, 지연 시간 |
 | `gpt-4o-mini-no-evidence.jsonl` | 예측 (evidence 없음) |
-| `gpt-4o-mini-evidence.run.json` | `text2sql-eval eval` 실행 파일 (`schema_version` 2, 오답 분석 포함) |
+| `gpt-4o-mini-evidence.run.json` | `text2sql-eval eval` 실행 파일 (`schema_version` 3, 오답 분석 포함) |
 | `gpt-4o-mini-no-evidence.run.json` | 같은 형식 |
 
 ## 다시 만들기

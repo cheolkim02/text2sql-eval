@@ -95,14 +95,14 @@ def test_wrong_cases_carry_facts_and_correct_ones_do_not(db_dir: Path) -> None:
     assert records[0].diff is None  # correct
     diff = records[1].diff
     assert diff is not None
-    assert diff.result.category == "single_value_differs"
+    assert diff.output.differences == ("single_value_differs",)
     assert [(f.kind, f.gold, f.pred) for f in diff.structure.facts] == [
         ("where_value", "x < 10", "x < 20"),
         ("aggregation", "MAX(x)", "MIN(x)"),
     ]
     assert records[2].diff is None  # the gold query failed: not the model's fault
     assert records[3].diff is not None
-    assert records[3].diff.result.category == "empty_result"
+    assert records[3].diff.output.differences == ("empty_result",)
 
 
 def test_keeps_only_a_sample_of_long_results(db_dir: Path) -> None:

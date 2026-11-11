@@ -15,7 +15,7 @@ from text2sql_eval.execution.executor import (
     execute_all,
 )
 from text2sql_eval.facts import CaseDiff
-from text2sql_eval.facts.result import classify
+from text2sql_eval.facts.output import compare_outputs
 from text2sql_eval.facts.structure import structural_facts
 from text2sql_eval.judge.ex import Correct, ExecError, Verdict, judge_case
 from text2sql_eval.runfile import CaseRecord, PredictionState, sample_of
@@ -146,6 +146,6 @@ def _diff(
     if isinstance(verdict, ExecError) and verdict.side == "gold":
         return None
     return CaseDiff(
-        result=classify(gold, pred),
+        output=compare_outputs(gold, pred),
         structure=structural_facts(gold_sql, pred_sql),
     )

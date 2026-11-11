@@ -1,5 +1,5 @@
 from text2sql_eval.facts.structure import (
-    FACT_LABELS_KO,
+    STRUCTURE_LABELS_KO,
     Fact,
     parse,
     shape_of,
@@ -64,14 +64,12 @@ def test_where_value_handles_in_lists_and_wrapped_columns() -> None:
 def test_where_value_ignores_conditions_without_a_literal_or_with_other_columns() -> (
     None
 ):
-    # A join condition in WHERE and an IN (subquery) carry no comparable value.
-    assert (
-        kinds(
-            "SELECT 1 FROM a, b WHERE a.id = b.id AND a.x IN (SELECT y FROM c)",
-            "SELECT 1 FROM a, b WHERE a.id = b.id AND a.x IN (SELECT z FROM c)",
-        )
-        == []
-    )
+    # A join condition in WHERE and an IN (subquery) carry no comparable value;
+    # the subquery's different column is a `columns` difference, not a value one.
+    assert kinds(
+        "SELECT 1 FROM a, b WHERE a.id = b.id AND a.x IN (SELECT y FROM c)",
+        "SELECT 1 FROM a, b WHERE a.id = b.id AND a.x IN (SELECT z FROM c)",
+    ) == ["columns"]
 
 
 # --- tables_joins ------------------------------------------------------------
@@ -113,6 +111,7 @@ def test_aggregation_reports_different_aggregate_sets() -> None:
     )
 
     assert report.facts == (
+        Fact("columns", gold="id", pred="(none)"),
         Fact("aggregation", gold="COUNT(id), SUM(height_cm)", pred="AVG(height_cm)"),
     )
 
@@ -160,9 +159,32 @@ def test_identical_queries_up_to_normalization_have_no_facts() -> None:
     assert report.parse_failed is None
 
 
-def test_select_column_differences_alone_are_not_a_v1_fact() -> None:
-    # Covered by the result category column_mismatch, not by structure (ADR 0031).
-    assert kinds("SELECT atom_id FROM atom", "SELECT atom_id, element FROM atom") == []
+def test_columns_lists_what_each_side_uses_alone() -> None:
+    report = structural_facts(
+        "SELECT T.atom_id FROM atom AS T WHERE T.molecule_id = 'TR186'",
+        "SELECT atom_id, element FROM atom WHERE molecule_id = 'TR186'",
+    )
+
+    assert report.facts == (Fact("columns", gold="(none)", pred="element"),)
+
+
+def test_columns_reports_a_wrong_column_in_any_clause() -> None:
+    report = structural_facts(
+        "SELECT name FROM superhero WHERE height_cm > 200",
+        "SELECT name FROM superhero WHERE weight_kg > 200",
+    )
+
+    assert report.facts == (Fact("columns", gold="height_cm", pred="weight_kg"),)
+
+
+def test_columns_ignore_aliases_qualifiers_and_case() -> None:
+    assert (
+        kinds(
+            "SELECT T1.Name AS n FROM superhero AS T1 ORDER BY n",
+            "SELECT name AS n FROM Superhero ORDER BY n",
+        )
+        == []
+    )
 
 
 def test_parse_failure_is_reported_not_raised() -> None:
@@ -185,9 +207,10 @@ def test_shape_of_a_subquery_includes_its_tables_and_aggregates() -> None:
 
 
 def test_every_fact_kind_has_a_korean_label() -> None:
-    assert set(FACT_LABELS_KO) == {
+    assert set(STRUCTURE_LABELS_KO) == {
         "where_value",
         "tables_joins",
+        "columns",
         "aggregation",
         "order_limit",
     }

@@ -1,10 +1,10 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "tool": {
     "name": "text2sql-eval",
     "version": "0.1.0"
   },
-  "created_at": "2026-11-10T18:34:03Z",
+  "created_at": "2026-11-11T05:47:09Z",
   "inputs": {
     "dataset": {
       "path": "examples/bird-mini/dev.json",
@@ -171,21 +171,28 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "single_value_differs",
+        "output": {
+          "differences": [
+            "single_value_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 1,
-          "gold_contained": null,
-          "relation": null
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
+          "gold_contained": false,
+          "relation": "disjoint"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: atom, bond; joins: 1",
               "pred": "tables: atom, bond, connected, molecule; joins: 3"
+            },
+            {
+              "kind": "columns",
+              "gold": "(none)",
+              "pred": "atom_id, atom_id2, bond_id"
             },
             {
               "kind": "aggregation",
@@ -240,21 +247,28 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "single_value_differs",
+        "output": {
+          "differences": [
+            "single_value_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 1,
-          "gold_contained": null,
-          "relation": null
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
+          "gold_contained": false,
+          "relation": "disjoint"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: atom, bond, molecule; joins: 2",
               "pred": "tables: atom, bond, connected, molecule; joins: 3"
+            },
+            {
+              "kind": "columns",
+              "gold": "(none)",
+              "pred": "atom_id, atom_id2, bond_id"
             },
             {
               "kind": "aggregation",
@@ -309,17 +323,19 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "single_value_differs",
+        "output": {
+          "differences": [
+            "single_value_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 1,
-          "gold_contained": null,
-          "relation": null
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
+          "gold_contained": false,
+          "relation": "disjoint"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: atom, molecule; joins: 1",
@@ -387,17 +403,19 @@
         "row_count": 2
       },
       "diff": {
-        "result": {
-          "category": "column_mismatch",
+        "output": {
+          "differences": [
+            "column_mismatch"
+          ],
           "gold_columns": 1,
           "pred_columns": 2,
-          "gold_rows": 2,
-          "pred_rows": 2,
+          "gold_distinct_rows": 2,
+          "pred_distinct_rows": 2,
           "gold_contained": true,
           "relation": null
         },
-        "structure": {
-          "facts": [],
+        "sql_structure": {
+          "differences": [],
           "parse_failed": null
         }
       }
@@ -445,17 +463,19 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "single_value_differs",
+        "output": {
+          "differences": [
+            "single_value_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 1,
-          "gold_contained": null,
-          "relation": null
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
+          "gold_contained": false,
+          "relation": "disjoint"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "aggregation",
               "gold": "COUNT(DISTINCT CASE WHEN element = 'c' THEN atom_id ELSE NULL END), COUNT(DISTINCT atom_id)",
@@ -894,17 +914,26 @@
         "row_count": 5
       },
       "diff": {
-        "result": {
-          "category": "row_set_differs",
+        "output": {
+          "differences": [
+            "row_count_differs",
+            "row_set_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 14,
-          "pred_rows": 5,
+          "gold_distinct_rows": 14,
+          "pred_distinct_rows": 5,
           "gold_contained": false,
           "relation": "subset"
         },
-        "structure": {
-          "facts": [],
+        "sql_structure": {
+          "differences": [
+            {
+              "kind": "columns",
+              "gold": "molecule_id",
+              "pred": "atom_id2, bond_id"
+            }
+          ],
           "parse_failed": null
         }
       }
@@ -1296,21 +1325,28 @@
         }
       },
       "diff": {
-        "result": {
-          "category": "execution_failed",
+        "output": {
+          "differences": [
+            "execution_failed"
+          ],
           "gold_columns": 1,
           "pred_columns": 0,
-          "gold_rows": 5399,
-          "pred_rows": 0,
+          "gold_distinct_rows": 5399,
+          "pred_distinct_rows": 0,
           "gold_contained": null,
           "relation": null
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: atom, connected, molecule; joins: 2",
               "pred": "tables: bond, connected, molecule; joins: 1"
+            },
+            {
+              "kind": "columns",
+              "gold": "(none)",
+              "pred": "atom_id2, bond_id"
             }
           ],
           "parse_failed": null
@@ -1506,17 +1542,25 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "column_mismatch",
+        "output": {
+          "differences": [
+            "column_mismatch",
+            "row_set_differs"
+          ],
           "gold_columns": 2,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 1,
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
           "gold_contained": false,
           "relation": null
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
+            {
+              "kind": "columns",
+              "gold": "(none)",
+              "pred": "atom_id2"
+            },
             {
               "kind": "aggregation",
               "gold": "COUNT(DISTINCT CASE WHEN element = 'i' THEN atom_id ELSE NULL END), COUNT(DISTINCT CASE WHEN element = 's' THEN atom_id ELSE NULL END)",
@@ -1841,17 +1885,21 @@
         "row_count": 40
       },
       "diff": {
-        "result": {
-          "category": "column_mismatch",
+        "output": {
+          "differences": [
+            "column_mismatch",
+            "row_count_differs",
+            "row_set_differs"
+          ],
           "gold_columns": 2,
           "pred_columns": 1,
-          "gold_rows": 82,
-          "pred_rows": 40,
+          "gold_distinct_rows": 82,
+          "pred_distinct_rows": 40,
           "gold_contained": false,
           "relation": null
         },
-        "structure": {
-          "facts": [],
+        "sql_structure": {
+          "differences": [],
           "parse_failed": null
         }
       }
@@ -1899,17 +1947,19 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "single_value_differs",
+        "output": {
+          "differences": [
+            "single_value_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 1,
-          "gold_contained": null,
-          "relation": null
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
+          "gold_contained": false,
+          "relation": "disjoint"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "aggregation",
               "gold": "COUNT(DISTINCT CASE WHEN element <> 'f' THEN molecule_id ELSE NULL END), COUNT(DISTINCT molecule_id)",
@@ -1963,21 +2013,28 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "single_value_differs",
+        "output": {
+          "differences": [
+            "single_value_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 1,
-          "gold_contained": null,
-          "relation": null
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
+          "gold_contained": false,
+          "relation": "disjoint"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: atom, bond, molecule; joins: 2",
               "pred": "tables: bond, molecule; joins: 1"
+            },
+            {
+              "kind": "columns",
+              "gold": "(none)",
+              "pred": "bond_id"
             },
             {
               "kind": "aggregation",
@@ -2096,21 +2153,29 @@
         "row_count": 2
       },
       "diff": {
-        "result": {
-          "category": "row_set_differs",
+        "output": {
+          "differences": [
+            "row_count_differs",
+            "row_set_differs"
+          ],
           "gold_columns": 2,
           "pred_columns": 2,
-          "gold_rows": 1,
-          "pred_rows": 2,
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 2,
           "gold_contained": true,
           "relation": "superset"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: bond; joins: 0",
               "pred": "tables: atom, bond, connected; joins: 3"
+            },
+            {
+              "kind": "columns",
+              "gold": "(none)",
+              "pred": "atom_id, atom_id2"
             }
           ],
           "parse_failed": null
@@ -2213,17 +2278,25 @@
         "row_count": 2
       },
       "diff": {
-        "result": {
-          "category": "column_mismatch",
+        "output": {
+          "differences": [
+            "column_mismatch"
+          ],
           "gold_columns": 1,
           "pred_columns": 2,
-          "gold_rows": 2,
-          "pred_rows": 2,
+          "gold_distinct_rows": 2,
+          "pred_distinct_rows": 2,
           "gold_contained": true,
           "relation": null
         },
-        "structure": {
-          "facts": [],
+        "sql_structure": {
+          "differences": [
+            {
+              "kind": "columns",
+              "gold": "(none)",
+              "pred": "atom_id2"
+            }
+          ],
           "parse_failed": null
         }
       }
@@ -2280,17 +2353,26 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "row_set_differs",
+        "output": {
+          "differences": [
+            "row_count_differs",
+            "row_set_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 4,
-          "pred_rows": 1,
+          "gold_distinct_rows": 4,
+          "pred_distinct_rows": 1,
           "gold_contained": false,
           "relation": "subset"
         },
-        "structure": {
-          "facts": [],
+        "sql_structure": {
+          "differences": [
+            {
+              "kind": "columns",
+              "gold": "(none)",
+              "pred": "atom_id"
+            }
+          ],
           "parse_failed": null
         }
       }
@@ -2346,17 +2428,19 @@
         "row_count": 0
       },
       "diff": {
-        "result": {
-          "category": "empty_result",
+        "output": {
+          "differences": [
+            "empty_result"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 5,
-          "pred_rows": 0,
+          "gold_distinct_rows": 5,
+          "pred_distinct_rows": 0,
           "gold_contained": null,
           "relation": null
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "where_value",
               "gold": "bond.bond_type = '='",
@@ -2366,6 +2450,11 @@
               "kind": "tables_joins",
               "gold": "tables: bond; joins: 0",
               "pred": "tables: bond, molecule; joins: 1"
+            },
+            {
+              "kind": "columns",
+              "gold": "(none)",
+              "pred": "label"
             },
             {
               "kind": "order_limit",
@@ -2740,21 +2829,28 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "column_mismatch",
+        "output": {
+          "differences": [
+            "column_mismatch"
+          ],
           "gold_columns": 1,
           "pred_columns": 3,
-          "gold_rows": 1,
-          "pred_rows": 1,
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
           "gold_contained": true,
           "relation": null
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: bond; joins: 0",
               "pred": "tables: bond, molecule; joins: 0"
+            },
+            {
+              "kind": "columns",
+              "gold": "(none)",
+              "pred": "label"
             },
             {
               "kind": "aggregation",
@@ -2920,17 +3016,19 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "single_value_differs",
+        "output": {
+          "differences": [
+            "single_value_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 1,
-          "gold_contained": null,
-          "relation": null
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
+          "gold_contained": false,
+          "relation": "disjoint"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: bond, connected; joins: 1",
@@ -3099,17 +3197,19 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "row_set_differs",
+        "output": {
+          "differences": [
+            "row_set_differs"
+          ],
           "gold_columns": 2,
           "pred_columns": 2,
-          "gold_rows": 1,
-          "pred_rows": 1,
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
           "gold_contained": false,
           "relation": "disjoint"
         },
-        "structure": {
-          "facts": [],
+        "sql_structure": {
+          "differences": [],
           "parse_failed": null
         }
       }
@@ -3201,21 +3301,28 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "single_value_differs",
+        "output": {
+          "differences": [
+            "single_value_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 1,
-          "gold_contained": null,
-          "relation": null
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
+          "gold_contained": false,
+          "relation": "disjoint"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "where_value",
               "gold": "SUBSTRING(connected.atom_id, -2) = '19'",
               "pred": "atom_id = 'TR%_19'"
+            },
+            {
+              "kind": "columns",
+              "gold": "bond_id",
+              "pred": "atom_id2"
             },
             {
               "kind": "aggregation",
@@ -3523,17 +3630,19 @@
         "row_count": 75
       },
       "diff": {
-        "result": {
-          "category": "column_mismatch",
+        "output": {
+          "differences": [
+            "column_mismatch"
+          ],
           "gold_columns": 1,
           "pred_columns": 2,
-          "gold_rows": 75,
-          "pred_rows": 75,
+          "gold_distinct_rows": 75,
+          "pred_distinct_rows": 75,
           "gold_contained": true,
           "relation": null
         },
-        "structure": {
-          "facts": [],
+        "sql_structure": {
+          "differences": [],
           "parse_failed": null
         }
       }
@@ -3678,17 +3787,19 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "single_value_differs",
+        "output": {
+          "differences": [
+            "single_value_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 1,
-          "gold_contained": null,
-          "relation": null
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
+          "gold_contained": false,
+          "relation": "disjoint"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "where_value",
               "gold": "bond.bond_type = '='",
@@ -3698,6 +3809,11 @@
               "kind": "tables_joins",
               "gold": "tables: bond, molecule; joins: 1",
               "pred": "tables: bond, molecule; joins: 2"
+            },
+            {
+              "kind": "columns",
+              "gold": "(none)",
+              "pred": "bond_id"
             },
             {
               "kind": "aggregation",
@@ -3880,17 +3996,20 @@
         "row_count": 2
       },
       "diff": {
-        "result": {
-          "category": "row_set_differs",
+        "output": {
+          "differences": [
+            "row_count_differs",
+            "row_set_differs"
+          ],
           "gold_columns": 2,
           "pred_columns": 2,
-          "gold_rows": 77,
-          "pred_rows": 2,
+          "gold_distinct_rows": 77,
+          "pred_distinct_rows": 2,
           "gold_contained": false,
           "relation": "subset"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "where_value",
               "gold": "SUBSTRING(connected.atom_id, 7, 2) = '45'",
@@ -3967,17 +4086,20 @@
         "row_count": 5
       },
       "diff": {
-        "result": {
-          "category": "row_set_differs",
+        "output": {
+          "differences": [
+            "row_count_differs",
+            "row_set_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 3,
-          "pred_rows": 5,
+          "gold_distinct_rows": 3,
+          "pred_distinct_rows": 5,
           "gold_contained": true,
           "relation": "superset"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: atom, connected; joins: 1",
@@ -4066,17 +4188,20 @@
         "row_count": 8
       },
       "diff": {
-        "result": {
-          "category": "column_mismatch",
+        "output": {
+          "differences": [
+            "column_mismatch",
+            "row_set_differs"
+          ],
           "gold_columns": 2,
           "pred_columns": 1,
-          "gold_rows": 4,
-          "pred_rows": 8,
+          "gold_distinct_rows": 4,
+          "pred_distinct_rows": 4,
           "gold_contained": false,
           "relation": null
         },
-        "structure": {
-          "facts": [],
+        "sql_structure": {
+          "differences": [],
           "parse_failed": null
         }
       }
@@ -4182,17 +4307,25 @@
         "row_count": 0
       },
       "diff": {
-        "result": {
-          "category": "empty_result",
+        "output": {
+          "differences": [
+            "empty_result",
+            "column_mismatch"
+          ],
           "gold_columns": 1,
           "pred_columns": 2,
-          "gold_rows": 1,
-          "pred_rows": 0,
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 0,
           "gold_contained": null,
           "relation": null
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
+            {
+              "kind": "columns",
+              "gold": "(none)",
+              "pred": "bond_id"
+            },
             {
               "kind": "aggregation",
               "gold": "COUNT(bond_type)",
@@ -4251,17 +4384,19 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "single_value_differs",
+        "output": {
+          "differences": [
+            "single_value_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 1,
-          "gold_contained": null,
-          "relation": null
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
+          "gold_contained": false,
+          "relation": "disjoint"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: atom, molecule; joins: 1",
@@ -4348,17 +4483,20 @@
         "row_count": 4
       },
       "diff": {
-        "result": {
-          "category": "column_mismatch",
+        "output": {
+          "differences": [
+            "column_mismatch",
+            "row_set_differs"
+          ],
           "gold_columns": 2,
           "pred_columns": 1,
-          "gold_rows": 4,
-          "pred_rows": 4,
+          "gold_distinct_rows": 4,
+          "pred_distinct_rows": 4,
           "gold_contained": false,
           "relation": null
         },
-        "structure": {
-          "facts": [],
+        "sql_structure": {
+          "differences": [],
           "parse_failed": null
         }
       }
@@ -4468,21 +4606,28 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "single_value_differs",
+        "output": {
+          "differences": [
+            "single_value_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 1,
-          "gold_contained": null,
-          "relation": null
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
+          "gold_contained": false,
+          "relation": "disjoint"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: bond, connected; joins: 1",
               "pred": "tables: atom, bond, connected; joins: 5"
+            },
+            {
+              "kind": "columns",
+              "gold": "bond_type",
+              "pred": "atom_id2, element"
             },
             {
               "kind": "aggregation",
@@ -4827,17 +4972,19 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "single_value_differs",
+        "output": {
+          "differences": [
+            "single_value_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 1,
-          "gold_contained": null,
-          "relation": null
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
+          "gold_contained": false,
+          "relation": "disjoint"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: atom, bond, molecule; joins: 2",
@@ -5308,21 +5455,29 @@
         "row_count": 442
       },
       "diff": {
-        "result": {
-          "category": "row_set_differs",
+        "output": {
+          "differences": [
+            "row_count_differs",
+            "row_set_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 442,
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 73,
           "gold_contained": false,
           "relation": "disjoint"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: atom, bond, molecule; joins: 2",
               "pred": "tables: atom, bond, connected; joins: 2"
+            },
+            {
+              "kind": "columns",
+              "gold": "(none)",
+              "pred": "atom_id2, bond_id"
             },
             {
               "kind": "aggregation",
@@ -5727,17 +5882,21 @@
         "row_count": 3
       },
       "diff": {
-        "result": {
-          "category": "column_mismatch",
+        "output": {
+          "differences": [
+            "column_mismatch",
+            "row_count_differs",
+            "row_set_differs"
+          ],
           "gold_columns": 2,
           "pred_columns": 1,
-          "gold_rows": 1153,
-          "pred_rows": 3,
+          "gold_distinct_rows": 74,
+          "pred_distinct_rows": 3,
           "gold_contained": false,
           "relation": null
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: bond, molecule; joins: 1",
@@ -5841,21 +6000,28 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "single_value_differs",
+        "output": {
+          "differences": [
+            "single_value_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 1,
-          "gold_contained": null,
-          "relation": null
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
+          "gold_contained": false,
+          "relation": "disjoint"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: atom, bond, molecule; joins: 2",
               "pred": "tables: atom, connected; joins: 2"
+            },
+            {
+              "kind": "columns",
+              "gold": "molecule_id",
+              "pred": "atom_id, atom_id2"
             },
             {
               "kind": "aggregation",
@@ -5963,17 +6129,21 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "column_mismatch",
+        "output": {
+          "differences": [
+            "column_mismatch",
+            "row_count_differs",
+            "row_set_differs"
+          ],
           "gold_columns": 3,
           "pred_columns": 1,
-          "gold_rows": 2,
-          "pred_rows": 1,
+          "gold_distinct_rows": 2,
+          "pred_distinct_rows": 1,
           "gold_contained": false,
           "relation": null
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: atom, connected; joins: 1",
@@ -6075,17 +6245,19 @@
         }
       },
       "diff": {
-        "result": {
-          "category": "execution_failed",
+        "output": {
+          "differences": [
+            "execution_failed"
+          ],
           "gold_columns": 1,
           "pred_columns": 0,
-          "gold_rows": 1,
-          "pred_rows": 0,
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 0,
           "gold_contained": null,
           "relation": null
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "aggregation",
               "gold": "COUNT(CASE WHEN element = 'cl' THEN element ELSE NULL END), COUNT(element)",
@@ -6141,17 +6313,19 @@
         "row_count": 0
       },
       "diff": {
-        "result": {
-          "category": "empty_result",
+        "output": {
+          "differences": [
+            "empty_result"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 3,
-          "pred_rows": 0,
+          "gold_distinct_rows": 3,
+          "pred_distinct_rows": 0,
           "gold_contained": null,
           "relation": null
         },
-        "structure": {
-          "facts": [],
+        "sql_structure": {
+          "differences": [],
           "parse_failed": null
         }
       }
@@ -6252,17 +6426,19 @@
         "row_count": 0
       },
       "diff": {
-        "result": {
-          "category": "empty_result",
+        "output": {
+          "differences": [
+            "empty_result"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 370,
-          "pred_rows": 0,
+          "gold_distinct_rows": 370,
+          "pred_distinct_rows": 0,
           "gold_contained": null,
           "relation": null
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "where_value",
               "gold": "bond.bond_type = '='",
@@ -6725,17 +6901,21 @@
         "row_count": 9
       },
       "diff": {
-        "result": {
-          "category": "column_mismatch",
+        "output": {
+          "differences": [
+            "column_mismatch",
+            "row_count_differs",
+            "row_set_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 2,
-          "gold_rows": 8,
-          "pred_rows": 9,
+          "gold_distinct_rows": 8,
+          "pred_distinct_rows": 9,
           "gold_contained": false,
           "relation": null
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "where_value",
               "gold": "LENGTH(atom.atom_id) = 7",
@@ -6803,17 +6983,24 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "row_set_differs",
+        "output": {
+          "differences": [
+            "row_set_differs"
+          ],
           "gold_columns": 2,
           "pred_columns": 2,
-          "gold_rows": 1,
-          "pred_rows": 1,
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
           "gold_contained": false,
           "relation": "disjoint"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
+            {
+              "kind": "columns",
+              "gold": "atom_id, label",
+              "pred": "(none)"
+            },
             {
               "kind": "aggregation",
               "gold": "COUNT(CASE WHEN element = 'h' THEN atom_id ELSE NULL END), COUNT(atom_id)",
@@ -6982,21 +7169,28 @@
         "row_count": 2
       },
       "diff": {
-        "result": {
-          "category": "column_mismatch",
+        "output": {
+          "differences": [
+            "column_mismatch"
+          ],
           "gold_columns": 1,
           "pred_columns": 2,
-          "gold_rows": 2,
-          "pred_rows": 2,
+          "gold_distinct_rows": 2,
+          "pred_distinct_rows": 2,
           "gold_contained": true,
           "relation": null
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: atom, bond, connected; joins: 2",
               "pred": "tables: atom, connected; joins: 2"
+            },
+            {
+              "kind": "columns",
+              "gold": "(none)",
+              "pred": "atom_id2"
             }
           ],
           "parse_failed": null
@@ -7046,21 +7240,28 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "single_value_differs",
+        "output": {
+          "differences": [
+            "single_value_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 1,
-          "gold_contained": null,
-          "relation": null
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
+          "gold_contained": false,
+          "relation": "disjoint"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: bond; joins: 0",
               "pred": "tables: bond, molecule; joins: 1"
+            },
+            {
+              "kind": "columns",
+              "gold": "bond_id",
+              "pred": "molecule_id"
             },
             {
               "kind": "aggregation",
@@ -7115,17 +7316,19 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "single_value_differs",
+        "output": {
+          "differences": [
+            "single_value_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 1,
-          "gold_contained": null,
-          "relation": null
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
+          "gold_contained": false,
+          "relation": "disjoint"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "aggregation",
               "gold": "COUNT(CASE WHEN bond_type = '=' THEN bond_id ELSE NULL END), COUNT(bond_id)",
@@ -7179,17 +7382,19 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "single_value_differs",
+        "output": {
+          "differences": [
+            "single_value_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 1,
-          "gold_contained": null,
-          "relation": null
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
+          "gold_contained": false,
+          "relation": "disjoint"
         },
-        "structure": {
-          "facts": [],
+        "sql_structure": {
+          "differences": [],
           "parse_failed": null
         }
       }
@@ -7233,17 +7438,19 @@
         "row_count": 0
       },
       "diff": {
-        "result": {
-          "category": "empty_result",
+        "output": {
+          "differences": [
+            "empty_result"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 0,
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 0,
           "gold_contained": null,
           "relation": null
         },
-        "structure": {
-          "facts": [],
+        "sql_structure": {
+          "differences": [],
           "parse_failed": null
         }
       }
@@ -7303,17 +7510,20 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "row_set_differs",
+        "output": {
+          "differences": [
+            "row_count_differs",
+            "row_set_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 5,
-          "pred_rows": 1,
+          "gold_distinct_rows": 5,
+          "pred_distinct_rows": 1,
           "gold_contained": false,
           "relation": "subset"
         },
-        "structure": {
-          "facts": [],
+        "sql_structure": {
+          "differences": [],
           "parse_failed": null
         }
       }
@@ -7519,17 +7729,20 @@
         "row_count": 363
       },
       "diff": {
-        "result": {
-          "category": "row_set_differs",
+        "output": {
+          "differences": [
+            "row_count_differs",
+            "row_set_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 434,
-          "pred_rows": 363,
+          "gold_distinct_rows": 434,
+          "pred_distinct_rows": 363,
           "gold_contained": false,
           "relation": "subset"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: atom; joins: 0",
@@ -7680,17 +7893,19 @@
         "row_count": 0
       },
       "diff": {
-        "result": {
-          "category": "empty_result",
+        "output": {
+          "differences": [
+            "empty_result"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 634,
-          "pred_rows": 0,
+          "gold_distinct_rows": 634,
+          "pred_distinct_rows": 0,
           "gold_contained": null,
           "relation": null
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "where_value",
               "gold": "bond.bond_type = '='",
@@ -7788,21 +8003,29 @@
         "row_count": 0
       },
       "diff": {
-        "result": {
-          "category": "empty_result",
+        "output": {
+          "differences": [
+            "empty_result",
+            "column_mismatch"
+          ],
           "gold_columns": 3,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 0,
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 0,
           "gold_contained": null,
           "relation": null
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: bond, connected; joins: 1",
               "pred": "tables: atom, bond, connected; joins: 2"
+            },
+            {
+              "kind": "columns",
+              "gold": "(none)",
+              "pred": "element"
             }
           ],
           "parse_failed": null
@@ -8010,17 +8233,19 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "single_value_differs",
+        "output": {
+          "differences": [
+            "single_value_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 1,
-          "gold_contained": null,
-          "relation": null
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
+          "gold_contained": false,
+          "relation": "disjoint"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "aggregation",
               "gold": "COUNT(CASE WHEN element = 'h' AND label = '+' THEN molecule_id ELSE NULL END), COUNT(molecule_id)",
@@ -8074,17 +8299,19 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "single_value_differs",
+        "output": {
+          "differences": [
+            "single_value_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 1,
-          "gold_contained": null,
-          "relation": null
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
+          "gold_contained": false,
+          "relation": "disjoint"
         },
-        "structure": {
-          "facts": [],
+        "sql_structure": {
+          "differences": [],
           "parse_failed": null
         }
       }
@@ -8267,17 +8494,25 @@
         "row_count": 41
       },
       "diff": {
-        "result": {
-          "category": "column_mismatch",
+        "output": {
+          "differences": [
+            "column_mismatch"
+          ],
           "gold_columns": 1,
           "pred_columns": 2,
-          "gold_rows": 41,
-          "pred_rows": 41,
+          "gold_distinct_rows": 41,
+          "pred_distinct_rows": 41,
           "gold_contained": true,
           "relation": null
         },
-        "structure": {
-          "facts": [],
+        "sql_structure": {
+          "differences": [
+            {
+              "kind": "columns",
+              "gold": "(none)",
+              "pred": "element"
+            }
+          ],
           "parse_failed": null
         }
       }
@@ -8417,17 +8652,19 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "row_set_differs",
+        "output": {
+          "differences": [
+            "row_set_differs"
+          ],
           "gold_columns": 2,
           "pred_columns": 2,
-          "gold_rows": 1,
-          "pred_rows": 1,
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
           "gold_contained": false,
           "relation": "disjoint"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "where_value",
               "gold": "bond.bond_type = '='",
@@ -8437,6 +8674,11 @@
               "kind": "tables_joins",
               "gold": "tables: bond, molecule; joins: 1",
               "pred": "tables: bond, molecule; joins: 0"
+            },
+            {
+              "kind": "columns",
+              "gold": "bond_id",
+              "pred": "(none)"
             },
             {
               "kind": "aggregation",
@@ -8668,17 +8910,19 @@
         "row_count": 3692
       },
       "diff": {
-        "result": {
-          "category": "column_mismatch",
+        "output": {
+          "differences": [
+            "column_mismatch"
+          ],
           "gold_columns": 2,
           "pred_columns": 3,
-          "gold_rows": 563,
-          "pred_rows": 3692,
+          "gold_distinct_rows": 563,
+          "pred_distinct_rows": 563,
           "gold_contained": true,
           "relation": null
         },
-        "structure": {
-          "facts": [],
+        "sql_structure": {
+          "differences": [],
           "parse_failed": null
         }
       }
@@ -9028,21 +9272,29 @@
         "row_count": 3
       },
       "diff": {
-        "result": {
-          "category": "row_set_differs",
+        "output": {
+          "differences": [
+            "row_count_differs",
+            "row_set_differs"
+          ],
           "gold_columns": 2,
           "pred_columns": 2,
-          "gold_rows": 13,
-          "pred_rows": 3,
+          "gold_distinct_rows": 13,
+          "pred_distinct_rows": 3,
           "gold_contained": false,
           "relation": "disjoint"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: atom, bond; joins: 1",
               "pred": "tables: atom, bond, connected, molecule; joins: 3"
+            },
+            {
+              "kind": "columns",
+              "gold": "(none)",
+              "pred": "atom_id, atom_id2, bond_id"
             },
             {
               "kind": "aggregation",
@@ -9153,21 +9405,28 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "single_value_differs",
+        "output": {
+          "differences": [
+            "single_value_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 1,
-          "gold_contained": null,
-          "relation": null
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
+          "gold_contained": false,
+          "relation": "disjoint"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: atom, connected; joins: 1",
               "pred": "tables: atom, bond, connected; joins: 3"
+            },
+            {
+              "kind": "columns",
+              "gold": "(none)",
+              "pred": "atom_id2"
             },
             {
               "kind": "aggregation",
@@ -9243,21 +9502,29 @@
         "row_count": 0
       },
       "diff": {
-        "result": {
-          "category": "empty_result",
+        "output": {
+          "differences": [
+            "empty_result",
+            "column_mismatch"
+          ],
           "gold_columns": 3,
           "pred_columns": 2,
-          "gold_rows": 5,
-          "pred_rows": 0,
+          "gold_distinct_rows": 5,
+          "pred_distinct_rows": 0,
           "gold_contained": null,
           "relation": null
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: atom, bond; joins: 1",
               "pred": "tables: atom, bond, molecule; joins: 2"
+            },
+            {
+              "kind": "columns",
+              "gold": "(none)",
+              "pred": "label"
             },
             {
               "kind": "aggregation",
@@ -9316,17 +9583,19 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "row_set_differs",
+        "output": {
+          "differences": [
+            "row_set_differs"
+          ],
           "gold_columns": 2,
           "pred_columns": 2,
-          "gold_rows": 1,
-          "pred_rows": 1,
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
           "gold_contained": false,
           "relation": "disjoint"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "where_value",
               "gold": "bond.bond_type = '='",
@@ -9437,21 +9706,28 @@
         "row_count": 343
       },
       "diff": {
-        "result": {
-          "category": "single_value_differs",
+        "output": {
+          "differences": [
+            "single_value_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 343,
-          "gold_contained": null,
-          "relation": null
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
+          "gold_contained": false,
+          "relation": "disjoint"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: atom, bond; joins: 1",
               "pred": "tables: atom, bond, connected, molecule; joins: 3"
+            },
+            {
+              "kind": "columns",
+              "gold": "(none)",
+              "pred": "atom_id, atom_id2, bond_id"
             },
             {
               "kind": "aggregation",
@@ -9773,17 +10049,19 @@
         "row_count": 44
       },
       "diff": {
-        "result": {
-          "category": "column_mismatch",
+        "output": {
+          "differences": [
+            "column_mismatch"
+          ],
           "gold_columns": 1,
           "pred_columns": 2,
-          "gold_rows": 44,
-          "pred_rows": 44,
+          "gold_distinct_rows": 44,
+          "pred_distinct_rows": 44,
           "gold_contained": true,
           "relation": null
         },
-        "structure": {
-          "facts": [],
+        "sql_structure": {
+          "differences": [],
           "parse_failed": null
         }
       }
@@ -9966,17 +10244,19 @@
         "row_count": 189
       },
       "diff": {
-        "result": {
-          "category": "column_mismatch",
+        "output": {
+          "differences": [
+            "column_mismatch"
+          ],
           "gold_columns": 1,
           "pred_columns": 2,
-          "gold_rows": 189,
-          "pred_rows": 189,
+          "gold_distinct_rows": 189,
+          "pred_distinct_rows": 189,
           "gold_contained": true,
           "relation": null
         },
-        "structure": {
-          "facts": [],
+        "sql_structure": {
+          "differences": [],
           "parse_failed": null
         }
       }
@@ -10024,17 +10304,19 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "single_value_differs",
+        "output": {
+          "differences": [
+            "single_value_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 1,
-          "gold_contained": null,
-          "relation": null
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
+          "gold_contained": false,
+          "relation": "disjoint"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "aggregation",
               "gold": "COUNT(CASE WHEN label = '+' AND element = 'cl' THEN molecule_id ELSE NULL END), COUNT(molecule_id)",
@@ -10132,21 +10414,28 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "single_value_differs",
+        "output": {
+          "differences": [
+            "single_value_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 1,
-          "gold_contained": null,
-          "relation": null
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
+          "gold_contained": false,
+          "relation": "disjoint"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: atom, connected; joins: 1",
               "pred": "tables: bond, connected; joins: 1"
+            },
+            {
+              "kind": "columns",
+              "gold": "element",
+              "pred": "(none)"
             },
             {
               "kind": "aggregation",
@@ -10250,17 +10539,19 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "column_mismatch",
+        "output": {
+          "differences": [
+            "column_mismatch"
+          ],
           "gold_columns": 1,
           "pred_columns": 2,
-          "gold_rows": 1,
-          "pred_rows": 1,
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
           "gold_contained": true,
           "relation": null
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "where_value",
               "gold": "connected.atom_id = 'TR000_2'",
@@ -10270,6 +10561,11 @@
               "kind": "tables_joins",
               "gold": "tables: bond, connected; joins: 1",
               "pred": "tables: atom, molecule; joins: 2"
+            },
+            {
+              "kind": "columns",
+              "gold": "atom_id2, bond_id",
+              "pred": "*"
             }
           ],
           "parse_failed": null
@@ -10464,21 +10760,29 @@
         "row_count": 12284
       },
       "diff": {
-        "result": {
-          "category": "row_set_differs",
+        "output": {
+          "differences": [
+            "row_count_differs",
+            "row_set_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 12284,
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 5,
           "gold_contained": false,
           "relation": "disjoint"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: bond; joins: 0",
               "pred": "tables: bond, connected; joins: 1"
+            },
+            {
+              "kind": "columns",
+              "gold": "(none)",
+              "pred": "atom_id"
             },
             {
               "kind": "aggregation",
@@ -10630,17 +10934,19 @@
         "row_count": 0
       },
       "diff": {
-        "result": {
-          "category": "empty_result",
+        "output": {
+          "differences": [
+            "empty_result"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 68,
-          "pred_rows": 0,
+          "gold_distinct_rows": 68,
+          "pred_distinct_rows": 0,
           "gold_contained": null,
           "relation": null
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "where_value",
               "gold": "bond.bond_type = '='",
@@ -10650,6 +10956,11 @@
               "kind": "tables_joins",
               "gold": "tables: atom, bond; joins: 1",
               "pred": "tables: atom, bond, connected, molecule; joins: 3"
+            },
+            {
+              "kind": "columns",
+              "gold": "(none)",
+              "pred": "atom_id, atom_id2, bond_id, label"
             }
           ],
           "parse_failed": null
@@ -10834,17 +11145,19 @@
         "row_count": 186
       },
       "diff": {
-        "result": {
-          "category": "column_mismatch",
+        "output": {
+          "differences": [
+            "column_mismatch"
+          ],
           "gold_columns": 1,
           "pred_columns": 2,
-          "gold_rows": 186,
-          "pred_rows": 186,
+          "gold_distinct_rows": 186,
+          "pred_distinct_rows": 186,
           "gold_contained": true,
           "relation": null
         },
-        "structure": {
-          "facts": [],
+        "sql_structure": {
+          "differences": [],
           "parse_failed": null
         }
       }
@@ -10952,21 +11265,29 @@
         "row_count": 2
       },
       "diff": {
-        "result": {
-          "category": "row_set_differs",
+        "output": {
+          "differences": [
+            "row_count_differs",
+            "row_set_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 76,
-          "pred_rows": 2,
+          "gold_distinct_rows": 5,
+          "pred_distinct_rows": 2,
           "gold_contained": false,
           "relation": "subset"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: atom, bond; joins: 1",
               "pred": "tables: atom, bond, connected; joins: 2"
+            },
+            {
+              "kind": "columns",
+              "gold": "(none)",
+              "pred": "atom_id, atom_id2, bond_id"
             }
           ],
           "parse_failed": null
@@ -11020,17 +11341,19 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "column_mismatch",
+        "output": {
+          "differences": [
+            "column_mismatch"
+          ],
           "gold_columns": 1,
           "pred_columns": 3,
-          "gold_rows": 1,
-          "pred_rows": 1,
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
           "gold_contained": true,
           "relation": null
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "order_limit",
               "gold": "(none)",
@@ -11080,21 +11403,28 @@
         "row_count": 0
       },
       "diff": {
-        "result": {
-          "category": "empty_result",
+        "output": {
+          "differences": [
+            "empty_result"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 0,
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 0,
           "gold_contained": null,
           "relation": null
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: atom, bond, molecule; joins: 2",
               "pred": "tables: atom, bond, connected, molecule; joins: 3"
+            },
+            {
+              "kind": "columns",
+              "gold": "(none)",
+              "pred": "atom_id, bond_id"
             },
             {
               "kind": "aggregation",
@@ -11325,21 +11655,28 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "single_value_differs",
+        "output": {
+          "differences": [
+            "single_value_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 1,
-          "gold_contained": null,
-          "relation": null
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
+          "gold_contained": false,
+          "relation": "disjoint"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: atom, bond; joins: 1",
               "pred": "tables: atom, bond, connected, molecule; joins: 3"
+            },
+            {
+              "kind": "columns",
+              "gold": "(none)",
+              "pred": "atom_id, atom_id2, bond_id"
             }
           ],
           "parse_failed": null
@@ -11533,21 +11870,29 @@
         "row_count": 20
       },
       "diff": {
-        "result": {
-          "category": "row_set_differs",
+        "output": {
+          "differences": [
+            "row_count_differs",
+            "row_set_differs"
+          ],
           "gold_columns": 2,
           "pred_columns": 2,
-          "gold_rows": 6,
-          "pred_rows": 20,
+          "gold_distinct_rows": 6,
+          "pred_distinct_rows": 4,
           "gold_contained": false,
           "relation": "subset"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: atom, bond; joins: 1",
               "pred": "tables: atom, bond, connected; joins: 2"
+            },
+            {
+              "kind": "columns",
+              "gold": "(none)",
+              "pred": "atom_id, atom_id2, bond_id"
             }
           ],
           "parse_failed": null
@@ -11626,17 +11971,19 @@
         "row_count": 0
       },
       "diff": {
-        "result": {
-          "category": "empty_result",
+        "output": {
+          "differences": [
+            "empty_result"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 12,
-          "pred_rows": 0,
+          "gold_distinct_rows": 12,
+          "pred_distinct_rows": 0,
           "gold_contained": null,
           "relation": null
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "where_value",
               "gold": "bond.bond_type = '='",
@@ -11646,6 +11993,11 @@
               "kind": "tables_joins",
               "gold": "tables: atom, bond, molecule; joins: 2",
               "pred": "tables: atom, bond, connected; joins: 2"
+            },
+            {
+              "kind": "columns",
+              "gold": "(none)",
+              "pred": "bond_id"
             }
           ],
           "parse_failed": null
@@ -12117,17 +12469,20 @@
         "row_count": 102
       },
       "diff": {
-        "result": {
-          "category": "row_set_differs",
+        "output": {
+          "differences": [
+            "row_count_differs",
+            "row_set_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 71,
-          "pred_rows": 102,
+          "gold_distinct_rows": 71,
+          "pred_distinct_rows": 65,
           "gold_contained": false,
           "relation": "subset"
         },
-        "structure": {
-          "facts": [],
+        "sql_structure": {
+          "differences": [],
           "parse_failed": null
         }
       }
@@ -12686,17 +13041,20 @@
         "row_count": 387
       },
       "diff": {
-        "result": {
-          "category": "column_mismatch",
+        "output": {
+          "differences": [
+            "column_mismatch",
+            "row_set_differs"
+          ],
           "gold_columns": 3,
           "pred_columns": 2,
-          "gold_rows": 387,
-          "pred_rows": 387,
+          "gold_distinct_rows": 386,
+          "pred_distinct_rows": 386,
           "gold_contained": false,
           "relation": null
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "aggregation",
               "gold": "RANK()",
@@ -12967,17 +13325,20 @@
         "row_count": 19
       },
       "diff": {
-        "result": {
-          "category": "column_mismatch",
+        "output": {
+          "differences": [
+            "column_mismatch",
+            "row_set_differs"
+          ],
           "gold_columns": 3,
           "pred_columns": 2,
-          "gold_rows": 19,
-          "pred_rows": 19,
+          "gold_distinct_rows": 19,
+          "pred_distinct_rows": 19,
           "gold_contained": false,
           "relation": null
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "aggregation",
               "gold": "COUNT(id), RANK()",
@@ -13473,17 +13834,20 @@
         "row_count": 3
       },
       "diff": {
-        "result": {
-          "category": "row_set_differs",
+        "output": {
+          "differences": [
+            "row_count_differs",
+            "row_set_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 3,
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 3,
           "gold_contained": true,
           "relation": "superset"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: attribute, hero_attribute, superhero; joins: 2",
@@ -13726,21 +14090,29 @@
         "row_count": 371
       },
       "diff": {
-        "result": {
-          "category": "column_mismatch",
+        "output": {
+          "differences": [
+            "column_mismatch",
+            "row_count_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 2,
-          "gold_rows": 371,
-          "pred_rows": 371,
+          "gold_distinct_rows": 368,
+          "pred_distinct_rows": 369,
           "gold_contained": true,
           "relation": null
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: attribute, hero_attribute, superhero; joins: 1",
               "pred": "tables: attribute, hero_attribute, superhero; joins: 2"
+            },
+            {
+              "kind": "columns",
+              "gold": "(none)",
+              "pred": "full_name"
             }
           ],
           "parse_failed": null
@@ -13914,17 +14286,24 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "single_value_differs",
+        "output": {
+          "differences": [
+            "single_value_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 1,
-          "gold_contained": null,
-          "relation": null
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
+          "gold_contained": false,
+          "relation": "disjoint"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
+            {
+              "kind": "columns",
+              "gold": "(none)",
+              "pred": "power_id"
+            },
             {
               "kind": "aggregation",
               "gold": "COUNT(hero_id)",
@@ -14031,17 +14410,19 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "row_set_differs",
+        "output": {
+          "differences": [
+            "row_set_differs"
+          ],
           "gold_columns": 2,
           "pred_columns": 2,
-          "gold_rows": 1,
-          "pred_rows": 1,
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
           "gold_contained": false,
           "relation": "disjoint"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "aggregation",
               "gold": "COUNT(*), SUM(CASE WHEN publisher_name = 'Marvel Comics' THEN 1 ELSE 0 END)",
@@ -14655,21 +15036,28 @@
         "row_count": 0
       },
       "diff": {
-        "result": {
-          "category": "empty_result",
+        "output": {
+          "differences": [
+            "empty_result"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 15,
-          "pred_rows": 0,
+          "gold_distinct_rows": 15,
+          "pred_distinct_rows": 0,
           "gold_contained": null,
           "relation": null
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: colour, superhero; joins: 1",
               "pred": "tables: superhero; joins: 0"
+            },
+            {
+              "kind": "columns",
+              "gold": "colour, id",
+              "pred": "(none)"
             }
           ],
           "parse_failed": null
@@ -14939,17 +15327,19 @@
         "row_count": 0
       },
       "diff": {
-        "result": {
-          "category": "empty_result",
+        "output": {
+          "differences": [
+            "empty_result"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 5,
-          "pred_rows": 0,
+          "gold_distinct_rows": 5,
+          "pred_distinct_rows": 0,
           "gold_contained": null,
           "relation": null
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "where_value",
               "gold": "race.race = 'Human'",
@@ -15315,17 +15705,19 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "single_value_differs",
+        "output": {
+          "differences": [
+            "single_value_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 1,
-          "gold_contained": null,
-          "relation": null
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
+          "gold_contained": false,
+          "relation": "disjoint"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "where_value",
               "gold": "superpower.power_name = 'Stealth'",
@@ -15385,17 +15777,19 @@
         "row_count": 0
       },
       "diff": {
-        "result": {
-          "category": "empty_result",
+        "output": {
+          "differences": [
+            "empty_result"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 0,
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 0,
           "gold_contained": null,
           "relation": null
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "where_value",
               "gold": "attribute.attribute_name = 'Strength'",
@@ -15449,17 +15843,19 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "single_value_differs",
+        "output": {
+          "differences": [
+            "single_value_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 1,
-          "gold_contained": null,
-          "relation": null
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
+          "gold_contained": false,
+          "relation": "disjoint"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: colour, superhero; joins: 1",
@@ -15563,17 +15959,19 @@
         "row_count": 0
       },
       "diff": {
-        "result": {
-          "category": "empty_result",
+        "output": {
+          "differences": [
+            "empty_result"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 0,
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 0,
           "gold_contained": null,
           "relation": null
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "where_value",
               "gold": "attribute.attribute_name = 'Durability'",
@@ -15877,21 +16275,28 @@
         "row_count": 5
       },
       "diff": {
-        "result": {
-          "category": "row_set_differs",
+        "output": {
+          "differences": [
+            "row_set_differs"
+          ],
           "gold_columns": 3,
           "pred_columns": 3,
-          "gold_rows": 5,
-          "pred_rows": 5,
+          "gold_distinct_rows": 5,
+          "pred_distinct_rows": 5,
           "gold_contained": false,
           "relation": "disjoint"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: gender, publisher, superhero; joins: 2",
               "pred": "tables: colour, gender, publisher, superhero; joins: 5"
+            },
+            {
+              "kind": "columns",
+              "gold": "(none)",
+              "pred": "colour"
             }
           ],
           "parse_failed": null
@@ -17005,17 +17410,19 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "single_value_differs",
+        "output": {
+          "differences": [
+            "single_value_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 1,
-          "gold_contained": null,
-          "relation": null
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
+          "gold_contained": false,
+          "relation": "disjoint"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "aggregation",
               "gold": "COUNT(CASE WHEN publisher_name = 'Marvel Comics' THEN 1 ELSE NULL END), COUNT(id)",
@@ -17157,17 +17564,24 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "single_value_differs",
+        "output": {
+          "differences": [
+            "single_value_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 1,
-          "gold_contained": null,
-          "relation": null
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
+          "gold_contained": false,
+          "relation": "disjoint"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
+            {
+              "kind": "columns",
+              "gold": "id",
+              "pred": "(none)"
+            },
             {
               "kind": "aggregation",
               "gold": "COUNT(id), SUM(height_cm)",
@@ -17735,21 +18149,28 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "single_value_differs",
+        "output": {
+          "differences": [
+            "single_value_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 1,
-          "gold_contained": null,
-          "relation": null
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
+          "gold_contained": false,
+          "relation": "disjoint"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: publisher, superhero; joins: 1",
               "pred": "tables: superhero; joins: 0"
+            },
+            {
+              "kind": "columns",
+              "gold": "id",
+              "pred": "(none)"
             },
             {
               "kind": "aggregation",
@@ -17904,17 +18325,20 @@
         "row_count": 2
       },
       "diff": {
-        "result": {
-          "category": "row_set_differs",
+        "output": {
+          "differences": [
+            "row_count_differs",
+            "row_set_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 2,
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 2,
           "gold_contained": true,
           "relation": "superset"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "aggregation",
               "gold": "(none)",
@@ -17969,17 +18393,19 @@
         "row_count": 0
       },
       "diff": {
-        "result": {
-          "category": "empty_result",
+        "output": {
+          "differences": [
+            "empty_result"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 0,
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 0,
           "gold_contained": null,
           "relation": null
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "where_value",
               "gold": "power_name = 'Cryokinesis'",
@@ -18191,17 +18617,20 @@
         "row_count": 236
       },
       "diff": {
-        "result": {
-          "category": "row_set_differs",
+        "output": {
+          "differences": [
+            "row_count_differs",
+            "row_set_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 107,
-          "pred_rows": 236,
+          "gold_distinct_rows": 107,
+          "pred_distinct_rows": 108,
           "gold_contained": true,
           "relation": "superset"
         },
-        "structure": {
-          "facts": [],
+        "sql_structure": {
+          "differences": [],
           "parse_failed": null
         }
       }
@@ -18545,17 +18974,20 @@
         "row_count": 278
       },
       "diff": {
-        "result": {
-          "category": "row_set_differs",
+        "output": {
+          "differences": [
+            "row_count_differs",
+            "row_set_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 278,
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 25,
           "gold_contained": true,
           "relation": "superset"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "aggregation",
               "gold": "(none)",
@@ -18686,21 +19118,29 @@
         "row_count": 5
       },
       "diff": {
-        "result": {
-          "category": "row_set_differs",
+        "output": {
+          "differences": [
+            "row_count_differs",
+            "row_set_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 5,
-          "pred_rows": 5,
+          "gold_distinct_rows": 5,
+          "pred_distinct_rows": 4,
           "gold_contained": false,
           "relation": "overlap"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: colour, superhero; joins: 1",
               "pred": "tables: colour, superhero; joins: 0"
+            },
+            {
+              "kind": "columns",
+              "gold": "superhero_name",
+              "pred": "full_name"
             }
           ],
           "parse_failed": null
@@ -19126,17 +19566,19 @@
         "row_count": 0
       },
       "diff": {
-        "result": {
-          "category": "empty_result",
+        "output": {
+          "differences": [
+            "empty_result"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 3,
-          "pred_rows": 0,
+          "gold_distinct_rows": 3,
+          "pred_distinct_rows": 0,
           "gold_contained": null,
           "relation": null
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "where_value",
               "gold": "colour.colour = 'Blue'",
@@ -19585,17 +20027,19 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "column_mismatch",
+        "output": {
+          "differences": [
+            "column_mismatch"
+          ],
           "gold_columns": 1,
           "pred_columns": 2,
-          "gold_rows": 1,
-          "pred_rows": 1,
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
           "gold_contained": true,
           "relation": null
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: publisher, superhero; joins: 1",
@@ -19886,17 +20330,20 @@
         "row_count": 2
       },
       "diff": {
-        "result": {
-          "category": "row_set_differs",
+        "output": {
+          "differences": [
+            "row_count_differs",
+            "row_set_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 2,
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 2,
           "gold_contained": true,
           "relation": "superset"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "aggregation",
               "gold": "(none)",
@@ -20326,17 +20773,19 @@
         "row_count": 0
       },
       "diff": {
-        "result": {
-          "category": "empty_result",
+        "output": {
+          "differences": [
+            "empty_result"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 91,
-          "pred_rows": 0,
+          "gold_distinct_rows": 70,
+          "pred_distinct_rows": 0,
           "gold_contained": null,
           "relation": null
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "where_value",
               "gold": "colour.colour = 'Brown'",
@@ -20925,17 +21374,19 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "column_mismatch",
+        "output": {
+          "differences": [
+            "column_mismatch"
+          ],
           "gold_columns": 1,
           "pred_columns": 3,
-          "gold_rows": 1,
-          "pred_rows": 1,
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
           "gold_contained": true,
           "relation": null
         },
-        "structure": {
-          "facts": [],
+        "sql_structure": {
+          "differences": [],
           "parse_failed": null
         }
       }
@@ -21025,17 +21476,20 @@
         "row_count": 0
       },
       "diff": {
-        "result": {
-          "category": "empty_result",
+        "output": {
+          "differences": [
+            "empty_result",
+            "column_mismatch"
+          ],
           "gold_columns": 2,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 0,
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 0,
           "gold_contained": null,
           "relation": null
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "where_value",
               "gold": "major.department = 'Art and Design Department'",
@@ -21182,17 +21636,25 @@
         "row_count": 0
       },
       "diff": {
-        "result": {
-          "category": "empty_result",
+        "output": {
+          "differences": [
+            "empty_result"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 17,
-          "pred_rows": 0,
+          "gold_distinct_rows": 17,
+          "pred_distinct_rows": 0,
           "gold_contained": null,
           "relation": null
         },
-        "structure": {
-          "facts": [],
+        "sql_structure": {
+          "differences": [
+            {
+              "kind": "columns",
+              "gold": "(none)",
+              "pred": "position, student, women's soccer"
+            }
+          ],
           "parse_failed": null
         }
       }
@@ -21287,21 +21749,29 @@
         "row_count": 0
       },
       "diff": {
-        "result": {
-          "category": "empty_result",
+        "output": {
+          "differences": [
+            "empty_result",
+            "column_mismatch"
+          ],
           "gold_columns": 1,
           "pred_columns": 3,
-          "gold_rows": 1,
-          "pred_rows": 0,
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 0,
           "gold_contained": null,
           "relation": null
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: attendance, event; joins: 1",
               "pred": "tables: attendance, event, member; joins: 2"
+            },
+            {
+              "kind": "columns",
+              "gold": "(none)",
+              "pred": "link_to_member, member_id, position"
             },
             {
               "kind": "aggregation",
@@ -21363,17 +21833,19 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "column_mismatch",
+        "output": {
+          "differences": [
+            "column_mismatch"
+          ],
           "gold_columns": 1,
           "pred_columns": 2,
-          "gold_rows": 1,
-          "pred_rows": 1,
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
           "gold_contained": true,
           "relation": null
         },
-        "structure": {
-          "facts": [],
+        "sql_structure": {
+          "differences": [],
           "parse_failed": null
         }
       }
@@ -21543,17 +22015,24 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "single_value_differs",
+        "output": {
+          "differences": [
+            "single_value_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 1,
-          "gold_contained": null,
-          "relation": null
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
+          "gold_contained": false,
+          "relation": "disjoint"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
+            {
+              "kind": "columns",
+              "gold": "(none)",
+              "pred": "event_name"
+            },
             {
               "kind": "aggregation",
               "gold": "COUNT(event_id)",
@@ -21640,21 +22119,29 @@
         "row_count": 4
       },
       "diff": {
-        "result": {
-          "category": "row_set_differs",
+        "output": {
+          "differences": [
+            "row_count_differs",
+            "row_set_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 9,
-          "pred_rows": 4,
+          "gold_distinct_rows": 9,
+          "pred_distinct_rows": 1,
           "gold_contained": false,
           "relation": "disjoint"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: attendance, event; joins: 1",
               "pred": "tables: attendance, event, member; joins: 2"
+            },
+            {
+              "kind": "columns",
+              "gold": "event_name",
+              "pred": "link_to_member, member_id"
             },
             {
               "kind": "aggregation",
@@ -21841,17 +22328,19 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "column_mismatch",
+        "output": {
+          "differences": [
+            "column_mismatch"
+          ],
           "gold_columns": 1,
           "pred_columns": 2,
-          "gold_rows": 1,
-          "pred_rows": 1,
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
           "gold_contained": true,
           "relation": null
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "aggregation",
               "gold": "(none)",
@@ -22089,17 +22578,20 @@
         "row_count": 20
       },
       "diff": {
-        "result": {
-          "category": "column_mismatch",
+        "output": {
+          "differences": [
+            "column_mismatch",
+            "row_set_differs"
+          ],
           "gold_columns": 2,
           "pred_columns": 1,
-          "gold_rows": 20,
-          "pred_rows": 20,
+          "gold_distinct_rows": 20,
+          "pred_distinct_rows": 20,
           "gold_contained": false,
           "relation": null
         },
-        "structure": {
-          "facts": [],
+        "sql_structure": {
+          "differences": [],
           "parse_failed": null
         }
       }
@@ -22427,21 +22919,29 @@
         "row_count": 0
       },
       "diff": {
-        "result": {
-          "category": "empty_result",
+        "output": {
+          "differences": [
+            "empty_result",
+            "column_mismatch"
+          ],
           "gold_columns": 2,
           "pred_columns": 1,
-          "gold_rows": 3,
-          "pred_rows": 0,
+          "gold_distinct_rows": 3,
+          "pred_distinct_rows": 0,
           "gold_contained": null,
           "relation": null
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: member, zip_code; joins: 1",
               "pred": "tables: major, member, zip_code; joins: 0"
+            },
+            {
+              "kind": "columns",
+              "gold": "(none)",
+              "pred": "college, link_to_major, major_id"
             }
           ],
           "parse_failed": null
@@ -22534,21 +23034,28 @@
         "row_count": 0
       },
       "diff": {
-        "result": {
-          "category": "empty_result",
+        "output": {
+          "differences": [
+            "empty_result"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 2,
-          "pred_rows": 0,
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 0,
           "gold_contained": null,
           "relation": null
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "where_value",
               "gold": "member.last_name = 'Pierce'",
               "pred": "member.last_name = 'Guidi'"
+            },
+            {
+              "kind": "columns",
+              "gold": "(none)",
+              "pred": "first_name"
             }
           ],
           "parse_failed": null
@@ -22644,17 +23151,19 @@
         "row_count": 0
       },
       "diff": {
-        "result": {
-          "category": "empty_result",
+        "output": {
+          "differences": [
+            "empty_result"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 3,
-          "pred_rows": 0,
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 0,
           "gold_contained": null,
           "relation": null
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: budget, event, expense; joins: 2",
@@ -22752,17 +23261,24 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "single_value_differs",
+        "output": {
+          "differences": [
+            "single_value_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 1,
-          "gold_contained": null,
-          "relation": null
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
+          "gold_contained": false,
+          "relation": "disjoint"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
+            {
+              "kind": "columns",
+              "gold": "(none)",
+              "pred": "event_name"
+            },
             {
               "kind": "aggregation",
               "gold": "SUM(CASE WHEN SUBSTRING(event_date, 1, 4) = '2019' THEN spent ELSE 0 END), SUM(CASE WHEN SUBSTRING(event_date, 1, 4) = '2020' THEN spent ELSE 0 END)",
@@ -23208,17 +23724,19 @@
         "row_count": 0
       },
       "diff": {
-        "result": {
-          "category": "empty_result",
+        "output": {
+          "differences": [
+            "empty_result"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 0,
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 0,
           "gold_contained": null,
           "relation": null
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "where_value",
               "gold": "expense.expense_date = '2019-08-20'",
@@ -23228,6 +23746,11 @@
               "kind": "tables_joins",
               "gold": "tables: budget, expense; joins: 1",
               "pred": "tables: budget, event, expense; joins: 2"
+            },
+            {
+              "kind": "columns",
+              "gold": "event_status",
+              "pred": "event_id, link_to_event, status"
             }
           ],
           "parse_failed": null
@@ -23279,17 +23802,19 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "column_mismatch",
+        "output": {
+          "differences": [
+            "column_mismatch"
+          ],
           "gold_columns": 1,
           "pred_columns": 2,
-          "gold_rows": 1,
-          "pred_rows": 1,
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
           "gold_contained": true,
           "relation": null
         },
-        "structure": {
-          "facts": [],
+        "sql_structure": {
+          "differences": [],
           "parse_failed": null
         }
       }
@@ -23429,17 +23954,25 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "column_mismatch",
+        "output": {
+          "differences": [
+            "column_mismatch"
+          ],
           "gold_columns": 1,
           "pred_columns": 3,
-          "gold_rows": 1,
-          "pred_rows": 1,
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
           "gold_contained": true,
           "relation": null
         },
-        "structure": {
-          "facts": [],
+        "sql_structure": {
+          "differences": [
+            {
+              "kind": "columns",
+              "gold": "(none)",
+              "pred": "first_name, last_name"
+            }
+          ],
           "parse_failed": null
         }
       }
@@ -23531,21 +24064,28 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "single_value_differs",
+        "output": {
+          "differences": [
+            "single_value_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 1,
-          "gold_contained": null,
-          "relation": null
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
+          "gold_contained": false,
+          "relation": "disjoint"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: major, member; joins: 1",
               "pred": "tables: member; joins: 0"
+            },
+            {
+              "kind": "columns",
+              "gold": "department, major_id",
+              "pred": "(none)"
             }
           ],
           "parse_failed": null
@@ -23647,17 +24187,20 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "column_mismatch",
+        "output": {
+          "differences": [
+            "column_mismatch",
+            "row_set_differs"
+          ],
           "gold_columns": 2,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 1,
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
           "gold_contained": false,
           "relation": null
         },
-        "structure": {
-          "facts": [],
+        "sql_structure": {
+          "differences": [],
           "parse_failed": null
         }
       }
@@ -23705,21 +24248,28 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "single_value_differs",
+        "output": {
+          "differences": [
+            "single_value_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 1,
-          "gold_contained": null,
-          "relation": null
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
+          "gold_contained": false,
+          "relation": "disjoint"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: budget, event; joins: 1",
               "pred": "tables: budget, event; joins: 0"
+            },
+            {
+              "kind": "columns",
+              "gold": "type",
+              "pred": "(none)"
             },
             {
               "kind": "aggregation",
@@ -23774,17 +24324,19 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "single_value_differs",
+        "output": {
+          "differences": [
+            "single_value_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 1,
-          "gold_contained": null,
-          "relation": null
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
+          "gold_contained": false,
+          "relation": "disjoint"
         },
-        "structure": {
-          "facts": [],
+        "sql_structure": {
+          "differences": [],
           "parse_failed": null
         }
       }
@@ -24115,17 +24667,20 @@
         "row_count": 2
       },
       "diff": {
-        "result": {
-          "category": "row_set_differs",
+        "output": {
+          "differences": [
+            "row_count_differs",
+            "row_set_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 2,
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 2,
           "gold_contained": true,
           "relation": "superset"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "aggregation",
               "gold": "(none)",
@@ -24340,17 +24895,26 @@
         "row_count": 23
       },
       "diff": {
-        "result": {
-          "category": "column_mismatch",
+        "output": {
+          "differences": [
+            "column_mismatch",
+            "row_set_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 3,
-          "gold_rows": 23,
-          "pred_rows": 23,
+          "gold_distinct_rows": 23,
+          "pred_distinct_rows": 23,
           "gold_contained": false,
           "relation": null
         },
-        "structure": {
-          "facts": [],
+        "sql_structure": {
+          "differences": [
+            {
+              "kind": "columns",
+              "gold": "(none)",
+              "pred": "email, first_name, last_name"
+            }
+          ],
           "parse_failed": null
         }
       }
@@ -24441,17 +25005,19 @@
         }
       },
       "diff": {
-        "result": {
-          "category": "execution_failed",
+        "output": {
+          "differences": [
+            "execution_failed"
+          ],
           "gold_columns": 1,
           "pred_columns": 0,
-          "gold_rows": 1,
-          "pred_rows": 0,
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 0,
           "gold_contained": null,
           "relation": null
         },
-        "structure": {
-          "facts": [],
+        "sql_structure": {
+          "differences": [],
           "parse_failed": null
         }
       }
@@ -24615,21 +25181,30 @@
         "row_count": 11
       },
       "diff": {
-        "result": {
-          "category": "column_mismatch",
+        "output": {
+          "differences": [
+            "column_mismatch",
+            "row_count_differs",
+            "row_set_differs"
+          ],
           "gold_columns": 2,
           "pred_columns": 1,
-          "gold_rows": 11,
-          "pred_rows": 11,
+          "gold_distinct_rows": 11,
+          "pred_distinct_rows": 5,
           "gold_contained": false,
           "relation": null
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: expense, member; joins: 1",
               "pred": "tables: expense, member; joins: 0"
+            },
+            {
+              "kind": "columns",
+              "gold": "expense_id",
+              "pred": "(none)"
             }
           ],
           "parse_failed": null
@@ -24885,17 +25460,20 @@
         "row_count": 5
       },
       "diff": {
-        "result": {
-          "category": "column_mismatch",
+        "output": {
+          "differences": [
+            "column_mismatch",
+            "row_set_differs"
+          ],
           "gold_columns": 2,
           "pred_columns": 1,
-          "gold_rows": 5,
-          "pred_rows": 5,
+          "gold_distinct_rows": 5,
+          "pred_distinct_rows": 5,
           "gold_contained": false,
           "relation": null
         },
-        "structure": {
-          "facts": [],
+        "sql_structure": {
+          "differences": [],
           "parse_failed": null
         }
       }
@@ -24945,17 +25523,19 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "column_mismatch",
+        "output": {
+          "differences": [
+            "column_mismatch"
+          ],
           "gold_columns": 1,
           "pred_columns": 2,
-          "gold_rows": 1,
-          "pred_rows": 1,
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
           "gold_contained": true,
           "relation": null
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "aggregation",
               "gold": "(none)",
@@ -25325,17 +25905,20 @@
         "row_count": 29
       },
       "diff": {
-        "result": {
-          "category": "column_mismatch",
+        "output": {
+          "differences": [
+            "column_mismatch",
+            "row_set_differs"
+          ],
           "gold_columns": 2,
           "pred_columns": 1,
-          "gold_rows": 29,
-          "pred_rows": 29,
+          "gold_distinct_rows": 29,
+          "pred_distinct_rows": 29,
           "gold_contained": false,
           "relation": null
         },
-        "structure": {
-          "facts": [],
+        "sql_structure": {
+          "differences": [],
           "parse_failed": null
         }
       }
@@ -25433,17 +26016,20 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "column_mismatch",
+        "output": {
+          "differences": [
+            "column_mismatch",
+            "row_set_differs"
+          ],
           "gold_columns": 2,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 1,
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
           "gold_contained": false,
           "relation": null
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: member, zip_code; joins: 1",
@@ -25676,17 +26262,20 @@
         "row_count": 33
       },
       "diff": {
-        "result": {
-          "category": "column_mismatch",
+        "output": {
+          "differences": [
+            "column_mismatch",
+            "row_set_differs"
+          ],
           "gold_columns": 2,
           "pred_columns": 1,
-          "gold_rows": 33,
-          "pred_rows": 33,
+          "gold_distinct_rows": 31,
+          "pred_distinct_rows": 31,
           "gold_contained": false,
           "relation": null
         },
-        "structure": {
-          "facts": [],
+        "sql_structure": {
+          "differences": [],
           "parse_failed": null
         }
       }
@@ -25801,17 +26390,20 @@
         "row_count": 4
       },
       "diff": {
-        "result": {
-          "category": "column_mismatch",
+        "output": {
+          "differences": [
+            "column_mismatch",
+            "row_set_differs"
+          ],
           "gold_columns": 2,
           "pred_columns": 1,
-          "gold_rows": 4,
-          "pred_rows": 4,
+          "gold_distinct_rows": 2,
+          "pred_distinct_rows": 2,
           "gold_contained": false,
           "relation": null
         },
-        "structure": {
-          "facts": [],
+        "sql_structure": {
+          "differences": [],
           "parse_failed": null
         }
       }
@@ -25865,17 +26457,20 @@
         "row_count": 0
       },
       "diff": {
-        "result": {
-          "category": "empty_result",
+        "output": {
+          "differences": [
+            "empty_result",
+            "column_mismatch"
+          ],
           "gold_columns": 3,
           "pred_columns": 2,
-          "gold_rows": 1,
-          "pred_rows": 0,
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 0,
           "gold_contained": null,
           "relation": null
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "aggregation",
               "gold": "SUM(amount)",
@@ -25935,21 +26530,28 @@
         "row_count": 0
       },
       "diff": {
-        "result": {
-          "category": "empty_result",
+        "output": {
+          "differences": [
+            "empty_result"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 0,
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 0,
           "gold_contained": null,
           "relation": null
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: budget, event, expense; joins: 2",
               "pred": "tables: event, expense; joins: 1"
+            },
+            {
+              "kind": "columns",
+              "gold": "budget_id, link_to_event",
+              "pred": "(none)"
             },
             {
               "kind": "aggregation",
@@ -26053,21 +26655,28 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "single_value_differs",
+        "output": {
+          "differences": [
+            "single_value_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 1,
-          "gold_contained": null,
-          "relation": null
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
+          "gold_contained": false,
+          "relation": "disjoint"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: major; joins: 0",
               "pred": "tables: major, member; joins: 1"
+            },
+            {
+              "kind": "columns",
+              "gold": "(none)",
+              "pred": "link_to_major, major_id"
             }
           ],
           "parse_failed": null
@@ -26119,17 +26728,24 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "column_mismatch",
+        "output": {
+          "differences": [
+            "column_mismatch"
+          ],
           "gold_columns": 1,
           "pred_columns": 2,
-          "gold_rows": 1,
-          "pred_rows": 1,
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
           "gold_contained": true,
           "relation": null
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
+            {
+              "kind": "columns",
+              "gold": "(none)",
+              "pred": "amount"
+            },
             {
               "kind": "aggregation",
               "gold": "(none)",
@@ -26194,17 +26810,20 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "column_mismatch",
+        "output": {
+          "differences": [
+            "column_mismatch",
+            "row_set_differs"
+          ],
           "gold_columns": 3,
           "pred_columns": 2,
-          "gold_rows": 1,
-          "pred_rows": 1,
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
           "gold_contained": false,
           "relation": null
         },
-        "structure": {
-          "facts": [],
+        "sql_structure": {
+          "differences": [],
           "parse_failed": null
         }
       }
@@ -26344,21 +26963,28 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "row_set_differs",
+        "output": {
+          "differences": [
+            "row_set_differs"
+          ],
           "gold_columns": 2,
           "pred_columns": 2,
-          "gold_rows": 1,
-          "pred_rows": 1,
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
           "gold_contained": false,
           "relation": "disjoint"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: attendance, major, member; joins: 2",
               "pred": "tables: attendance, member; joins: 1"
+            },
+            {
+              "kind": "columns",
+              "gold": "major_id, major_name",
+              "pred": "(none)"
             }
           ],
           "parse_failed": null
@@ -26535,17 +27161,20 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "row_set_differs",
+        "output": {
+          "differences": [
+            "row_count_differs",
+            "row_set_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 14,
-          "pred_rows": 1,
+          "gold_distinct_rows": 2,
+          "pred_distinct_rows": 1,
           "gold_contained": false,
           "relation": "disjoint"
         },
-        "structure": {
-          "facts": [],
+        "sql_structure": {
+          "differences": [],
           "parse_failed": null
         }
       }
@@ -26593,21 +27222,28 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "single_value_differs",
+        "output": {
+          "differences": [
+            "single_value_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 1,
-          "gold_contained": null,
-          "relation": null
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
+          "gold_contained": false,
+          "relation": "disjoint"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: event; joins: 0",
               "pred": "tables: attendance, event, member; joins: 0"
+            },
+            {
+              "kind": "columns",
+              "gold": "(none)",
+              "pred": "event_id, link_to_event, link_to_member, member_id, position"
             },
             {
               "kind": "aggregation",
@@ -26708,17 +27344,19 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "column_mismatch",
+        "output": {
+          "differences": [
+            "column_mismatch"
+          ],
           "gold_columns": 1,
           "pred_columns": 2,
-          "gold_rows": 1,
-          "pred_rows": 1,
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
           "gold_contained": true,
           "relation": null
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "order_limit",
               "gold": "ORDER BY COUNT(t_shirt_size) DESC LIMIT 1",
@@ -26815,21 +27453,28 @@
         "row_count": 0
       },
       "diff": {
-        "result": {
-          "category": "empty_result",
+        "output": {
+          "differences": [
+            "empty_result"
+          ],
           "gold_columns": 2,
           "pred_columns": 2,
-          "gold_rows": 1,
-          "pred_rows": 0,
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 0,
           "gold_contained": null,
           "relation": null
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: budget, event, expense; joins: 2",
               "pred": "tables: budget, event, expense; joins: 0"
+            },
+            {
+              "kind": "columns",
+              "gold": "type",
+              "pred": "approved, expense_description"
             }
           ],
           "parse_failed": null
@@ -26951,17 +27596,25 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "single_value_differs",
+        "output": {
+          "differences": [
+            "single_value_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 1,
-          "gold_contained": null,
-          "relation": null
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
+          "gold_contained": false,
+          "relation": "disjoint"
         },
-        "structure": {
-          "facts": [],
+        "sql_structure": {
+          "differences": [
+            {
+              "kind": "columns",
+              "gold": "budget_id",
+              "pred": "(none)"
+            }
+          ],
           "parse_failed": null
         }
       }
@@ -27029,17 +27682,19 @@
         "row_count": 3
       },
       "diff": {
-        "result": {
-          "category": "column_mismatch",
+        "output": {
+          "differences": [
+            "column_mismatch"
+          ],
           "gold_columns": 1,
           "pred_columns": 3,
-          "gold_rows": 3,
-          "pred_rows": 3,
+          "gold_distinct_rows": 3,
+          "pred_distinct_rows": 3,
           "gold_contained": true,
           "relation": null
         },
-        "structure": {
-          "facts": [],
+        "sql_structure": {
+          "differences": [],
           "parse_failed": null
         }
       }
@@ -27181,17 +27836,20 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "column_mismatch",
+        "output": {
+          "differences": [
+            "column_mismatch",
+            "row_set_differs"
+          ],
           "gold_columns": 3,
           "pred_columns": 2,
-          "gold_rows": 1,
-          "pred_rows": 1,
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
           "gold_contained": false,
           "relation": null
         },
-        "structure": {
-          "facts": [],
+        "sql_structure": {
+          "differences": [],
           "parse_failed": null
         }
       }
@@ -27932,21 +28590,28 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "single_value_differs",
+        "output": {
+          "differences": [
+            "single_value_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 1,
-          "gold_contained": null,
-          "relation": null
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
+          "gold_contained": false,
+          "relation": "disjoint"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: major, member; joins: 1",
               "pred": "tables: member; joins: 0"
+            },
+            {
+              "kind": "columns",
+              "gold": "major_id, major_name",
+              "pred": "(none)"
             }
           ],
           "parse_failed": null
@@ -27996,17 +28661,19 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "single_value_differs",
+        "output": {
+          "differences": [
+            "single_value_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 1,
-          "gold_contained": null,
-          "relation": null
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
+          "gold_contained": false,
+          "relation": "disjoint"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "aggregation",
               "gold": "COUNT(member_id), SUM(CASE WHEN major_name = 'Business' THEN 1 ELSE 0 END)",
@@ -28339,17 +29006,20 @@
         "row_count": 4
       },
       "diff": {
-        "result": {
-          "category": "column_mismatch",
+        "output": {
+          "differences": [
+            "column_mismatch",
+            "row_set_differs"
+          ],
           "gold_columns": 2,
           "pred_columns": 1,
-          "gold_rows": 4,
-          "pred_rows": 4,
+          "gold_distinct_rows": 4,
+          "pred_distinct_rows": 4,
           "gold_contained": false,
           "relation": null
         },
-        "structure": {
-          "facts": [],
+        "sql_structure": {
+          "differences": [],
           "parse_failed": null
         }
       }
@@ -28655,17 +29325,24 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "single_value_differs",
+        "output": {
+          "differences": [
+            "single_value_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 1,
-          "gold_contained": null,
-          "relation": null
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
+          "gold_contained": false,
+          "relation": "disjoint"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
+            {
+              "kind": "columns",
+              "gold": "income_id",
+              "pred": "source"
+            },
             {
               "kind": "aggregation",
               "gold": "COUNT(income_id), SUM(CASE WHEN amount = 50 THEN 1.0 ELSE 0 END)",
@@ -28833,17 +29510,26 @@
         "row_count": 52
       },
       "diff": {
-        "result": {
-          "category": "row_set_differs",
+        "output": {
+          "differences": [
+            "row_count_differs",
+            "row_set_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1424,
-          "pred_rows": 52,
+          "gold_distinct_rows": 1424,
+          "pred_distinct_rows": 52,
           "gold_contained": false,
           "relation": "overlap"
         },
-        "structure": {
-          "facts": [],
+        "sql_structure": {
+          "differences": [
+            {
+              "kind": "columns",
+              "gold": "county",
+              "pred": "state"
+            }
+          ],
           "parse_failed": null
         }
       }
@@ -29332,17 +30018,25 @@
         "row_count": 472
       },
       "diff": {
-        "result": {
-          "category": "column_mismatch",
+        "output": {
+          "differences": [
+            "column_mismatch"
+          ],
           "gold_columns": 2,
           "pred_columns": 4,
-          "gold_rows": 46,
-          "pred_rows": 472,
+          "gold_distinct_rows": 46,
+          "pred_distinct_rows": 46,
           "gold_contained": true,
           "relation": null
         },
-        "structure": {
-          "facts": [],
+        "sql_structure": {
+          "differences": [
+            {
+              "kind": "columns",
+              "gold": "(none)",
+              "pred": "first_name, last_name"
+            }
+          ],
           "parse_failed": null
         }
       }
@@ -29534,17 +30228,19 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "single_value_differs",
+        "output": {
+          "differences": [
+            "single_value_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 1,
-          "gold_contained": null,
-          "relation": null
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
+          "gold_contained": false,
+          "relation": "disjoint"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "where_value",
               "gold": "major.college = 'College of Education & Human Services'",
@@ -29554,6 +30250,11 @@
               "kind": "tables_joins",
               "gold": "tables: major, member; joins: 1",
               "pred": "tables: major, member; joins: 0"
+            },
+            {
+              "kind": "columns",
+              "gold": "member_id, position",
+              "pred": "(none)"
             },
             {
               "kind": "aggregation",
@@ -29607,17 +30308,24 @@
         }
       },
       "diff": {
-        "result": {
-          "category": "execution_failed",
+        "output": {
+          "differences": [
+            "execution_failed"
+          ],
           "gold_columns": 1,
           "pred_columns": 0,
-          "gold_rows": 1,
-          "pred_rows": 0,
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 0,
           "gold_contained": null,
           "relation": null
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
+            {
+              "kind": "columns",
+              "gold": "budget_id",
+              "pred": "event_id"
+            },
             {
               "kind": "aggregation",
               "gold": "COUNT(budget_id), SUM(CASE WHEN remaining < 0 THEN 1 ELSE 0 END)",
@@ -30044,17 +30752,20 @@
         "row_count": 8
       },
       "diff": {
-        "result": {
-          "category": "column_mismatch",
+        "output": {
+          "differences": [
+            "column_mismatch",
+            "row_set_differs"
+          ],
           "gold_columns": 2,
           "pred_columns": 1,
-          "gold_rows": 8,
-          "pred_rows": 8,
+          "gold_distinct_rows": 8,
+          "pred_distinct_rows": 8,
           "gold_contained": false,
           "relation": null
         },
-        "structure": {
-          "facts": [],
+        "sql_structure": {
+          "differences": [],
           "parse_failed": null
         }
       }
@@ -30357,21 +31068,28 @@
         "row_count": 0
       },
       "diff": {
-        "result": {
-          "category": "empty_result",
+        "output": {
+          "differences": [
+            "empty_result"
+          ],
           "gold_columns": 2,
           "pred_columns": 2,
-          "gold_rows": 4,
-          "pred_rows": 0,
+          "gold_distinct_rows": 4,
+          "pred_distinct_rows": 0,
           "gold_contained": null,
           "relation": null
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: budget, event, expense; joins: 2",
               "pred": "tables: event, expense; joins: 1"
+            },
+            {
+              "kind": "columns",
+              "gold": "budget_id, link_to_event",
+              "pred": "(none)"
             }
           ],
           "parse_failed": null
@@ -30452,17 +31170,20 @@
         "row_count": 6
       },
       "diff": {
-        "result": {
-          "category": "column_mismatch",
+        "output": {
+          "differences": [
+            "column_mismatch",
+            "row_set_differs"
+          ],
           "gold_columns": 3,
           "pred_columns": 2,
-          "gold_rows": 2,
-          "pred_rows": 6,
+          "gold_distinct_rows": 2,
+          "pred_distinct_rows": 2,
           "gold_contained": false,
           "relation": null
         },
-        "structure": {
-          "facts": [],
+        "sql_structure": {
+          "differences": [],
           "parse_failed": null
         }
       }
@@ -30585,21 +31306,28 @@
         "row_count": 0
       },
       "diff": {
-        "result": {
-          "category": "empty_result",
+        "output": {
+          "differences": [
+            "empty_result"
+          ],
           "gold_columns": 2,
           "pred_columns": 2,
-          "gold_rows": 31,
-          "pred_rows": 0,
+          "gold_distinct_rows": 31,
+          "pred_distinct_rows": 0,
           "gold_contained": null,
           "relation": null
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: income, member, zip_code; joins: 2",
               "pred": "tables: attendance, event, income, member, zip_code; joins: 4"
+            },
+            {
+              "kind": "columns",
+              "gold": "amount",
+              "pred": "event_id, income_id, link_to_event"
             },
             {
               "kind": "aggregation",
@@ -30651,21 +31379,29 @@
         "row_count": 0
       },
       "diff": {
-        "result": {
-          "category": "empty_result",
+        "output": {
+          "differences": [
+            "empty_result",
+            "column_mismatch"
+          ],
           "gold_columns": 1,
           "pred_columns": 2,
-          "gold_rows": 1,
-          "pred_rows": 0,
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 0,
           "gold_contained": null,
           "relation": null
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: budget, event, expense, member; joins: 3",
               "pred": "tables: expense; joins: 0"
+            },
+            {
+              "kind": "columns",
+              "gold": "budget_id, event_id, link_to_event, member_id",
+              "pred": "(none)"
             },
             {
               "kind": "aggregation",
@@ -30771,21 +31507,28 @@
         "row_count": 0
       },
       "diff": {
-        "result": {
-          "category": "empty_result",
+        "output": {
+          "differences": [
+            "empty_result"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 3,
-          "pred_rows": 0,
+          "gold_distinct_rows": 3,
+          "pred_distinct_rows": 0,
           "gold_contained": null,
           "relation": null
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: budget, event, expense; joins: 2",
               "pred": "tables: event, expense; joins: 1"
+            },
+            {
+              "kind": "columns",
+              "gold": "budget_id, category, link_to_event",
+              "pred": "expense_description"
             }
           ],
           "parse_failed": null
@@ -30835,17 +31578,19 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "single_value_differs",
+        "output": {
+          "differences": [
+            "single_value_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 1,
-          "gold_contained": null,
-          "relation": null
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
+          "gold_contained": false,
+          "relation": "disjoint"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "aggregation",
               "gold": "SUM(CASE WHEN type = 'Meeting' THEN cost ELSE 0 END), SUM(cost)",
@@ -30899,17 +31644,24 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "single_value_differs",
+        "output": {
+          "differences": [
+            "single_value_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 1,
-          "gold_contained": null,
-          "relation": null
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
+          "gold_contained": false,
+          "relation": "disjoint"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
+            {
+              "kind": "columns",
+              "gold": "cost",
+              "pred": "amount"
+            },
             {
               "kind": "order_limit",
               "gold": "ORDER BY cost DESC LIMIT 1",
@@ -30987,21 +31739,30 @@
         "row_count": 3
       },
       "diff": {
-        "result": {
-          "category": "column_mismatch",
+        "output": {
+          "differences": [
+            "column_mismatch",
+            "row_count_differs",
+            "row_set_differs"
+          ],
           "gold_columns": 2,
           "pred_columns": 1,
-          "gold_rows": 5,
-          "pred_rows": 3,
+          "gold_distinct_rows": 2,
+          "pred_distinct_rows": 3,
           "gold_contained": false,
           "relation": null
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: budget, expense, member; joins: 2",
               "pred": "tables: expense, member; joins: 1"
+            },
+            {
+              "kind": "columns",
+              "gold": "budget_id, link_to_budget, spent",
+              "pred": "cost"
             },
             {
               "kind": "aggregation",
@@ -31077,21 +31838,30 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "column_mismatch",
+        "output": {
+          "differences": [
+            "column_mismatch",
+            "row_count_differs",
+            "row_set_differs"
+          ],
           "gold_columns": 3,
           "pred_columns": 2,
-          "gold_rows": 3,
-          "pred_rows": 1,
+          "gold_distinct_rows": 3,
+          "pred_distinct_rows": 1,
           "gold_contained": false,
           "relation": null
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: budget, expense, member; joins: 4",
               "pred": "tables: expense, member; joins: 1"
+            },
+            {
+              "kind": "columns",
+              "gold": "budget_id, link_to_budget",
+              "pred": "(none)"
             }
           ],
           "parse_failed": null
@@ -31141,17 +31911,24 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "single_value_differs",
+        "output": {
+          "differences": [
+            "single_value_differs"
+          ],
           "gold_columns": 1,
           "pred_columns": 1,
-          "gold_rows": 1,
-          "pred_rows": 1,
-          "gold_contained": null,
-          "relation": null
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
+          "gold_contained": false,
+          "relation": "disjoint"
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
+            {
+              "kind": "columns",
+              "gold": "member_id",
+              "pred": "position"
+            },
             {
               "kind": "aggregation",
               "gold": "COUNT(member_id), SUM(CASE WHEN state = 'New Jersey' THEN 1 ELSE 0 END), SUM(CASE WHEN state = 'Vermont' THEN 1 ELSE 0 END)",
@@ -31213,17 +31990,19 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "column_mismatch",
+        "output": {
+          "differences": [
+            "column_mismatch"
+          ],
           "gold_columns": 2,
           "pred_columns": 4,
-          "gold_rows": 1,
-          "pred_rows": 1,
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
           "gold_contained": true,
           "relation": null
         },
-        "structure": {
-          "facts": [],
+        "sql_structure": {
+          "differences": [],
           "parse_failed": null
         }
       }
@@ -31277,17 +32056,20 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "column_mismatch",
+        "output": {
+          "differences": [
+            "column_mismatch",
+            "row_set_differs"
+          ],
           "gold_columns": 3,
           "pred_columns": 2,
-          "gold_rows": 1,
-          "pred_rows": 1,
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
           "gold_contained": false,
           "relation": null
         },
-        "structure": {
-          "facts": [],
+        "sql_structure": {
+          "differences": [],
           "parse_failed": null
         }
       }
@@ -31627,17 +32409,20 @@
         "row_count": 0
       },
       "diff": {
-        "result": {
-          "category": "empty_result",
+        "output": {
+          "differences": [
+            "empty_result",
+            "column_mismatch"
+          ],
           "gold_columns": 3,
           "pred_columns": 2,
-          "gold_rows": 2,
-          "pred_rows": 0,
+          "gold_distinct_rows": 2,
+          "pred_distinct_rows": 0,
           "gold_contained": null,
           "relation": null
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "where_value",
               "gold": "income.date_received = '2019-09-09'",
@@ -31647,6 +32432,11 @@
               "kind": "tables_joins",
               "gold": "tables: attendance, event, income, member; joins: 3",
               "pred": "tables: income, member; joins: 1"
+            },
+            {
+              "kind": "columns",
+              "gold": "event_id, link_to_event",
+              "pred": "(none)"
             }
           ],
           "parse_failed": null
@@ -31761,17 +32551,20 @@
         "row_count": 1
       },
       "diff": {
-        "result": {
-          "category": "column_mismatch",
+        "output": {
+          "differences": [
+            "column_mismatch",
+            "row_set_differs"
+          ],
           "gold_columns": 3,
           "pred_columns": 2,
-          "gold_rows": 1,
-          "pred_rows": 1,
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 1,
           "gold_contained": false,
           "relation": null
         },
-        "structure": {
-          "facts": [],
+        "sql_structure": {
+          "differences": [],
           "parse_failed": null
         }
       }
@@ -31871,17 +32664,19 @@
         "row_count": 7
       },
       "diff": {
-        "result": {
-          "category": "row_set_differs",
+        "output": {
+          "differences": [
+            "row_set_differs"
+          ],
           "gold_columns": 2,
           "pred_columns": 2,
-          "gold_rows": 7,
-          "pred_rows": 7,
+          "gold_distinct_rows": 7,
+          "pred_distinct_rows": 7,
           "gold_contained": false,
           "relation": "disjoint"
         },
-        "structure": {
-          "facts": [],
+        "sql_structure": {
+          "differences": [],
           "parse_failed": null
         }
       }
@@ -31974,21 +32769,29 @@
         "row_count": 0
       },
       "diff": {
-        "result": {
-          "category": "empty_result",
+        "output": {
+          "differences": [
+            "empty_result",
+            "column_mismatch"
+          ],
           "gold_columns": 3,
           "pred_columns": 2,
-          "gold_rows": 1,
-          "pred_rows": 0,
+          "gold_distinct_rows": 1,
+          "pred_distinct_rows": 0,
           "gold_contained": null,
           "relation": null
         },
-        "structure": {
-          "facts": [
+        "sql_structure": {
+          "differences": [
             {
               "kind": "tables_joins",
               "gold": "tables: member, zip_code; joins: 1",
               "pred": "tables: major, member, zip_code; joins: 0"
+            },
+            {
+              "kind": "columns",
+              "gold": "(none)",
+              "pred": "college, link_to_major, major_id"
             }
           ],
           "parse_failed": null
