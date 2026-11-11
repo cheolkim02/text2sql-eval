@@ -12,6 +12,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
 
+from text2sql_eval.csv_safety import excel_safe
 from text2sql_eval.judge.ex import status_of
 from text2sql_eval.runfile import CaseRecord, Run
 
@@ -174,7 +175,8 @@ def write_csv(comparison: Comparison, path: Path) -> None:
 
     Written as UTF-8 with a byte order mark so Excel shows Korean text and
     other non-ASCII characters correctly. Multiple differences are joined
-    with ``;``.
+    with ``;``. A cell that starts like a formula (``=``, ``-`` ...) gets a
+    leading ``'`` so Excel shows it as text (ADR 0040).
     """
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8-sig", newline="") as file:
@@ -182,19 +184,18 @@ def write_csv(comparison: Comparison, path: Path) -> None:
         writer.writerow(CSV_COLUMNS)
         for case in comparison.cases:
             base, head = case.base, case.head
-            writer.writerow(
-                (
-                    base.id,
-                    base.db_id,
-                    base.difficulty or "",
-                    case.change,
-                    status_of(base.verdict),
-                    status_of(head.verdict),
-                    ";".join(_outputs(base)),
-                    ";".join(_outputs(head)),
-                    base.question,
-                    base.gold_sql,
-                    base.pred_sql,
-                    head.pred_sql,
-                )
+            cells = (
+                base.id,
+                base.db_id,
+                base.difficulty or "",
+                case.change,
+                status_of(base.verdict),
+                status_of(head.verdict),
+                ";".join(_outputs(base)),
+                ";".join(_outputs(head)),
+                base.question,
+                base.gold_sql,
+                base.pred_sql,
+                head.pred_sql,
             )
+            writer.writerow(excel_safe(cell) for cell in cells)

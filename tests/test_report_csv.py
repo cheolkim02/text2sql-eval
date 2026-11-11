@@ -130,3 +130,20 @@ def test_failed_case_shows_the_error_and_prediction_state(tmp_path: Path) -> Non
     assert row["error"] == "pred timeout: did not finish within 30 s"
     assert row["prediction"] == "missing"
     assert row["difficulty"] == ""
+
+
+def test_cells_that_start_like_a_formula_are_written_as_text(tmp_path: Path) -> None:
+    path = tmp_path / "report.csv"
+    hostile = replace(
+        WRONG,
+        pred_sql='=HYPERLINK("http://example.com","click")',
+        evidence="-- the model's note",
+        question="What is 1 = 1?",
+    )
+
+    write_csv(make_run(hostile), path)
+
+    (row,) = read_rows(path)
+    assert row["pred_sql"] == '\'=HYPERLINK("http://example.com","click")'
+    assert row["evidence"] == "'-- the model's note"
+    assert row["question"] == "What is 1 = 1?"  # only the first character counts
