@@ -41,3 +41,5 @@
 | [0035](0035-no-significance-test.md) | 실행 비교에 통계 검정(McNemar)을 넣지 않음 | D22 | 2026-11-11 | 채택 |
 | [0036](0036-compare-gate-opt-in.md) | compare는 `--max-drop`을 줄 때만 실패 | D35 | 2026-11-11 | 채택 |
 | [0037](0037-compare-dataset-mismatch.md) | 데이터셋이 다르면 경고하고 공통 케이스만 비교 | D36 | 2026-11-11 | 채택 |
+| [0038](0038-jinja2-html-report.md) | HTML 리포트는 Jinja2 템플릿 (자동 이스케이프) | D21 | 2026-11-11 | 채택 |
+| [0039](0039-html-report-scope.md) | HTML 리포트 범위: 기본 화면 + 다른 절·행 강조 | D37 | 2026-11-11 | 채택 |

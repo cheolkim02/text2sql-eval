@@ -1,0 +1,280 @@
+{#
+  HTML report of one run (ADR 0007, 0038, 0039).
+  Rendered with autoescaping on: every {{ value }} is escaped.
+  Everything shown is prepared in html_report.py; keep logic out of here.
+  No external resources: the page must open offline.
+#}
+{% macro sql(view) %}
+{% if view.blocks %}
+<pre class="sql">{% for block in view.blocks %}<span class="clause{% if block.differs %} differs{% endif %}">{{ block.text }}</span>{% endfor %}</pre>
+{% if view.formatted %}
+<details class="original"><summary>원래 SQL</summary><pre class="sql">{{ view.original }}</pre></details>
+{% endif %}
+{% else %}
+<p class="muted">(SQL 없음)</p>
+{% endif %}
+{% endmacro %}
+{% macro table(view) %}
+{% if view.failure %}
+<p class="error">{{ view.failure }}</p>
+{% elif not view.columns %}
+<p class="muted">(컬럼 없음)</p>
+{% else %}
+<div class="scroll"><table class="result">
+<thead><tr>{% for column in view.columns %}<th>{{ column }}</th>{% endfor %}</tr></thead>
+<tbody>
+{% for row in view.rows %}
+<tr{% if row.differs %} class="differs"{% endif %}>{% for cell in row.cells %}<td{% if cell.null %} class="null"{% endif %}>{{ cell.text }}</td>{% endfor %}</tr>
+{% endfor %}
+</tbody>
+</table></div>
+{% endif %}
+{% endmacro %}
+{% macro counts(title, rows) %}
+<section class="card">
+<h3>{{ title }}</h3>
+<table class="counts">
+{% for row in rows %}
+<tr{% if not row.count %} class="zero"{% endif %}><td><code>{{ row.code }}</code><br><span class="muted">{{ row.label }}</span></td><td class="num">{{ row.count }}</td></tr>
+{% endfor %}
+</table>
+</section>
+{% endmacro %}
+{% macro groups(title, rows) %}
+<section class="card">
+<h3>{{ title }}</h3>
+<table class="counts">
+<tr><th></th><th class="num">문제</th><th class="num">정답</th><th class="num">EX</th></tr>
+{% for row in rows %}
+<tr><td>{{ row.name }}</td><td class="num">{{ row.cases }}</td><td class="num">{{ row.correct }}</td><td class="num">{{ row.ex }}</td></tr>
+{% endfor %}
+</table>
+</section>
+{% endmacro %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ page.title }}</title>
+<style>
+:root {
+  --bg: #ffffff; --fg: #1f2328; --muted: #656d76; --line: #d0d7de; --panel: #f6f8fa;
+  --differs: #fff1b8; --differs-edge: #d4a72c;
+  --correct: #1a7f37; --incorrect: #cf222e; --error: #bc4c00;
+  --suspect: #8250df; --info: #57606a;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0d1117; --fg: #e6edf3; --muted: #8d96a0; --line: #30363d; --panel: #161b22;
+    --differs: #4d3c00; --differs-edge: #bb8009;
+    --correct: #3fb950; --incorrect: #f85149; --error: #db6d28;
+    --suspect: #a371f7; --info: #8d96a0;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 14px/1.5 system-ui, -apple-system, "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
+main { max-width: 1280px; margin: 0 auto; padding: 16px; }
+h1 { font-size: 20px; margin: 8px 0 16px; overflow-wrap: anywhere; }
+h2 { font-size: 16px; margin: 24px 0 8px; }
+h3 { font-size: 14px; margin: 0 0 8px; }
+h4 { font-size: 13px; margin: 16px 0 4px; color: var(--muted); font-weight: 600; }
+code, pre { font: 12.5px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+[hidden] { display: none !important; }
+.muted { color: var(--muted); }
+.num { text-align: right; font-variant-numeric: tabular-nums; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; align-items: start; }
+.card { border: 1px solid var(--line); border-radius: 8px; padding: 12px; background: var(--bg); }
+.ex { font-size: 32px; font-weight: 700; }
+table { border-collapse: collapse; }
+.counts { width: 100%; }
+.counts.numbers { width: auto; min-width: 240px; }
+.counts td, .counts th { padding: 4px 6px; border-top: 1px solid var(--line); vertical-align: top; }
+.counts tr:first-child td, .counts tr:first-child th { border-top: 0; }
+.counts .zero { color: var(--muted); }
+.info td { padding: 2px 12px 2px 0; vertical-align: top; overflow-wrap: anywhere; }
+.info td:first-child { white-space: nowrap; }
+.filters { position: sticky; top: 0; z-index: 1; display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; padding: 10px 12px; margin: 0 -12px; background: var(--panel); border-bottom: 1px solid var(--line); }
+.filters label { display: flex; gap: 6px; align-items: center; }
+.filters select, .filters button { font: inherit; color: inherit; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 2px 6px; max-width: 100%; }
+.case { border: 1px solid var(--line); border-radius: 8px; margin: 8px 0; }
+.case > summary { cursor: pointer; padding: 8px 12px; display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: baseline; }
+.case[open] > summary { border-bottom: 1px solid var(--line); background: var(--panel); border-radius: 8px 8px 0 0; }
+.case .id { font-weight: 700; }
+.case .question { flex: 1 1 320px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.body { padding: 12px; }
+.badge { border-radius: 10px; padding: 0 8px; color: #fff; font-size: 12px; font-weight: 600; }
+.status-correct { background: var(--correct); }
+.status-incorrect { background: var(--incorrect); }
+.status-error { background: var(--error); }
+.tag { border: 1px solid var(--line); border-radius: 6px; padding: 0 4px; font-size: 11.5px; }
+.flag-suspect_incorrect, .flag-suspect_correct { border-color: var(--suspect); color: var(--suspect); }
+.flag-info { color: var(--info); }
+.pair > section > h4:first-child { margin-top: 0; }
+.pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 12px; margin: 12px 0; }
+.pair > section { min-width: 0; }
+pre.sql { margin: 0; padding: 8px; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.clause { display: block; }
+.differs { background: var(--differs); box-shadow: inset 3px 0 var(--differs-edge); }
+.original { margin-top: 4px; }
+.original > summary { cursor: pointer; color: var(--muted); font-size: 12px; }
+.scroll { overflow-x: auto; max-width: 100%; }
+.result td, .result th { border: 1px solid var(--line); padding: 2px 6px; text-align: left; vertical-align: top; max-width: 360px; overflow-wrap: anywhere; }
+.result th { background: var(--panel); }
+.result .null { color: var(--muted); font-style: italic; }
+.error { color: var(--error); overflow-wrap: anywhere; }
+.facts { width: 100%; }
+.facts td, .facts th { border-top: 1px solid var(--line); padding: 4px 6px; text-align: left; vertical-align: top; overflow-wrap: anywhere; }
+.flags { margin: 0; padding-left: 18px; }
+.legend { font-size: 12px; }
+.legend .differs { padding: 0 4px; }
+</style>
+</head>
+<body>
+<main>
+<h1>{{ page.title }}</h1>
+
+<section class="grid">
+<section class="card">
+<h3>실행 정보</h3>
+<table class="info">
+{% for label, value in page.info %}
+<tr><td class="muted">{{ label }}</td><td>{{ value }}</td></tr>
+{% endfor %}
+</table>
+</section>
+<section class="card">
+<h3>EX (실행 정확도)</h3>
+<div class="ex">{{ page.ex }}</div>
+<table class="counts">
+{% for row in page.status_counts %}
+<tr><td>{{ row.label }}</td><td class="num">{{ row.count }}</td></tr>
+{% endfor %}
+</table>
+</section>
+{{ groups("난이도별 EX", page.by_difficulty) }}
+{{ groups("데이터베이스별 EX", page.by_db) }}
+</section>
+
+<h2>오답 분석</h2>
+<p class="muted">한 오답에 여러 차이가 붙을 수 있어 합계가 오답 수보다 클 수 있습니다. 플래그는 판정을 바꾸지 않고, 공식 규칙이 놓칠 수 있는 경우를 표시합니다.</p>
+<section class="grid">
+{{ counts("출력 차이 (Output difference)", page.output_counts) }}
+{{ counts("SQL 구조 차이 (SQL structure difference)", page.structure_counts) }}
+{{ counts("판정 신뢰도 플래그", page.flag_counts) }}
+</section>
+
+<h2>케이스</h2>
+<p class="muted legend"><span class="differs">색칠한 부분</span>은 정답과 예측에서 다른 SQL 절과 결과 행입니다.</p>
+<form class="filters" onsubmit="return false">
+{% for filter in page.filters %}
+<label>{{ filter.label }}
+<select data-filter="{{ filter.key }}">
+{% for option in filter.options %}
+<option value="{{ option.value }}"{% if option.value == filter.default %} selected{% endif %}>{{ option.label }}</option>
+{% endfor %}
+</select>
+</label>
+{% endfor %}
+<span><output id="shown">{{ page.cases|length }}</output> / {{ page.cases|length }}개</span>
+<button type="button" id="open-all">모두 펼치기</button>
+<button type="button" id="close-all">모두 접기</button>
+</form>
+
+{% for case in page.cases %}
+<details class="case"{% for key, value in case.filters.items() %} data-{{ key }}="{{ value }}"{% endfor %}>
+<summary>
+<span class="id">#{{ case.id }}</span>
+<span class="badge status-{{ case.status }}">{{ case.status_label }}</span>
+<span class="muted">{{ case.db_id }}{% if case.difficulty %} · {{ case.difficulty }}{% endif %}</span>
+{% for output in case.outputs %}<code class="tag">{{ output.code }}</code> {% endfor %}
+{% for flag in case.flags %}<code class="tag flag-{{ flag.group }}">{{ flag.code }}</code> {% endfor %}
+<span class="question">{{ case.question }}</span>
+</summary>
+<div class="body">
+<p><strong>질문</strong> {{ case.question }}</p>
+{% if case.evidence %}
+<p><strong>evidence</strong> {{ case.evidence }}</p>
+{% endif %}
+{% if case.prediction_label %}
+<p class="muted">{{ case.prediction_label }}</p>
+{% endif %}
+{% if case.error %}
+<p class="error">{{ case.error }}</p>
+{% endif %}
+<div class="pair">
+<section><h4>정답 SQL</h4>{{ sql(case.gold_sql) }}</section>
+<section><h4>예측 SQL</h4>{{ sql(case.pred_sql) }}</section>
+</div>
+{% if case.flags %}
+<h4>판정 신뢰도 플래그</h4>
+<ul class="flags">
+{% for flag in case.flags %}
+<li><code class="tag flag-{{ flag.group }}">{{ flag.code }}</code> {{ flag.group_label }}: {{ flag.label }} <span class="muted">({{ flag.detail }})</span></li>
+{% endfor %}
+</ul>
+{% endif %}
+{% if case.outputs %}
+<h4>출력 차이</h4>
+<p>{% for output in case.outputs %}<code class="tag">{{ output.code }}</code> {{ output.label }}{% if not loop.last %} · {% endif %}{% endfor %}</p>
+<table class="counts numbers">
+<tr><th></th><th class="num">정답</th><th class="num">예측</th></tr>
+{% for row in case.numbers %}
+<tr><td>{{ row.label }}</td><td class="num">{{ row.gold }}</td><td class="num">{{ row.pred }}</td></tr>
+{% endfor %}
+</table>
+{% if case.relation %}
+<p class="muted">행 집합 관계: {{ case.relation }}</p>
+{% endif %}
+{% endif %}
+{% if case.facts or case.structure_note %}
+<h4>SQL 구조 차이</h4>
+{% if case.facts %}
+<table class="facts">
+<tr><th>차이</th><th>정답 SQL</th><th>예측 SQL</th></tr>
+{% for fact in case.facts %}
+<tr><td><code>{{ fact.code }}</code><br><span class="muted">{{ fact.label }}</span></td><td><code>{{ fact.gold }}</code></td><td><code>{{ fact.pred }}</code></td></tr>
+{% endfor %}
+</table>
+{% endif %}
+{% if case.structure_note %}
+<p class="muted">{{ case.structure_note }}</p>
+{% endif %}
+{% endif %}
+<div class="pair">
+<section><h4>정답 결과 <span class="muted">{{ case.gold_result.caption }}</span></h4>{{ table(case.gold_result) }}</section>
+<section><h4>예측 결과 <span class="muted">{{ case.pred_result.caption }}</span></h4>{{ table(case.pred_result) }}</section>
+</div>
+</div>
+</details>
+{% endfor %}
+</main>
+<script>
+// Filters only show or hide cases; all content is already in the page.
+(() => {
+  "use strict";
+  const selects = [...document.querySelectorAll("select[data-filter]")];
+  const cases = [...document.querySelectorAll(".case")];
+  const shown = document.getElementById("shown");
+  const matches = (element, select) =>
+    !select.value ||
+    (element.dataset[select.dataset.filter] || "").split(" ").includes(select.value);
+  const apply = () => {
+    let count = 0;
+    for (const element of cases) {
+      element.hidden = !selects.every((select) => matches(element, select));
+      if (!element.hidden) count += 1;
+    }
+    shown.textContent = String(count);
+  };
+  const setOpen = (open) => {
+    for (const element of cases) if (!element.hidden) element.open = open;
+  };
+  for (const select of selects) select.addEventListener("change", apply);
+  document.getElementById("open-all").addEventListener("click", () => setOpen(true));
+  document.getElementById("close-all").addEventListener("click", () => setOpen(false));
+  apply();
+})();
+</script>
+</body>
+</html>

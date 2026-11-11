@@ -23,6 +23,7 @@ classifiers = [
     "Typing :: Typed",
 ]
 dependencies = [
+    "jinja2>=3.1.6",
     "sqlglot>=30.31.0",
 ]
 
