@@ -1,5 +1,6 @@
 """End-to-end tests that run ``text2sql-eval`` as a real process."""
 
+import csv
 import json
 import subprocess
 import sys
@@ -214,3 +215,89 @@ def test_text_summary_explains_missing_predictions(
 
     assert result.returncode == 0, result.stderr
     assert "Predictions: 431 missing, 1 empty (judged as empty SQL)" in result.stdout
+
+
+# --- compare -----------------------------------------------------------------
+
+RESULTS = BIRD_MINI.parent / "results"
+NO_EVIDENCE = RESULTS / "gpt-4o-mini-no-evidence.run.json"
+EVIDENCE = RESULTS / "gpt-4o-mini-evidence.run.json"
+
+
+def test_compare_summarizes_the_committed_baselines(tmp_path: Path) -> None:
+    flips = tmp_path / "flips.csv"
+
+    result = run_cli("compare", NO_EVIDENCE, EVIDENCE, "--csv", flips)
+
+    assert result.returncode == 0, result.stderr
+    assert "(432 common cases)" in result.stdout
+    assert "EX: 37.5% -> 61.8% (+24.3 pp)" in result.stdout
+    assert (
+        "Both correct 144 | Fixed 123 | Regressed 18 | Both wrong 147" in result.stdout
+    )
+    assert "By difficulty: challenging 29.1% -> 47.3%" in result.stdout
+    assert "where_value 132 -> 25" in result.stdout
+    assert "WARNING" not in result.stdout
+    # Count records with a CSV reader: some BIRD fields contain line breaks.
+    with flips.open(encoding="utf-8-sig", newline="") as file:
+        rows = list(csv.DictReader(file))
+    assert len(rows) == 432
+    assert sum(row["change"] == "fixed" for row in rows) == 123
+
+
+def test_compare_json_lists_flipped_cases() -> None:
+    result = run_cli("compare", NO_EVIDENCE, EVIDENCE, "--json")
+
+    summary = json.loads(result.stdout)
+    assert (summary["fixed"], summary["regressed"]) == (123, 18)
+    assert len(summary["fixed_ids"]) == 123
+    assert summary["output_differences"]["base"]["empty_result"] == 100
+    assert summary["failed_max_drop"] is False
+
+
+@pytest.mark.parametrize(("max_drop", "code"), [("5", 1), ("30", 0)])
+def test_compare_max_drop_fails_only_past_the_limit(max_drop: str, code: int) -> None:
+    result = run_cli("compare", EVIDENCE, NO_EVIDENCE, "--max-drop", max_drop)
+
+    assert result.returncode == code
+    if code == 1:
+        assert "FAILED: EX dropped by 24.3 pp, more than --max-drop 5" in result.stderr
+
+
+def test_compare_without_max_drop_never_fails_on_a_drop() -> None:
+    assert run_cli("compare", EVIDENCE, NO_EVIDENCE).returncode == 0
+
+
+def test_compare_warns_about_a_different_dataset(tmp_path: Path) -> None:
+    document = json.loads(EVIDENCE.read_text(encoding="utf-8"))
+    document["inputs"]["dataset"]["sha256"] = "0" * 64
+    document["cases"] = document["cases"][:100]
+    head = tmp_path / "head.json"
+    head.write_text(json.dumps(document), encoding="utf-8")
+
+    result = run_cli("compare", NO_EVIDENCE, head)
+
+    assert result.returncode == 0, result.stderr
+    assert "WARNING: the runs used different dataset files" in result.stdout
+    assert "WARNING: 332 cases only in base, left out" in result.stdout
+    assert "(100 common cases)" in result.stdout
+
+
+def test_compare_refuses_runs_without_common_cases(tmp_path: Path) -> None:
+    document = json.loads(EVIDENCE.read_text(encoding="utf-8"))
+    for record in document["cases"]:
+        record["id"] = "x" + record["id"]
+    head = tmp_path / "head.json"
+    head.write_text(json.dumps(document), encoding="utf-8")
+
+    result = run_cli("compare", NO_EVIDENCE, head)
+
+    assert result.returncode == 2
+    assert "shares no case ids" in result.stderr
+
+
+def test_compare_rejects_a_negative_max_drop() -> None:
+    result = run_cli("compare", EVIDENCE, NO_EVIDENCE, "--max-drop", "-1")
+
+    assert result.returncode == 2
+    assert "argument --max-drop: must be 0 or more" in result.stderr
