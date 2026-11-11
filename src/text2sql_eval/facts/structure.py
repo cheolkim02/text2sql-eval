@@ -103,7 +103,7 @@ def parse(sql: str) -> Expr | None:
 
 def shape_of(query: Expr) -> Shape:
     """Reduce a parsed query to the parts the facts compare."""
-    query = _normalize(query)
+    query = normalize(query)
     cte_names = {cte.alias_or_name.lower() for cte in query.find_all(exp.CTE)}
     tables = frozenset(
         table.name.lower()
@@ -124,7 +124,7 @@ def shape_of(query: Expr) -> Shape:
         for where in query.find_all(exp.Where)
         for condition in _conditions(where)
     )
-    aggregates = frozenset(_unqualified(agg) for agg in query.find_all(exp.AggFunc))
+    aggregates = frozenset(unqualified(agg) for agg in query.find_all(exp.AggFunc))
     order = query.args.get("order")
     limit = query.args.get("limit")
     return Shape(
@@ -133,8 +133,8 @@ def shape_of(query: Expr) -> Shape:
         columns=columns,
         conditions=conditions,
         aggregates=aggregates,
-        order=_unqualified(order) if isinstance(order, Expr) else None,
-        limit=_unqualified(limit) if isinstance(limit, Expr) else None,
+        order=unqualified(order) if isinstance(order, Expr) else None,
+        limit=unqualified(limit) if isinstance(limit, Expr) else None,
     )
 
 
@@ -252,7 +252,7 @@ def _has_subquery(node: Expr) -> bool:
     return node.find(exp.Select) is not None
 
 
-def _normalize(query: Expr) -> Expr:
+def normalize(query: Expr) -> Expr:
     """Resolve table aliases to table names and lower-case identifiers."""
     aliases = {
         table.alias.lower(): table.name.lower()
@@ -274,7 +274,7 @@ def _normalize(query: Expr) -> Expr:
     return query.copy().transform(rewrite)
 
 
-def _unqualified(node: Expr) -> str:
+def unqualified(node: Expr) -> str:
     """SQL of ``node`` with table qualifiers dropped from columns.
 
     ``COUNT(bond_id)`` and ``COUNT(bond.bond_id)`` name the same thing in the

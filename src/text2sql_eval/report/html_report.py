@@ -20,10 +20,19 @@ from typing import Literal, TypeVar
 
 import jinja2
 
+# sqlglot 30's node base class; see the note in facts/structure.py.
+from sqlglot.expressions.core import Expr
+
 from text2sql_eval.execution.executor import QueryFailure, SqlValue
 from text2sql_eval.facts.output import OUTPUT_LABELS_KO, OutputDiff, Relation
 from text2sql_eval.facts.structure import DIALECT, STRUCTURE_LABELS_KO, parse
 from text2sql_eval.judge.ex import ExecError, FlagKind, Verdict, status_of
+from text2sql_eval.report.highlight import (
+    Clause,
+    clause_blocks,
+    differing_clauses,
+    differing_rows,
+)
 from text2sql_eval.runfile import CaseRecord, QuerySummary, Run
 
 # A bound TypeVar instead of 3.12's ``def f[K: str]`` (ADR 0009).
@@ -235,6 +244,10 @@ def write_html(run: Run, path: Path, *, run_name: str) -> None:
     """Write the report of ``run`` to ``path`` as one UTF-8 HTML file.
 
     ``run_name`` names the run in the page title, usually the run file name.
+
+    Example:
+        >>> run_path = Path("runs/v3.json")
+        >>> write_html(read_run(run_path), Path("runs/v3.html"), run_name=run_path.name)
     """
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(render_html(run, run_name=run_name), encoding="utf-8")
@@ -456,6 +469,13 @@ def _case_view(case: CaseRecord) -> CaseView:
     )
     outputs = () if diff is None else diff.output.differences
     facts = () if diff is None else diff.structure.facts
+    # Highlight where the differences are reported: cases that are not
+    # correct and whose gold query ran (ADR 0031, 0039).
+    highlight = diff is not None
+    gold_sql, pred_sql = sql_views(case.gold_sql, case.pred_sql, highlight=highlight)
+    gold_rows, pred_rows = (
+        differing_rows(case.gold, case.pred) if highlight else ((), ())
+    )
     return CaseView(
         id=case.id,
         db_id=case.db_id,
@@ -465,8 +485,8 @@ def _case_view(case: CaseRecord) -> CaseView:
         prediction_label=_PREDICTION_LABELS_KO[case.prediction_state],
         question=case.question,
         evidence=case.evidence,
-        gold_sql=sql_view(case.gold_sql),
-        pred_sql=sql_view(case.pred_sql),
+        gold_sql=gold_sql,
+        pred_sql=pred_sql,
         error=_error(case.verdict),
         outputs=tuple(Labeled(kind, OUTPUT_LABELS_KO[kind]) for kind in outputs),
         numbers=() if diff is None else _numbers(diff.output),
@@ -479,8 +499,8 @@ def _case_view(case: CaseRecord) -> CaseView:
         ),
         structure_note=_structure_note(case),
         flags=flags,
-        gold_result=table_view(case.gold),
-        pred_result=table_view(case.pred),
+        gold_result=table_view(case.gold, gold_rows),
+        pred_result=table_view(case.pred, pred_rows),
         filters={
             "status": status if status == "correct" else f"{status} wrong",
             "db": case.db_id,
@@ -494,19 +514,44 @@ def _case_view(case: CaseRecord) -> CaseView:
     )
 
 
-def sql_view(sql: str) -> SqlView:
-    """SQL reformatted by sqlglot, one clause per line, or as written."""
-    if not sql.strip():
-        return SqlView((), sql, formatted=False)
-    tree = parse(sql)
-    if tree is None:
-        return SqlView((SqlBlock(sql.strip()),), sql, formatted=False)
-    return SqlView(
-        (SqlBlock(tree.sql(dialect=DIALECT, pretty=True)),), sql, formatted=True
+def sql_views(
+    gold_sql: str, pred_sql: str, *, highlight: bool
+) -> tuple[SqlView, SqlView]:
+    """Both queries reformatted by sqlglot, one block per outer clause.
+
+    With ``highlight``, clauses that differ between the two are marked. SQL
+    that is empty or that sqlglot cannot parse is shown as written, and then
+    nothing is marked on either side.
+    """
+    gold_tree = parse(gold_sql) if gold_sql.strip() else None
+    pred_tree = parse(pred_sql) if pred_sql.strip() else None
+    differs: frozenset[Clause] = frozenset()
+    if highlight and gold_tree is not None and pred_tree is not None:
+        differs = differing_clauses(gold_tree, pred_tree)
+    return (
+        _sql_view(gold_sql, gold_tree, differs),
+        _sql_view(pred_sql, pred_tree, differs),
     )
 
 
-def table_view(result: QuerySummary) -> TableView:
+def _sql_view(sql: str, tree: Expr | None, differs: frozenset[Clause]) -> SqlView:
+    if not sql.strip():
+        return SqlView((), sql, formatted=False)
+    if tree is None:
+        return SqlView((SqlBlock(sql.strip()),), sql, formatted=False)
+    pretty = tree.sql(dialect=DIALECT, pretty=True)
+    return SqlView(
+        tuple(
+            SqlBlock(text, differs=clause in differs)
+            for clause, text in clause_blocks(pretty)
+        ),
+        sql,
+        formatted=True,
+    )
+
+
+def table_view(result: QuerySummary, differs: tuple[bool, ...] = ()) -> TableView:
+    """A result sample as a table; ``differs`` marks rows, one flag per row."""
     if isinstance(result, QueryFailure):
         return TableView((), (), caption="", failure=f"{result.kind}: {result.message}")
     if result.row_count > len(result.rows):
@@ -516,7 +561,11 @@ def table_view(result: QuerySummary) -> TableView:
     return TableView(
         columns=result.columns,
         rows=tuple(
-            RowView(tuple(_cell(value) for value in row)) for row in result.rows
+            RowView(
+                tuple(_cell(value) for value in row),
+                differs=index < len(differs) and differs[index],
+            )
+            for index, row in enumerate(result.rows)
         ),
         caption=caption,
     )

@@ -12,7 +12,7 @@ from text2sql_eval.judge.ex import Correct, ExecError, Flag, Incorrect
 from text2sql_eval.report.html_report import (
     build_page,
     render_html,
-    sql_view,
+    sql_views,
     table_view,
     write_html,
 )
@@ -176,19 +176,54 @@ def test_user_text_is_escaped_everywhere() -> None:
 
 
 def test_sql_is_formatted_one_clause_per_line_and_the_original_kept() -> None:
-    view = sql_view("select name from superhero where id = 1;")
+    gold, pred = sql_views(
+        "select name from superhero where id = 1;",
+        "SELECT T.name FROM superhero AS T WHERE T.id = 2",
+        highlight=True,
+    )
 
-    assert view.formatted
-    assert [block.text for block in view.blocks] == [
-        "SELECT\n  name\nFROM superhero\nWHERE\n  id = 1"
+    assert gold.formatted
+    assert [(b.text, b.differs) for b in gold.blocks] == [
+        ("SELECT\n  name", False),
+        ("FROM superhero", False),
+        ("WHERE\n  id = 1", True),
     ]
-    assert view.original == "select name from superhero where id = 1;"
+    assert [b.differs for b in pred.blocks] == [False, False, True]
+    assert gold.original == "select name from superhero where id = 1;"
 
 
-def test_unparsable_or_missing_sql_is_shown_as_written() -> None:
-    assert sql_view("SELEC name FROM").blocks[0].text == "SELEC name FROM"
-    assert not sql_view("SELEC name FROM").formatted
-    assert sql_view("   ").blocks == ()
+def test_nothing_is_highlighted_without_the_highlight_option() -> None:
+    gold, pred = sql_views("SELECT 1", "SELECT 2", highlight=False)
+
+    assert not any(b.differs for b in (*gold.blocks, *pred.blocks))
+
+
+def test_unparsable_or_missing_sql_is_shown_as_written_and_not_marked() -> None:
+    gold, pred = sql_views("SELECT name FROM t", "SELEC name FROM", highlight=True)
+
+    assert [(b.text, b.differs) for b in pred.blocks] == [("SELEC name FROM", False)]
+    assert not pred.formatted
+    assert not any(b.differs for b in gold.blocks)
+    _, missing = sql_views("SELECT 1", "   ", highlight=True)
+    assert missing.blocks == ()
+
+
+def test_rows_missing_from_the_other_complete_result_are_marked() -> None:
+    page = build_page(
+        make_run(
+            replace(
+                WRONG,
+                pred=ResultSample(
+                    columns=("name",), rows=(("Surtur",), ("Ymir",)), row_count=2
+                ),
+            )
+        ),
+        run_name="r.json",
+    )
+
+    (case,) = page.cases
+    assert [row.differs for row in case.gold_result.rows] == [False]
+    assert [row.differs for row in case.pred_result.rows] == [False, True]
 
 
 def test_result_tables_note_samples_failures_and_special_values() -> None:

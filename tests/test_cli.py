@@ -250,6 +250,16 @@ def test_report_without_an_output_is_a_usage_error() -> None:
     assert "nothing to write" in result.stderr
 
 
+def test_report_to_an_unwritable_path_is_an_environment_error(tmp_path: Path) -> None:
+    taken = tmp_path / "already-a-directory"
+    taken.mkdir()
+
+    result = run_cli("report", EVIDENCE, "--html", taken)
+
+    assert result.returncode == 3
+    assert "error:" in result.stderr
+
+
 def test_report_of_a_file_that_is_not_a_run_is_an_input_error(tmp_path: Path) -> None:
     result = run_cli("report", DEV, "--csv", tmp_path / "out.csv")
 

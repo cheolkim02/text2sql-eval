@@ -38,6 +38,9 @@ def write_csv(run: Run, path: Path) -> None:
     Written as UTF-8 with a byte order mark so Excel shows Korean text and
     other non-ASCII characters correctly. Multiple differences or flags are
     joined with ``;``. ``prediction`` is ``given``, ``empty`` or ``missing``.
+
+    Example:
+        >>> write_csv(read_run(Path("runs/v3.json")), Path("runs/v3.csv"))
     """
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8-sig", newline="") as file:
