@@ -8,7 +8,7 @@
 | [0002](0002-project-name.md) | 프로젝트 이름 `text2sql-eval` | D1 | 2026-11-03 | 채택 |
 | [0003](0003-language-python.md) | 구현 언어 Python | D2 | 2026-11-04 | 채택 |
 | [0004](0004-prediction-file-input.md) | 예측 파일 입력, LLM 호출 없음 | D3 | 2026-11-04 | 채택 |
-| [0005](0005-feature-priorities.md) | 대표: 결정적 사실 추출, 부대표: 실행 비교 | D4 | 2026-11-04 | 채택 |
+| [0005](0005-feature-priorities.md) | 대표: 결정적 사실 추출, 부대표: 실행 비교 | D4 | 2026-11-04 | 일부 대체됨(0042) |
 | [0006](0006-demo-dataset-bird-subset.md) | 시연 데이터 BIRD dev 3개 DB, 432문제 | D5 | 2026-11-04 | 채택 |
 | [0007](0007-report-outputs-html-csv.md) | 결과 화면 HTML 리포트 + CSV | D6 | 2026-11-04 | 채택 |
 | [0008](0008-out-of-scope-and-roadmap.md) | 범위에서 뺄 것과 로드맵 | D7 | 2026-11-04 | 채택 |
@@ -44,3 +44,6 @@
 | [0038](0038-jinja2-html-report.md) | HTML 리포트는 Jinja2 템플릿 (자동 이스케이프) | D21 | 2026-11-11 | 채택 |
 | [0039](0039-html-report-scope.md) | HTML 리포트 범위: 기본 화면 + 다른 절·행 강조 | D37 | 2026-11-11 | 채택 |
 | [0040](0040-csv-formula-escaping.md) | CSV 셀이 수식 문자로 시작하면 앞에 `'` | D38 | 2026-11-11 | 채택 |
+| [0041](0041-markdown-docs.md) | 문서는 Markdown으로만, `api.md`는 테스트로 코드와 맞춤 | D23 | 2026-11-12 | 채택 |
+| [0042](0042-category-mapping-roadmap.md) | 사용자 카테고리 매핑 파일은 로드맵 | D20 | 2026-11-12 | 채택 |
+| [0043](0043-public-api-scope.md) | 공개 API: CLI 흐름의 함수와 결과 타입 | D39 | 2026-11-12 | 채택 |

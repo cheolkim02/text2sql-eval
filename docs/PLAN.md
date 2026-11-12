@@ -36,7 +36,7 @@ Nov 3, 2026 작성 · Nov 4, 2026 전면 개정 · @철
 - [ ] 깨끗한 환경에서 설치·린트·타입 검사·테스트가 성공하고, GitHub Actions CI가 녹색
 - [ ] `examples/bird-mini`에서 baseline 예측 2개(같은 모델, 설정 2종)로 `text2sql-eval eval`이 실행 파일을 만든다
 - [ ] 공식 호환 모드의 EX가 같은 예측에 대한 BIRD 공식 평가 스크립트의 EX와 일치한다(확인 결과를 문서에 기록)
-- [ ] 모든 오답 케이스에 "무엇이 다른가" 사실 목록과 근거가 붙는다. 사용자 카테고리 매핑 파일이 동작한다
+- [ ] 모든 오답 케이스에 "무엇이 다른가" 사실 목록과 근거가 붙는다. 사용자 분류는 CSV의 `my_category` 열로 이어 간다 (매핑 파일은 로드맵, ADR 0042)
 - [ ] 판정 신뢰도 플래그 6개(ADR 0034)가 근거와 함께 표시된다
 - [ ] `report`가 오프라인에서 열리는 HTML 한 파일과 엑셀에서 한글이 깨지지 않는 CSV를 만든다
 - [ ] `compare`가 분할표, 뒤집힌 케이스, 차이 분포 변화를 내고, 설정한 기준보다 나빠지면 종료 코드 1을 낸다
@@ -128,7 +128,7 @@ SQLite 실행만 지원하고(BIRD·Spider의 DB가 SQLite), 위 핵심 기능�
 - 예측 파일 로더: 한 줄 한 SQL 텍스트와 자체 JSONL(ADR 0018), 개수·누락·중복 `id` 검사
 - 실행기: 읽기 전용 연결, 시간 제한, 병렬 실행
 - EX 판정: BIRD 공식과 똑같은 집합 비교(ADR 0022), 빈 예측·동점 대체 정답은 플래그(ADR 0023, 0024)
-- 사실 추출 ①, 카테고리 매핑, 신뢰도 플래그 ②
+- 사실 추출 ①, 신뢰도 플래그 ② (카테고리 매핑 파일은 로드맵, ADR 0042)
 - 실행 파일(JSON): 스키마 버전, 도구 버전, 데이터셋 해시, 판정 모드, 사용자 메타데이터, 케이스별 결과
 - 비교 ③, HTML 리포트·CSV ④
 - CLI: `eval`, `report`, `compare`
@@ -157,6 +157,7 @@ SQLite 실행만 지원하고(BIRD·Spider의 DB가 SQLite), 위 핵심 기능�
 - **beta: 결과 파일을 LLM이 읽고 분석을 제안하는 기능** (사실 추출은 결정적으로 유지하고, LLM은 그 위에서 요약만)
 - 합성 MES 예제 데이터셋
 - Weights & Biases 등 실험 추적 도구 연동
+- 사용자 카테고리 매핑 파일 `--categories` (ADR 0042)
 
 **이번에 하지 않음**
 
@@ -230,7 +231,7 @@ CLI는 라이브러리를 얇게 감싼 것이다. 모든 로직은 라이브러
 2. 정답 SQL과 예측 SQL을 읽기 전용 연결에서 시간 제한을 두고 실행한다.
 3. 결과를 판정 모드에 따라 비교해 `correct` / `incorrect` / `error`를 정한다.
 4. 오답·오류 케이스에서 사실을 추출하고, 모든 케이스에 신뢰도 플래그 규칙을 적용한다.
-5. 카테고리 매핑 파일이 있으면 사실에 사용자 카테고리를 붙인다.
+5. (로드맵, ADR 0042) 카테고리 매핑 파일이 있으면 사실에 사용자 카테고리를 붙인다.
 6. 실행 파일(JSON)로 저장한다. `report`가 읽고, `compare`가 두 실행 파일을 비교한다.
 
 ### CLI 명령어 (초안)
@@ -241,7 +242,7 @@ text2sql-eval eval                       예측 파일을 판정하고 실행 �
   --db-dir <dir>                    <db_id>/<db_id>.sqlite 구조
   --pred <predictions.jsonl>
   --out <run.json>
-  --categories <map.toml>           사실 → 내 카테고리 매핑 (D20)
+  --categories <map.toml>           사실 → 내 카테고리 매핑 (로드맵, ADR 0042)
   --timeout <sec> --workers <n>
   --meta key=value ... | --meta-file <path>
   --json                            요약을 stdout에 JSON으로
@@ -354,7 +355,7 @@ text2sql-eval/
 │  ├─ execution/              읽기 전용 실행, 시간 제한, 병렬 실행
 │  ├─ judge/                  EX 판정(모드별), 신뢰도 플래그
 │  ├─ facts/                  SQL 파싱·정규화, 구조 비교, 사실 생성 (대표 기능)
-│  ├─ categories/             사실 → 사용자 카테고리 매핑
+│  ├─ categories/             사실 → 사용자 카테고리 매핑 (로드맵, ADR 0042)
 │  ├─ compare/                실행 비교
 │  ├─ report/                 HTML(단일 파일), CSV, 터미널 요약
 │  ├─ runfile.py              실행 파일 스키마와 버전
@@ -369,7 +370,7 @@ text2sql-eval/
 ├─ examples/
 │  ├─ bird-mini/              data(문제 JSON, sqlite 3개), LICENSE(CC BY-SA 4.0), SOURCE.md, download_full_dev.py
 │  ├─ baseline/               OpenAI 단일 프롬프트 baseline, README
-│  ├─ categories.example.toml 카테고리 매핑 예시
+│  ├─ categories.example.toml 카테고리 매핑 예시 (로드맵, ADR 0042)
 │  └─ results/                예측 파일 2개, 실행 파일, report.html (공개 실측)
 ├─ docs/
 │  ├─ PLAN.md                 이 문서
@@ -380,7 +381,7 @@ text2sql-eval/
 │  ├─ guides/                 (ADR 0012로 6개에서 4개로 줄임)
 │  │  ├─ getting-started.md   3분 시작
 │  │  ├─ prediction-format.md 내 파이프라인 결과를 예측 파일로 만들기
-│  │  ├─ reading-results.md   사실·근거·정규화 규칙, 신뢰도 플래그, 내 카테고리 매핑
+│  │  ├─ reading-results.md   사실·근거·정규화 규칙, 신뢰도 플래그, CSV로 손 분류하기
 │  │  └─ comparing-runs.md    비교 결과 읽는 법
 │  └─ reference/
 │     ├─ cli.md
@@ -421,10 +422,10 @@ text2sql-eval/
 | D17 | 시간 제한 구현 | `sqlite3` 진행 콜백 / 별도 프로세스 | **결정됨: 진행 콜백 + 스레드 병렬 (ADR 0020)** | 11/8 |
 | D18 | 사실 목록과 정규화 규칙 | 실제 오답 케이스를 보며 정함 | **결정됨: 다중 라벨 출력 차이 6개 + SQL 구조 차이 5종 (ADR 0031, 0033)** | 11/9 |
 | D19 | 신뢰도 플래그 목록 | 빈 결과, 값 하나, 컬럼 상위집합, 형식 차이 등 | **결정됨: 6개 (거짓 정답 의심 2, 거짓 오답 의심 3, 정보 1) (ADR 0034)** | 11/9 |
-| D20 | 카테고리 매핑 파일 형식 | TOML / YAML / JSON | TOML (표준 라이브러리로 읽음) | 11/8 |
+| D20 | 카테고리 매핑 파일 형식 | TOML / YAML / JSON | **결정됨: 로드맵으로 미룸, 손 분류는 CSV `my_category` (ADR 0042)** | 11/8 |
 | D21 | HTML 리포트 구현 | Jinja2 / 표준 라이브러리 템플릿, CSS·JS 인라인 | **결정됨: Jinja2, 자동 이스케이프 (ADR 0038)** | 11/11 |
 | D22 | 통계 검정 | McNemar 정확 검정 직접 구현 / scipy | **결정됨: 넣지 않음 (ADR 0035, Claude 추천 기각)** | 11/10 |
-| D23 | 문서 도구 | Markdown만 / MkDocs + API 자동 생성 | Markdown 먼저, 시간이 남으면 자동 생성 | 11/13 |
+| D23 | 문서 도구 | Markdown만 / MkDocs + API 자동 생성 | **결정됨: Markdown만, `api.md`는 테스트로 코드와 맞춤 (ADR 0041)** | 11/13 |
 | D24 | baseline 구성 | 모델, evidence 있음/없음 vs 프롬프트 2종 | **결정됨: 같은 모델 × evidence 있음/없음 (ADR 0028)** | 11/9 |
 | D25 | 문서 언어 | 한국어 / 영어 / 한국어 + 영어 요약 | **결정됨: README 한국어 + 영어 요약, 코드·커밋·docstring 영어 (ADR 0016)** | 11/7 |
 | D26 | 커밋 규칙과 AI 표시 | Conventional Commits 여부, `Co-Authored-By` 여부 | **결정됨: 둘 다 사용 (ADR 0017)** | 11/7 |
@@ -440,7 +441,7 @@ text2sql-eval/
 | D36 | 데이터셋이 다른 두 실행 비교 | 경고 + 공통 케이스 / 오류 | **결정됨: 경고 + 공통 케이스 (ADR 0037)** | 11/11 |
 | D37 | HTML 리포트 범위 | 기본 / 기본 + 강조 / 기본 + `compare` HTML | **결정됨: 기본 + 다른 절·행 강조 (ADR 0039, Claude 추천 기각)** | 11/11 |
 | D38 | CSV 수식 주입 대응 | 그대로 두고 문서에 경고 / 위험한 첫 글자 앞에 `'` / 위험한 첫 글자 앞에 탭 | **결정됨: 위험한 첫 글자 앞에 `'` (ADR 0040)** | 11/11 |
-| D39 | 공개 API 범위 (`__init__.py`에서 내보낼 것) | CLI 흐름의 함수와 결과 타입 / CLI와 실행 파일 형식만 / 모듈 전부 | CLI 흐름의 함수와 결과 타입 | 11/12 |
+| D39 | 공개 API 범위 (`__init__.py`에서 내보낼 것) | CLI 흐름의 함수와 결과 타입 / CLI와 실행 파일 형식만 / 모듈 전부 | **결정됨: CLI 흐름의 함수와 결과 타입 (ADR 0043)** | 11/12 |
 
 라이선스는 코드 MIT, 예제 데이터 CC BY-SA 4.0으로 정하고 0001번 ADR에 함께 적는다. 이 목록에 없는 결정이 나오면 Claude가 D40부터 새 번호를 붙여 물어본다.
 
