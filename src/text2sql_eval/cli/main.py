@@ -12,38 +12,26 @@ import os
 import sys
 from collections import Counter
 from collections.abc import Sequence
-from datetime import UTC, datetime
 from pathlib import Path
 from typing import Literal, TextIO
 
 from text2sql_eval import __version__
-from text2sql_eval.compare.runs import Comparison, compare_runs, write_csv
-from text2sql_eval.datasets.bird import load_bird, load_bird_tied
-from text2sql_eval.datasets.predictions import (
-    load_jsonl_predictions,
-    load_text_predictions,
+from text2sql_eval.compare.runs import (
+    Comparison,
+    compare_runs,
+    write_comparison_csv,
 )
 from text2sql_eval.errors import InputError
-from text2sql_eval.evaluate import evaluate
+from text2sql_eval.evaluate import evaluate_files
 from text2sql_eval.execution.executor import DEFAULT_TIMEOUT_SECONDS
 from text2sql_eval.report import csv_report, html_report
-from text2sql_eval.runfile import (
-    FileRef,
-    PredictionFormat,
-    Run,
-    RunSettings,
-    read_run,
-    sha256_of,
-    write_run,
-)
+from text2sql_eval.runfile import PredictionFormat, Run, read_run, write_run
 
 EXIT_OK = 0
 EXIT_FAILED_CHECK = 1
 EXIT_USAGE = 2
 EXIT_ENVIRONMENT = 3
 EXIT_INTERRUPTED = 130
-
-_FORMAT_BY_SUFFIX: dict[str, PredictionFormat] = {".txt": "text", ".jsonl": "jsonl"}
 
 _EVAL_EXAMPLES = """\
 examples:
@@ -216,56 +204,19 @@ def _build_parser() -> argparse.ArgumentParser:
 
 
 def _run_eval(args: argparse.Namespace, out: TextIO) -> int:
-    dataset_path: Path = args.dataset
-    pred_path: Path = args.pred
-    tied_path: Path | None = args.tied
-    db_dir: Path = args.db_dir
     out_path: Path = args.out
-    pred_format = _prediction_format(pred_path, args.pred_format)
-    if args.allow_missing and pred_format != "jsonl":
-        raise InputError(
-            pred_path,
-            "--allow-missing only applies to JSONL predictions",
-            hint="text predictions need one line per case; leave a line empty instead",
-        )
-
-    dataset = load_bird(dataset_path)
-    if pred_format == "text":
-        predictions = load_text_predictions(pred_path, dataset)
-    else:
-        predictions = load_jsonl_predictions(
-            pred_path, dataset, allow_missing=args.allow_missing
-        )
-    tied = None if tied_path is None else load_bird_tied(tied_path, dataset)
-
-    records = evaluate(
-        dataset,
-        predictions,
-        db_dir=db_dir,
-        tied=tied,
+    pred_format: PredictionFormat | None = args.pred_format
+    run = evaluate_files(
+        args.dataset,
+        args.pred,
+        db_dir=args.db_dir,
+        prediction_format=pred_format,
+        allow_missing=args.allow_missing,
+        tied=args.tied,
         timeout=args.timeout,
         max_rows=args.max_rows,
         workers=args.workers,
-    )
-    run = Run(
-        tool_version=__version__,
-        created_at=datetime.now(UTC)
-        .isoformat(timespec="seconds")
-        .replace("+00:00", "Z"),
-        dataset=FileRef(str(dataset_path), sha256_of(dataset_path)),
-        predictions=FileRef(str(pred_path), sha256_of(pred_path)),
-        prediction_format=pred_format,
-        tied=None
-        if tied_path is None
-        else FileRef(str(tied_path), sha256_of(tied_path)),
-        db_dir=str(db_dir),
-        settings=RunSettings(
-            timeout_seconds=args.timeout,
-            max_rows=args.max_rows,
-            allow_missing=args.allow_missing,
-        ),
         meta=dict(args.meta),
-        cases=records,
     )
     write_run(run, out_path)
     _print_summary(run, out_path, out, as_json=args.json)
@@ -278,9 +229,9 @@ def _run_report(args: argparse.Namespace, out: TextIO) -> int:
     csv_path: Path | None = args.csv
     run = read_run(run_path)
     if html_path is not None:
-        html_report.write_html(run, html_path, run_name=run_path.name)
+        html_report.write_html_report(run, html_path, run_name=run_path.name)
     if csv_path is not None:
-        csv_report.write_csv(run, csv_path)
+        csv_report.write_report_csv(run, csv_path)
     summary = run.summary
     print(f"Report of {run_path}: {summary.total} cases, EX {summary.ex:.1%}", file=out)
     if html_path is not None:
@@ -302,7 +253,7 @@ def _run_compare(args: argparse.Namespace, out: TextIO) -> int:
         )
     csv_path: Path | None = args.csv
     if csv_path is not None:
-        write_csv(comparison, csv_path)
+        write_comparison_csv(comparison, csv_path)
 
     max_drop: float | None = args.max_drop
     failed = max_drop is not None and comparison.delta_pp < -max_drop
@@ -413,19 +364,6 @@ def _print_comparison_json(
 def _silence_stdout() -> None:
     """Point stdout at devnull so the interpreter's final flush does not raise."""
     os.dup2(os.open(os.devnull, os.O_WRONLY), sys.stdout.fileno())
-
-
-def _prediction_format(path: Path, override: str | None) -> PredictionFormat:
-    if override == "text" or override == "jsonl":
-        return override
-    detected = _FORMAT_BY_SUFFIX.get(path.suffix.lower())
-    if detected is None:
-        raise InputError(
-            path,
-            f"cannot tell the prediction format from the extension '{path.suffix}'",
-            hint="use a .txt or .jsonl file, or pass --pred-format text|jsonl",
-        )
-    return detected
 
 
 def _print_summary(run: Run, out_path: Path, out: TextIO, *, as_json: bool) -> None:

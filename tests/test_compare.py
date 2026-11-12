@@ -2,7 +2,7 @@ import csv
 from dataclasses import replace
 from pathlib import Path
 
-from text2sql_eval.compare.runs import CSV_COLUMNS, compare_runs, write_csv
+from text2sql_eval.compare.runs import CSV_COLUMNS, compare_runs, write_comparison_csv
 from text2sql_eval.execution.executor import QueryFailure
 from text2sql_eval.facts import CaseDiff
 from text2sql_eval.facts.output import OutputDiff
@@ -159,7 +159,7 @@ def test_csv_has_one_row_per_common_case_and_a_bom(tmp_path: Path) -> None:
     )
     path = tmp_path / "out" / "flips.csv"
 
-    write_csv(comparison, path)
+    write_comparison_csv(comparison, path)
 
     assert path.read_bytes().startswith(b"\xef\xbb\xbf")  # Excel reads it as UTF-8
     with path.open(encoding="utf-8-sig", newline="") as file:
@@ -178,7 +178,7 @@ def test_csv_cells_that_start_like_a_formula_are_written_as_text(
     hostile = case("1", False, pred_sql="@SUM(A1:A9)", question="+82 phone?")
     path = tmp_path / "flips.csv"
 
-    write_csv(compare_runs(run(hostile), run(hostile)), path)
+    write_comparison_csv(compare_runs(run(hostile), run(hostile)), path)
 
     with path.open(encoding="utf-8-sig", newline="") as file:
         (row,) = list(csv.DictReader(file))

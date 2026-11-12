@@ -14,7 +14,7 @@ from text2sql_eval.report.html_report import (
     render_html,
     sql_views,
     table_view,
-    write_html,
+    write_html_report,
 )
 from text2sql_eval.runfile import (
     CaseRecord,
@@ -296,7 +296,7 @@ def test_summary_groups_and_counts() -> None:
 def test_write_html_creates_parent_folders(tmp_path: Path) -> None:
     path = tmp_path / "out" / "report.html"
 
-    write_html(make_run(CORRECT), path, run_name="r.json")
+    write_html_report(make_run(CORRECT), path, run_name="r.json")
 
     assert "<title>text2sql-eval report: r.json</title>" in path.read_text(
         encoding="utf-8"
