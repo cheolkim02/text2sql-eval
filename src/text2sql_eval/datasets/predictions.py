@@ -56,7 +56,8 @@ def load_text_predictions(path: Path, dataset: Dataset) -> dict[str, Prediction]
     if len(lines) != expected:
         raise InputError(
             path,
-            f"has {len(lines)} lines but the dataset {dataset.path} has {expected} cases",
+            f"has {_count(len(lines), 'line')} but the dataset {dataset.path} "
+            f"has {_count(expected, 'case')}",
             hint=(
                 "write exactly one line per case, in dataset order; "
                 "keep an empty line where the model produced no SQL"
@@ -126,7 +127,8 @@ def load_jsonl_predictions(
         raise InputError(
             path,
             f"{len(missing)} of {len(dataset.cases)} cases have no prediction: {listing}",
-            hint="add a line for each case, or allow missing predictions",
+            hint="add a line for each case, or allow missing predictions "
+            "(--allow-missing, or allow_missing=True in Python)",
         )
     return predictions
 
@@ -178,3 +180,8 @@ def _parse_prediction_line(line: str, path: Path, location: str) -> Prediction:
             location=location,
         )
     return Prediction(case_id=str(raw_id), sql=sql.strip(), meta=meta)
+
+
+def _count(number: int, noun: str) -> str:
+    """``1 line``, ``2 lines``: messages read naturally for any count."""
+    return f"{number} {noun}" if number == 1 else f"{number} {noun}s"

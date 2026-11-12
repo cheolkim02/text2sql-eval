@@ -15,7 +15,13 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Literal, TypeVar, get_args
 
-from text2sql_eval.datasets._json import as_array, as_object, parse_json, read_utf8
+from text2sql_eval.datasets._json import (
+    as_array,
+    as_object,
+    json_type_name,
+    parse_json,
+    read_utf8,
+)
 from text2sql_eval.errors import InputError
 from text2sql_eval.execution.executor import QueryFailure, Rows, SqlValue
 from text2sql_eval.facts import CaseDiff
@@ -287,13 +293,28 @@ def read_run(path: Path) -> Run:
         (267, 432)
     """
     reader = _Reader(path)
-    root = reader.obj(parse_json(read_utf8(path), path), "the file")
+    document = parse_json(read_utf8(path), path)
+    root = as_object(document)
+    if root is None or root.get("schema_version") is None:
+        found = (
+            "it has no schema_version"
+            if root is not None
+            else f"it is a JSON {json_type_name(document)}"
+        )
+        raise InputError(
+            path,
+            f"not a run file: {found}",
+            hint="pass the file that `text2sql-eval eval --out` wrote",
+        )
     version = root.get("schema_version")
     if version != SCHEMA_VERSION:
+        newer = isinstance(version, int) and version > SCHEMA_VERSION
         raise InputError(
             path,
             f"schema_version is {version!r}, but this tool reads {SCHEMA_VERSION}",
-            hint="re-run eval with this version of text2sql-eval",
+            hint="upgrade text2sql-eval to read it"
+            if newer
+            else "re-run eval with this version of text2sql-eval",
         )
     tool = reader.obj(root.get("tool"), "tool")
     inputs = reader.obj(root.get("inputs"), "inputs")
