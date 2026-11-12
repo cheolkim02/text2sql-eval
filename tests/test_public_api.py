@@ -25,6 +25,8 @@ AGREED = {
     "QueryFailure",
     "SqlValue",
     "PredictionState",
+    "PredictionFormat",
+    "QuerySummary",
     "Verdict",
     "Correct",
     "Incorrect",
