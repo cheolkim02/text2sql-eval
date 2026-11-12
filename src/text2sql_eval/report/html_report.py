@@ -240,14 +240,14 @@ class Page:
 # --- rendering ----------------------------------------------------------------
 
 
-def write_html(run: Run, path: Path, *, run_name: str) -> None:
+def write_html_report(run: Run, path: Path, *, run_name: str) -> None:
     """Write the report of ``run`` to ``path`` as one UTF-8 HTML file.
 
     ``run_name`` names the run in the page title, usually the run file name.
 
     Example:
         >>> run_path = Path("runs/v3.json")
-        >>> write_html(read_run(run_path), Path("runs/v3.html"), run_name=run_path.name)
+        >>> write_html_report(read_run(run_path), Path("runs/v3.html"), run_name=run_path.name)
     """
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(render_html(run, run_name=run_name), encoding="utf-8")

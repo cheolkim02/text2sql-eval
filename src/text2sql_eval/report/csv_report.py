@@ -33,7 +33,7 @@ CSV_COLUMNS = (
 )
 
 
-def write_csv(run: Run, path: Path) -> None:
+def write_report_csv(run: Run, path: Path) -> None:
     """Write every case of ``run`` as one CSV row, in the run's order.
 
     Written as UTF-8 with a byte order mark so Excel shows Korean text and
@@ -43,7 +43,7 @@ def write_csv(run: Run, path: Path) -> None:
     so Excel shows it as text (ADR 0040).
 
     Example:
-        >>> write_csv(read_run(Path("runs/v3.json")), Path("runs/v3.csv"))
+        >>> write_report_csv(read_run(Path("runs/v3.json")), Path("runs/v3.csv"))
     """
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8-sig", newline="") as file:

@@ -170,7 +170,7 @@ CSV_COLUMNS = (
 )
 
 
-def write_csv(comparison: Comparison, path: Path) -> None:
+def write_comparison_csv(comparison: Comparison, path: Path) -> None:
     """One row per common case, for spreadsheet analysis.
 
     Written as UTF-8 with a byte order mark so Excel shows Korean text and

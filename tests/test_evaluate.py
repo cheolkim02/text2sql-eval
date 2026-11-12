@@ -1,16 +1,25 @@
+import json
+import re
 import sqlite3
 from collections import Counter
 from pathlib import Path
 
 import pytest
 
+import text2sql_eval
 from text2sql_eval.datasets.bird import Case, Dataset, load_bird, load_bird_tied
 from text2sql_eval.datasets.predictions import Prediction
 from text2sql_eval.errors import InputError
-from text2sql_eval.evaluate import evaluate
+from text2sql_eval.evaluate import evaluate, evaluate_files
 from text2sql_eval.execution.executor import QueryFailure
 from text2sql_eval.judge.ex import Correct, ExecError, Incorrect, status_of
-from text2sql_eval.runfile import SAMPLE_ROWS, ResultSample
+from text2sql_eval.runfile import (
+    SAMPLE_ROWS,
+    FileRef,
+    ResultSample,
+    RunSettings,
+    sha256_of,
+)
 
 BIRD_MINI = Path(__file__).resolve().parents[1] / "examples/bird-mini"
 
@@ -147,3 +156,101 @@ def test_gold_as_predictions_scores_100_percent_on_bird_mini() -> None:
     assert Counter(status_of(r.verdict) for r in records) == {"correct": 432}
     flagged = [r.id for r in records if r.verdict.flags]
     assert sorted(flagged) == sorted(tied)  # only the "tied alternative exists" note
+
+
+# --- evaluate_files ----------------------------------------------------------
+
+
+@pytest.fixture
+def toy_dataset(tmp_path: Path) -> Path:
+    path = tmp_path / "dev.json"
+    rows = [
+        {
+            "question_id": 1,
+            "db_id": "toy",
+            "question": "How many?",
+            "evidence": "",
+            "SQL": "SELECT COUNT(*) FROM t",
+            "difficulty": "simple",
+        },
+        {
+            "question_id": 2,
+            "db_id": "toy",
+            "question": "Largest?",
+            "evidence": "",
+            "SQL": "SELECT MAX(x) FROM t",
+            "difficulty": "moderate",
+        },
+    ]
+    path.write_text(json.dumps(rows), encoding="utf-8")
+    return path
+
+
+def test_evaluate_files_records_inputs_settings_and_meta(
+    tmp_path: Path, db_dir: Path, toy_dataset: Path
+) -> None:
+    pred = tmp_path / "p.txt"
+    pred.write_text("SELECT COUNT(*) FROM t\nSELECT MIN(x) FROM t\n", encoding="utf-8")
+
+    run = evaluate_files(
+        toy_dataset, pred, db_dir=db_dir, timeout=5.0, meta={"model": "m"}
+    )
+
+    assert [status_of(case.verdict) for case in run.cases] == ["correct", "incorrect"]
+    assert run.prediction_format == "text"
+    assert run.dataset == FileRef(str(toy_dataset), sha256_of(toy_dataset))
+    assert run.predictions == FileRef(str(pred), sha256_of(pred))
+    assert run.tied is None
+    assert run.db_dir == str(db_dir)
+    assert run.settings == RunSettings(
+        timeout_seconds=5.0, max_rows=None, allow_missing=False
+    )
+    assert run.meta == {"model": "m"}
+    assert run.tool_version == text2sql_eval.__version__
+    assert re.fullmatch(r"\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ", run.created_at)
+
+
+def test_evaluate_files_reads_jsonl_and_can_allow_missing_cases(
+    tmp_path: Path, db_dir: Path, toy_dataset: Path
+) -> None:
+    pred = tmp_path / "p.jsonl"
+    pred.write_text('{"id": 1, "sql": "SELECT COUNT(*) FROM t"}\n', encoding="utf-8")
+
+    run = evaluate_files(toy_dataset, pred, db_dir=db_dir, allow_missing=True)
+
+    assert run.prediction_format == "jsonl"
+    assert [case.prediction_state for case in run.cases] == ["given", "missing"]
+    assert run.settings.allow_missing
+
+
+def test_prediction_format_overrides_the_extension(
+    tmp_path: Path, db_dir: Path, toy_dataset: Path
+) -> None:
+    pred = tmp_path / "p.sql"
+    pred.write_text("SELECT 1\nSELECT 2\n", encoding="utf-8")
+
+    run = evaluate_files(toy_dataset, pred, db_dir=db_dir, prediction_format="text")
+
+    assert run.prediction_format == "text"
+
+
+@pytest.mark.parametrize(
+    ("name", "allow_missing", "problem"),
+    [
+        ("p.csv", False, "cannot tell the prediction format from the extension"),
+        ("p.txt", True, "--allow-missing only applies to JSONL predictions"),
+    ],
+)
+def test_evaluate_files_rejects_unusable_prediction_options(
+    tmp_path: Path,
+    db_dir: Path,
+    toy_dataset: Path,
+    name: str,
+    allow_missing: bool,
+    problem: str,
+) -> None:
+    pred = tmp_path / name
+    pred.write_text("SELECT 1\nSELECT 2\n", encoding="utf-8")
+
+    with pytest.raises(InputError, match=problem):
+        evaluate_files(toy_dataset, pred, db_dir=db_dir, allow_missing=allow_missing)

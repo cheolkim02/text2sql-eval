@@ -7,7 +7,7 @@ from text2sql_eval.facts import CaseDiff
 from text2sql_eval.facts.output import OutputDiff
 from text2sql_eval.facts.structure import Fact, StructureReport
 from text2sql_eval.judge.ex import Correct, ExecError, Flag, Incorrect
-from text2sql_eval.report.csv_report import CSV_COLUMNS, write_csv
+from text2sql_eval.report.csv_report import CSV_COLUMNS, write_report_csv
 from text2sql_eval.runfile import CaseRecord, FileRef, ResultSample, Run, RunSettings
 
 SAMPLE = ResultSample(columns=("name",), rows=(("Surtur",),), row_count=1)
@@ -83,7 +83,7 @@ def read_rows(path: Path) -> list[dict[str, str]]:
 def test_one_row_per_case_in_run_order_with_a_bom(tmp_path: Path) -> None:
     path = tmp_path / "nested" / "report.csv"
 
-    write_csv(make_run(CORRECT, WRONG, FAILED), path)
+    write_report_csv(make_run(CORRECT, WRONG, FAILED), path)
 
     assert path.read_bytes().startswith(b"\xef\xbb\xbf")  # Excel reads it as UTF-8
     rows = read_rows(path)
@@ -98,7 +98,7 @@ def test_one_row_per_case_in_run_order_with_a_bom(tmp_path: Path) -> None:
 def test_wrong_case_lists_differences_and_flags(tmp_path: Path) -> None:
     path = tmp_path / "report.csv"
 
-    write_csv(make_run(WRONG), path)
+    write_report_csv(make_run(WRONG), path)
 
     (row,) = read_rows(path)
     assert row["output_differences"] == "column_mismatch;row_set_differs"
@@ -111,7 +111,7 @@ def test_wrong_case_lists_differences_and_flags(tmp_path: Path) -> None:
 def test_correct_case_has_empty_analysis_columns(tmp_path: Path) -> None:
     path = tmp_path / "report.csv"
 
-    write_csv(make_run(CORRECT), path)
+    write_report_csv(make_run(CORRECT), path)
 
     (row,) = read_rows(path)
     assert row["output_differences"] == row["sql_structure_differences"] == ""
@@ -124,7 +124,7 @@ def test_correct_case_has_empty_analysis_columns(tmp_path: Path) -> None:
 def test_failed_case_shows_the_error_and_prediction_state(tmp_path: Path) -> None:
     path = tmp_path / "report.csv"
 
-    write_csv(make_run(FAILED), path)
+    write_report_csv(make_run(FAILED), path)
 
     (row,) = read_rows(path)
     assert row["error"] == "pred timeout: did not finish within 30 s"
@@ -141,7 +141,7 @@ def test_cells_that_start_like_a_formula_are_written_as_text(tmp_path: Path) -> 
         question="What is 1 = 1?",
     )
 
-    write_csv(make_run(hostile), path)
+    write_report_csv(make_run(hostile), path)
 
     (row,) = read_rows(path)
     assert row["pred_sql"] == '\'=HYPERLINK("http://example.com","click")'
