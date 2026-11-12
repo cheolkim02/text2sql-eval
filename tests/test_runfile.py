@@ -137,15 +137,46 @@ def test_ex_of_an_empty_run_is_zero() -> None:
     assert _run().summary.ex == 0.0
 
 
-def test_rejects_another_schema_version(tmp_path: Path) -> None:
+@pytest.mark.parametrize(
+    ("version", "hint"),
+    [(99, "upgrade text2sql-eval"), (2, "re-run eval with this version")],
+)
+def test_rejects_another_schema_version(
+    tmp_path: Path, version: int, hint: str
+) -> None:
     path = tmp_path / "run.json"
     write_run(RUN, path)
     document = json.loads(path.read_text(encoding="utf-8"))
-    document["schema_version"] = 99
+    document["schema_version"] = version
     path.write_text(json.dumps(document), encoding="utf-8")
 
-    with pytest.raises(InputError, match="schema_version is 99, but this tool reads 3"):
+    with pytest.raises(InputError) as excinfo:
         read_run(path)
+
+    message = str(excinfo.value)
+    assert f"schema_version is {version}, but this tool reads 3" in message
+    assert hint in message
+
+
+@pytest.mark.parametrize(
+    ("content", "found"),
+    [
+        ('{"model": "x"}', "it has no schema_version"),
+        ('[{"question_id": 1}]', "it is a JSON array"),
+    ],
+)
+def test_other_json_files_are_reported_as_not_a_run_file(
+    tmp_path: Path, content: str, found: str
+) -> None:
+    path = tmp_path / "other.json"
+    path.write_text(content, encoding="utf-8")
+
+    with pytest.raises(InputError) as excinfo:
+        read_run(path)
+
+    message = str(excinfo.value)
+    assert f"not a run file: {found}" in message
+    assert "text2sql-eval eval --out" in message
 
 
 @pytest.mark.parametrize(

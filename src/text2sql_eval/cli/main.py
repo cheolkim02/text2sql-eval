@@ -35,24 +35,40 @@ EXIT_INTERRUPTED = 130
 
 _EVAL_EXAMPLES = """\
 examples:
+  # With the example data in this repository:
+  text2sql-eval eval --dataset examples/bird-mini/dev.json \\
+      --db-dir examples/bird-mini/dev_databases \\
+      --pred examples/results/gpt-4o-mini-evidence.jsonl \\
+      --tied examples/bird-mini/dev_tied_append.json --out runs/evidence.json
+
+  # Your own predictions, one SQL per line in dataset order:
   text2sql-eval eval --dataset dev.json --db-dir dev_databases \\
       --pred predictions.txt --out runs/baseline.json
+
+  # JSONL predictions, recording facts about the run:
   text2sql-eval eval --dataset dev.json --db-dir dev_databases \\
-      --pred predictions.jsonl --tied dev_tied_append.json \\
-      --meta model=my-model --meta prompt=v3 --out runs/v3.json
+      --pred predictions.jsonl --meta model=my-model --meta prompt=v3 \\
+      --out runs/v3.json
 """
 
 
 _REPORT_EXAMPLES = """\
 examples:
+  # A committed run in this repository:
+  text2sql-eval report examples/results/gpt-4o-mini-evidence.run.json \\
+      --html runs/evidence.html --csv runs/evidence.csv
+
   text2sql-eval report runs/v3.json --html runs/v3.html
-  text2sql-eval report runs/v3.json --html runs/v3.html --csv runs/v3.csv
 """
 
 
 _COMPARE_EXAMPLES = """\
 examples:
-  text2sql-eval compare runs/prompt-v2.json runs/prompt-v3.json
+  # The two committed runs in this repository:
+  text2sql-eval compare examples/results/gpt-4o-mini-no-evidence.run.json \\
+      examples/results/gpt-4o-mini-evidence.run.json
+
+  # Fail (exit code 1) if EX drops by more than 1 percentage point:
   text2sql-eval compare runs/main.json runs/branch.json --max-drop 1.0 \\
       --csv runs/flips.csv
 """
@@ -401,7 +417,7 @@ def _print_summary(run: Run, out_path: Path, out: TextIO, *, as_json: bool) -> N
     print(
         f"Evaluated {summary.total} cases: EX {summary.ex:.1%} "
         f"({summary.correct} correct, {summary.incorrect} incorrect, "
-        f"{summary.error} errors)",
+        f"{summary.error} {'error' if summary.error == 1 else 'errors'})",
         file=out,
     )
     if states["missing"] or states["empty"]:

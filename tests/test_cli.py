@@ -2,6 +2,7 @@
 
 import csv
 import json
+import re
 import subprocess
 import sys
 from importlib.metadata import entry_points
@@ -215,6 +216,7 @@ def test_text_summary_explains_missing_predictions(
 
     assert result.returncode == 0, result.stderr
     assert "Predictions: 431 missing, 1 empty (judged as empty SQL)" in result.stdout
+    assert re.search(r"\(\d+ correct, \d+ incorrect, \d+ errors?\)", result.stdout)
 
 
 RESULTS = BIRD_MINI.parent / "results"

@@ -90,16 +90,22 @@ def test_text_accepts_windows_line_endings(tmp_path: Path) -> None:
 
 
 @pytest.mark.parametrize(
-    "text", ["SELECT 10\nSELECT 11\n", "a\nb\nc\nd\n", "a\nb\nc\n\n"]
+    ("text", "count"),
+    [
+        ("SELECT 10\n", "1 line"),
+        ("SELECT 10\nSELECT 11\n", "2 lines"),
+        ("a\nb\nc\nd\n", "4 lines"),
+        ("a\nb\nc\n\n", "4 lines"),
+    ],
 )
 def test_text_rejects_a_line_count_that_differs_from_the_dataset(
-    tmp_path: Path, text: str
+    tmp_path: Path, text: str, count: str
 ) -> None:
     with pytest.raises(InputError) as excinfo:
         load_text_predictions(_write(tmp_path, "p.txt", text), DATASET)
 
     message = str(excinfo.value)
-    assert "lines but the dataset dev.json has 3 cases" in message
+    assert f"has {count} but the dataset dev.json has 3 cases" in message
     assert "keep an empty line where the model produced no SQL" in message
 
 
