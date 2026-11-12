@@ -161,7 +161,12 @@ def judge_case(
 
 
 def status_of(verdict: Verdict) -> Literal["correct", "incorrect", "error"]:
-    """The verdict's status name, as written to run files and reports."""
+    """The verdict's status name, as written to run files and reports.
+
+    Example:
+        >>> status_of(Correct()), status_of(ExecError("pred", "timeout", "30 s"))
+        ('correct', 'error')
+    """
     match verdict:
         case Correct():
             return "correct"

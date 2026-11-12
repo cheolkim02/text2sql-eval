@@ -177,6 +177,10 @@ def write_comparison_csv(comparison: Comparison, path: Path) -> None:
     other non-ASCII characters correctly. Multiple differences are joined
     with ``;``. A cell that starts like a formula (``=``, ``-`` ...) gets a
     leading ``'`` so Excel shows it as text (ADR 0040).
+
+    Example:
+        >>> comparison = compare_runs(read_run(base_path), read_run(head_path))
+        >>> write_comparison_csv(comparison, Path("runs/flips.csv"))
     """
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8-sig", newline="") as file:

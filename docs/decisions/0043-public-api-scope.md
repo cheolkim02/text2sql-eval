@@ -23,6 +23,16 @@
 > "D39 추천대로"
 
 ## 결과
-- 정확한 이름 목록은 구현 계획에서 사용자 승인을 받은 뒤 이 ADR에 덧붙인다.
+- 공개 이름 36개 (구현 계획 승인, 2026-11-12):
+  - 함수 8개: `evaluate_files`, `read_run`, `write_run`, `compare_runs`, `write_html_report`, `write_report_csv`, `write_comparison_csv`, `status_of`
+  - 실행 파일: `Run`, `CaseRecord`, `Summary`, `FileRef`, `RunSettings`, `ResultSample`, `QueryFailure`, `SqlValue`, `PredictionState`
+  - 판정: `Verdict`, `Correct`, `Incorrect`, `ExecError`, `Flag`, `FlagKind`
+  - 차이: `CaseDiff`, `OutputDiff`, `OutputDifference`, `Relation`, `StructureReport`, `Fact`, `FactKind`
+  - 비교: `Comparison`, `CaseChange`, `Change`, `GroupEx`
+  - 기타: `InputError`, `__version__`
+- 공개 함수의 결과에 나오는 타입은 모두 내보낸다. 사용자가 내부 모듈을 import하지 않고 타입을 적고 `match`로 나눌 수 있게 하려는 것이다.
+- 데이터셋·예측 로더와 낮은 수준의 `evaluate`는 공개하지 않는다. CLI의 `eval`과 같은 일은 `evaluate_files`가 한다.
+- 이름 정리: `write_html` → `write_html_report`, 리포트 `write_csv` → `write_report_csv`, 비교 `write_csv` → `write_comparison_csv`
+- `tests/test_public_api.py`가 지키는 것: `__all__`이 위 목록과 같다, 함수에는 예시가 있다, 클래스에는 docstring이 있다, 시그니처와 필드에 `Any`가 없다.
 - 공개 API에는 `Any`를 쓰지 않는다(AGENTS.md 절대 규칙 6).
 - `api.md`와 `__all__`이 같은지 테스트로 검사한다(0041).

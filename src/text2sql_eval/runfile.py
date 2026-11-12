@@ -86,6 +86,8 @@ class CaseRecord:
 
 @dataclass(frozen=True)
 class RunSettings:
+    """How the run executed queries, so a later run can tell if they differ."""
+
     timeout_seconds: float
     max_rows: int | None
     allow_missing: bool
@@ -93,6 +95,8 @@ class RunSettings:
 
 @dataclass(frozen=True)
 class Summary:
+    """Number of cases per status; ``total`` is their sum."""
+
     total: int
     correct: int
     incorrect: int
@@ -154,7 +158,13 @@ def sample_of(result: Rows | QueryFailure) -> QuerySummary:
 
 
 def write_run(run: Run, path: Path) -> None:
-    """Write ``run`` as UTF-8 JSON, creating parent directories as needed."""
+    """Write ``run`` as UTF-8 JSON, creating parent directories as needed.
+
+    Example:
+        >>> write_run(run, Path("runs/v3.json"))
+        >>> read_run(Path("runs/v3.json")) == run
+        True
+    """
     summary = run.summary
     document: dict[str, object] = {
         "schema_version": SCHEMA_VERSION,
@@ -270,6 +280,11 @@ def read_run(path: Path) -> Run:
     Raises:
         InputError: if the file is unreadable, has another ``schema_version``,
             or is missing fields or has fields of the wrong type.
+
+    Example:
+        >>> run = read_run(Path("examples/results/gpt-4o-mini-evidence.run.json"))
+        >>> run.summary.correct, run.summary.total
+        (267, 432)
     """
     reader = _Reader(path)
     root = reader.obj(parse_json(read_utf8(path), path), "the file")
