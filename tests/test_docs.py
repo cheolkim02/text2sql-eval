@@ -74,3 +74,48 @@ def test_run_file_reference_mentions_every_field(mode: str) -> None:
     for key in keys:
         # In the prose or tables as `key`; the JSON examples alone do not count.
         assert f"`{key}`" in doc, key
+
+
+# --- links ---------------------------------------------------------------------
+
+
+def markdown_files() -> list[Path]:
+    """Markdown files of the repository, outside hidden and build folders."""
+    return sorted(
+        path
+        for path in ROOT.rglob("*.md")
+        if not any(
+            part.startswith(".") or part in ("dist", "build")
+            for part in path.relative_to(ROOT).parts
+        )
+    )
+
+
+def without_code(text: str) -> str:
+    """The text outside fenced code blocks, where links and headings live."""
+    return re.sub(r"^```.*?^```", "", text, flags=re.MULTILINE | re.DOTALL)
+
+
+def anchor(heading: str) -> str:
+    """GitHub's anchor for a heading: lower-case, punctuation dropped, - for spaces."""
+    return re.sub(r"[^\w\- ]", "", heading.strip().lower()).replace(" ", "-")
+
+
+def anchors(path: Path) -> set[str]:
+    headings = re.findall(r"^#+ (.+)$", without_code(read(path)), re.MULTILINE)
+    return {anchor(heading) for heading in headings}
+
+
+@pytest.mark.parametrize(
+    "path", markdown_files(), ids=lambda p: str(p.relative_to(ROOT))
+)
+def test_relative_links_point_at_existing_files_and_headings(path: Path) -> None:
+    links = re.findall(r"\]\(([^)\s]+)\)", without_code(read(path)))
+    for link in links:
+        if re.match(r"[a-z]+:", link):  # http:, https:, mailto:
+            continue
+        target, _, fragment = link.partition("#")
+        file = (path.parent / target).resolve() if target else path
+        assert file.exists(), f"{link}: no such file"
+        if fragment and file.suffix == ".md":
+            assert fragment in anchors(file), f"{link}: no such heading"
