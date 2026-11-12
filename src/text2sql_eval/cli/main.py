@@ -417,7 +417,7 @@ def _print_summary(run: Run, out_path: Path, out: TextIO, *, as_json: bool) -> N
     print(
         f"Evaluated {summary.total} cases: EX {summary.ex:.1%} "
         f"({summary.correct} correct, {summary.incorrect} incorrect, "
-        f"{summary.error} errors)",
+        f"{summary.error} {'error' if summary.error == 1 else 'errors'})",
         file=out,
     )
     if states["missing"] or states["empty"]:
