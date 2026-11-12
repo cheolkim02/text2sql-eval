@@ -30,6 +30,7 @@
   - 차이: `CaseDiff`, `OutputDiff`, `OutputDifference`, `Relation`, `StructureReport`, `Fact`, `FactKind`
   - 비교: `Comparison`, `CaseChange`, `Change`, `GroupEx`
   - 기타: `InputError`, `__version__`
+- 추가 (2026-11-12, 사용자 승인): 공개 타입의 필드에 쓰이는데 빠져 있던 타입 별칭 `PredictionFormat`(`Run.prediction_format`)과 `QuerySummary`(`CaseRecord.gold`, `CaseRecord.pred`)를 더해 38개가 됐다. API 문서를 쓰다가 발견했다.
 - 공개 함수의 결과에 나오는 타입은 모두 내보낸다. 사용자가 내부 모듈을 import하지 않고 타입을 적고 `match`로 나눌 수 있게 하려는 것이다.
 - 데이터셋·예측 로더와 낮은 수준의 `evaluate`는 공개하지 않는다. CLI의 `eval`과 같은 일은 `evaluate_files`가 한다.
 - 이름 정리: `write_html` → `write_html_report`, 리포트 `write_csv` → `write_report_csv`, 비교 `write_csv` → `write_comparison_csv`

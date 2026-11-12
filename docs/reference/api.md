@@ -1,6 +1,6 @@
 # Python API 레퍼런스
 
-`text2sql_eval` 패키지가 `__all__`로 내보내는 이름만 공개 API다([ADR 0043](../decisions/0043-public-api-scope.md)). 하위 모듈(`text2sql_eval.judge.ex` 등)은 예고 없이 바뀔 수 있으니 패키지에서 바로 가져온다. 패키지는 타입 정보(`py.typed`)를 함께 배포하므로 pyright·mypy로 사용 코드를 검사할 수 있다. 공개 API에는 `Any`가 없다(테스트로 검사한다).
+`text2sql_eval` 패키지가 `__all__`로 내보내는 이름 38개만 공개 API다([ADR 0043](../decisions/0043-public-api-scope.md)). 하위 모듈(`text2sql_eval.judge.ex` 등)은 예고 없이 바뀔 수 있으니 패키지에서 바로 가져온다. 패키지는 타입 정보(`py.typed`)를 함께 배포하므로 pyright·mypy로 사용 코드를 검사할 수 있다. 공개 API에는 `Any`가 없다(테스트로 검사한다).
 
 CLI의 `eval → report → compare`와 같은 흐름:
 
@@ -32,7 +32,7 @@ print(comparison.counts()["fixed"], round(comparison.delta_pp, 1))  # 123 24.3
 
 ```text
 evaluate_files(dataset: Path, predictions: Path, *, db_dir: Path,
-               prediction_format: "text" | "jsonl" | None = None,
+               prediction_format: PredictionFormat | None = None,
                allow_missing: bool = False, tied: Path | None = None,
                timeout: float = 30.0, max_rows: int | None = None,
                workers: int | None = None,
@@ -96,7 +96,7 @@ evaluate_files(dataset: Path, predictions: Path, *, db_dir: Path,
 | --- | --- |
 | `tool_version`, `created_at`, `db_dir` | `str` |
 | `dataset`, `predictions` | [`FileRef`](#fileref) |
-| `prediction_format` | `"text"` 또는 `"jsonl"` |
+| `prediction_format` | [`PredictionFormat`](#predictionformat) |
 | `tied` | [`FileRef`](#fileref) `\| None` |
 | `settings` | [`RunSettings`](#runsettings) |
 | `meta` | `dict[str, str]` |
@@ -126,7 +126,7 @@ evaluate_files(dataset: Path, predictions: Path, *, db_dir: Path,
 | `difficulty` | `str \| None` |
 | `prediction_state` | [`PredictionState`](#predictionstate) |
 | `verdict` | [`Verdict`](#verdict) |
-| `gold`, `pred` | [`ResultSample`](#resultsample) `\|` [`QueryFailure`](#queryfailure) |
+| `gold`, `pred` | [`QuerySummary`](#querysummary) |
 | `pred_meta` | `dict[str, object]` |
 | `diff` | [`CaseDiff`](#casediff) `\| None` (정답이거나 정답 SQL이 실패하면 `None`) |
 
@@ -138,9 +138,17 @@ evaluate_files(dataset: Path, predictions: Path, *, db_dir: Path,
 
 실패한 쿼리. `kind`는 `"error"`, `"timeout"`, `"row_limit"` 중 하나이고, `message: str`이 있다.
 
+### `QuerySummary`
+
+쿼리 하나의 결과: [`ResultSample`](#resultsample) `|` [`QueryFailure`](#queryfailure). `isinstance`나 `match`로 나눈다.
+
 ### `SqlValue`
 
 SQLite가 돌려주는 값의 타입: `int | float | str | bytes | None`.
+
+### `PredictionFormat`
+
+예측 파일 형식: `"text"`(한 줄에 SQL 하나) 또는 `"jsonl"`.
 
 ### `PredictionState`
 
