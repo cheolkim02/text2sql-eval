@@ -65,3 +65,21 @@ jobs:
           grep -q "text2sql_eval/py.typed" wheel-contents.txt
           grep -q "text2sql_eval/report/templates/report.html.j2" wheel-contents.txt
           grep -q "licenses/LICENSE" wheel-contents.txt
+      # ADR 0044: the built wheel alone, without dev dependencies, must run the
+      # CLI end to end. Prediction 211 never finishes (examples/results/README.md),
+      # so it is left out to keep the step short.
+      - name: Install the wheel in a clean environment and run the CLI
+        run: |
+          uv venv --python 3.11 "$RUNNER_TEMP/clean"
+          uv pip install --python "$RUNNER_TEMP/clean" dist/*.whl
+          cli="$RUNNER_TEMP/clean/bin/text2sql-eval"
+          "$cli" --version
+          head -n 40 examples/results/gpt-4o-mini-evidence.jsonl \
+            | grep -v '"id": "211"' > "$RUNNER_TEMP/pred.jsonl"
+          "$cli" eval --dataset examples/bird-mini/dev.json \
+            --db-dir examples/bird-mini/dev_databases \
+            --pred "$RUNNER_TEMP/pred.jsonl" --allow-missing --timeout 10 \
+            --out "$RUNNER_TEMP/run.json"
+          "$cli" report "$RUNNER_TEMP/run.json" \
+            --html "$RUNNER_TEMP/report.html" --csv "$RUNNER_TEMP/report.csv"
+          test "$(grep -c '<details class="case"' "$RUNNER_TEMP/report.html")" -eq 432

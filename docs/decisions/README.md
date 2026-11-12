@@ -47,3 +47,4 @@
 | [0041](0041-markdown-docs.md) | 문서는 Markdown으로만, `api.md`는 테스트로 코드와 맞춤 | D23 | 2026-11-12 | 채택 |
 | [0042](0042-category-mapping-roadmap.md) | 사용자 카테고리 매핑 파일은 로드맵 | D20 | 2026-11-12 | 채택 |
 | [0043](0043-public-api-scope.md) | 공개 API: CLI 흐름의 함수와 결과 타입 | D39 | 2026-11-12 | 채택 |
+| [0044](0044-ci-dogfooding.md) | CI에서 빌드한 wheel을 새 환경에 설치해 CLI를 돌림 | D40 | 2026-11-12 | 채택 |
