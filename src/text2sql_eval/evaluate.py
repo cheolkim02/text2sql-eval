@@ -143,7 +143,8 @@ def _format_from_extension(path: Path) -> PredictionFormat:
         raise InputError(
             path,
             f"cannot tell the prediction format from the extension '{path.suffix}'",
-            hint="use a .txt or .jsonl file, or pass --pred-format text|jsonl",
+            hint="use a .txt or .jsonl file, or pass --pred-format text|jsonl "
+            "(prediction_format= in Python)",
         )
     return detected
 
