@@ -18,6 +18,7 @@ from text2sql_eval.datasets.bird import Dataset, load_bird, load_bird_tied
 from text2sql_eval.datasets.predictions import load_jsonl_predictions
 from text2sql_eval.evaluate import evaluate
 from text2sql_eval.judge.ex import status_of
+from text2sql_eval.report.html_report import render_html
 from text2sql_eval.runfile import read_run
 
 EXAMPLES = Path(__file__).resolve().parents[1] / "examples"
@@ -67,3 +68,11 @@ def test_timing_sensitive_cases_are_the_documented_ones() -> None:
         (case,) = [c for c in run.cases if c.id == case_id]
         assert status_of(case.verdict) == status
     assert {(m, i) for m, ids in TIMING_SENSITIVE.items() for i in ids} == set(expected)
+
+
+def test_committed_report_is_the_report_of_the_committed_run() -> None:
+    # Regenerate with `text2sql-eval report` after changing the report code.
+    run_file = EXAMPLES / "results/gpt-4o-mini-evidence.run.json"
+    committed = (EXAMPLES / "results/report.html").read_text(encoding="utf-8")
+
+    assert committed == render_html(read_run(run_file), run_name=run_file.name)
