@@ -1,15 +1,15 @@
 ---
 name: explain
-description: Explain a file or module of this repository to the user and quiz them with interview-style questions, saving the Q&A to .study/. Only when the user runs /explain <path>.
+description: Explain a file or module of this repository to the user and check their understanding with review questions, saving the Q&A to .study/. Only when the user runs /explain <path>.
 disable-model-invocation: true
 argument-hint: "[file-or-module-path]"
 ---
 
-# 코드 설명과 면접 연습
+# 코드 설명과 이해 확인
 
 대상: $ARGUMENTS
 
-사용자는 면접에서 이 저장소의 모든 줄을 설명해야 한다. 목표는 사용자가 스스로 설명할 수 있게 되는 것이다.
+사용자는 이 저장소의 모든 줄을 설명할 수 있어야 한다. 목표는 사용자가 스스로 설명할 수 있게 되는 것이다.
 
 ## 1. 설명
 
@@ -23,7 +23,7 @@ argument-hint: "[file-or-module-path]"
 
 용어(예: 판별 유니언, 픽스처, 속성 기반 테스트)는 처음 나올 때 한 줄로 풀어 쓴다.
 
-## 2. 면접식 질문
+## 2. 확인 질문
 
 질문 5개를 낸다.
 
@@ -39,7 +39,7 @@ argument-hint: "[file-or-module-path]"
 
 1. 질문마다 맞음 / 부분 정답 / 틀림으로 채점한다.
 2. 빠진 부분을 보충한다.
-3. 모범 답안을 면접에서 말하듯 2~3문장으로 쓴다.
+3. 모범 답안을 말로 설명하듯 2~3문장으로 쓴다.
 
 ## 4. 저장
 

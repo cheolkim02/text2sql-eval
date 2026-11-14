@@ -15,7 +15,7 @@
 | [0009](0009-python-version.md) | 지원 Python 3.11+ | D8 | 2026-11-07 | 채택 |
 | [0010](0010-uv-and-uv-build.md) | 프로젝트 관리 uv, 빌드 백엔드 uv_build | D9 | 2026-11-07 | 채택 |
 | [0011](0011-ruff.md) | 린트·포맷 Ruff | D10 | 2026-11-07 | 채택 |
-| [0012](0012-schedule-adjustment-1107.md) | 일정 지연에 따른 일정·범위 조정 | — | 2026-11-07 | 일부 대체됨(0034) |
+| [0012](0012-schedule-adjustment-1107.md) | 11/7 일정·범위 조정 | — | 2026-11-07 | 일부 대체됨(0034) |
 | [0013](0013-pyright-strict.md) | 타입 검사 pyright strict + 규칙 1개 | D11 | 2026-11-07 | 채택 |
 | [0014](0014-pytest-hypothesis-syrupy.md) | 테스트 pytest + Hypothesis + syrupy | D12 | 2026-11-07 | 채택 |
 | [0015](0015-ruff-default-rules.md) | Ruff 기본 규칙, 줄 길이 88자 | D28 | 2026-11-07 | 채택 |
