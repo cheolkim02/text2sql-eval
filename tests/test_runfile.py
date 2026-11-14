@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+from helpers import make_run
 
 from text2sql_eval.errors import InputError
 from text2sql_eval.execution.executor import QueryFailure
@@ -16,7 +17,6 @@ from text2sql_eval.runfile import (
     FileRef,
     ResultSample,
     Run,
-    RunSettings,
     read_run,
     sha256_of,
     write_run,
@@ -38,17 +38,11 @@ BASE = CaseRecord(
 
 
 def _run(*cases: CaseRecord) -> Run:
-    return Run(
-        tool_version="0.1.0",
-        created_at="2026-11-09T01:02:03Z",
-        dataset=FileRef("dev.json", "a" * 64),
-        predictions=FileRef("preds.jsonl", "b" * 64),
-        prediction_format="jsonl",
+    return make_run(
+        *cases,
         tied=FileRef("dev_tied_append.json", "c" * 64),
-        db_dir="dev_databases",
-        settings=RunSettings(timeout_seconds=30.0, max_rows=None, allow_missing=True),
+        allow_missing=True,
         meta={"model": "test-model", "prompt": "v3"},
-        cases=cases,
     )
 
 
@@ -203,6 +197,8 @@ def test_reports_where_a_damaged_file_is_wrong(
 ) -> None:
     path = tmp_path / "run.json"
     write_run(RUN, path)
+    # Any on purpose: the test walks the parsed JSON by a path of mixed str and
+    # int keys and writes arbitrary values, which no static type describes.
     document: Any = json.loads(path.read_text(encoding="utf-8"))
     target = document
     for key in keys[:-1]:

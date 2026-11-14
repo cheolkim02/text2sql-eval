@@ -10,13 +10,12 @@ examples/results/README.md are left out.
 import csv
 import json
 import re
-import subprocess
-import sys
 from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
 
 import pytest
+from helpers import run_cli
 
 from text2sql_eval import Run, read_run, status_of
 
@@ -33,16 +32,6 @@ class Evaluated:
     run: Run
     summary: dict[str, object]  # what `eval --json` printed
     given: int
-
-
-def run_cli(*args: str | Path) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        [sys.executable, "-m", "text2sql_eval.cli.main", *map(str, args)],
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        check=False,
-    )
 
 
 def first_predictions(mode: str, out: Path) -> int:

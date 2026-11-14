@@ -3,27 +3,16 @@
 import csv
 import json
 import re
-import subprocess
-import sys
 from importlib.metadata import entry_points
 from pathlib import Path
 
 import pytest
+from helpers import run_cli
 
 from text2sql_eval.runfile import read_run
 
 BIRD_MINI = Path(__file__).resolve().parents[1] / "examples/bird-mini"
 DEV = BIRD_MINI / "dev.json"
-
-
-def run_cli(*args: str | Path) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        [sys.executable, "-m", "text2sql_eval.cli.main", *map(str, args)],
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        check=False,
-    )
 
 
 def eval_args(pred: Path, out: Path, *extra: str | Path) -> list[str | Path]:

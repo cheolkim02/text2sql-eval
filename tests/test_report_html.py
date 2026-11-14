@@ -3,6 +3,7 @@ from dataclasses import replace
 from pathlib import Path
 
 import pytest
+from helpers import make_run
 
 from text2sql_eval.execution.executor import QueryFailure
 from text2sql_eval.facts import CaseDiff
@@ -18,10 +19,8 @@ from text2sql_eval.report.html_report import (
 )
 from text2sql_eval.runfile import (
     CaseRecord,
-    FileRef,
     ResultSample,
     Run,
-    RunSettings,
     read_run,
 )
 
@@ -90,21 +89,6 @@ FAILED = replace(
         structure=StructureReport((), parse_failed="pred"),
     ),
 )
-
-
-def make_run(*cases: CaseRecord) -> Run:
-    return Run(
-        tool_version="0.1.0",
-        created_at="2026-11-11T00:00:00Z",
-        dataset=FileRef("dev.json", "a" * 64),
-        predictions=FileRef("p.jsonl", "b" * 64),
-        prediction_format="jsonl",
-        tied=None,
-        db_dir="dbs",
-        settings=RunSettings(timeout_seconds=30.0, max_rows=None, allow_missing=False),
-        meta={"model": "test-model"},
-        cases=cases,
-    )
 
 
 @pytest.fixture(scope="module")
@@ -271,7 +255,8 @@ def test_case_views_carry_differences_flags_and_filter_tokens() -> None:
 
 
 def test_summary_groups_and_counts() -> None:
-    page = build_page(make_run(CORRECT, WRONG, FAILED), run_name="r.json")
+    run = make_run(CORRECT, WRONG, FAILED, meta={"model": "test-model"})
+    page = build_page(run, run_name="r.json")
 
     assert [(r.label, r.count) for r in page.status_counts] == [
         ("전체", 3),

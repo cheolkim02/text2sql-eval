@@ -2,13 +2,15 @@ import csv
 from dataclasses import replace
 from pathlib import Path
 
+from helpers import make_run
+
 from text2sql_eval.execution.executor import QueryFailure
 from text2sql_eval.facts import CaseDiff
 from text2sql_eval.facts.output import OutputDiff
 from text2sql_eval.facts.structure import Fact, StructureReport
 from text2sql_eval.judge.ex import Correct, ExecError, Flag, Incorrect
 from text2sql_eval.report.csv_report import CSV_COLUMNS, write_report_csv
-from text2sql_eval.runfile import CaseRecord, FileRef, ResultSample, Run, RunSettings
+from text2sql_eval.runfile import CaseRecord, ResultSample
 
 SAMPLE = ResultSample(columns=("name",), rows=(("Surtur",),), row_count=1)
 
@@ -58,21 +60,6 @@ FAILED = replace(
     verdict=ExecError("pred", "timeout", "did not finish within 30 s"),
     pred=QueryFailure("timeout", "did not finish within 30 s"),
 )
-
-
-def make_run(*cases: CaseRecord) -> Run:
-    return Run(
-        tool_version="0.1.0",
-        created_at="2026-11-11T00:00:00Z",
-        dataset=FileRef("dev.json", "a" * 64),
-        predictions=FileRef("p.jsonl", "b" * 64),
-        prediction_format="jsonl",
-        tied=None,
-        db_dir="dbs",
-        settings=RunSettings(timeout_seconds=30.0, max_rows=None, allow_missing=True),
-        meta={},
-        cases=cases,
-    )
 
 
 def read_rows(path: Path) -> list[dict[str, str]]:
