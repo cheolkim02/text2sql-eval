@@ -445,7 +445,7 @@ text2sql-eval/
 | D39 | 공개 API 범위 (`__init__.py`에서 내보낼 것) | CLI 흐름의 함수와 결과 타입 / CLI와 실행 파일 형식만 / 모듈 전부 | **결정됨: CLI 흐름의 함수와 결과 타입 (ADR 0043)** | 11/12 |
 | D40 | CI 도그푸딩 | 넣음 / 넣지 않음 | **결정됨: wheel을 새 환경에 설치해 `eval → report` 실행 (ADR 0044)** | 11/12 |
 | D41 | 문서용 이미지 위치 | `docs/images/` / `examples/results/` / 외부 URL | **결정됨: `docs/images/` (ADR 0045)** | 11/14 |
-| D42 | PyPI 배포 | 배포하지 않음 / 태그 push 시 GitHub Actions + Trusted Publishing / 로컬에서 토큰으로 수동 | 태그 push 시 Trusted Publishing, 저장소 공개 후 | 11/14 |
+| D42 | PyPI 배포 | 배포하지 않음 / 태그 push 시 GitHub Actions + Trusted Publishing / 로컬에서 토큰으로 수동 | **결정됨: 태그 push 시 GitHub Actions + Trusted Publishing, 저장소 공개 후 첫 배포 (ADR 0046)** | 11/14 |
 
 라이선스는 코드 MIT, 예제 데이터 CC BY-SA 4.0으로 정하고 0001번 ADR에 함께 적는다. 이 목록에 없는 결정이 나오면 Claude가 D43부터 새 번호를 붙여 물어본다.
 

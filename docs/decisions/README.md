@@ -49,3 +49,4 @@
 | [0043](0043-public-api-scope.md) | 공개 API: CLI 흐름의 함수와 결과 타입 | D39 | 2026-11-12 | 채택 |
 | [0044](0044-ci-dogfooding.md) | CI에서 빌드한 wheel을 새 환경에 설치해 CLI를 돌림 | D40 | 2026-11-12 | 채택 |
 | [0045](0045-docs-images-folder.md) | 문서용 이미지는 `docs/images/` | D41 | 2026-11-14 | 채택 |
+| [0046](0046-pypi-trusted-publishing.md) | PyPI는 태그 push 시 GitHub Actions + Trusted Publishing | D42 | 2026-11-14 | 채택 |
