@@ -33,16 +33,16 @@ Nov 3, 2026 작성 · Nov 4, 2026 전면 개정 · @철
 
 **완료 기준 (11/14 밤)**
 
-- [ ] 깨끗한 환경에서 설치·린트·타입 검사·테스트가 성공하고, GitHub Actions CI가 녹색
-- [ ] `examples/bird-mini`에서 baseline 예측 2개(같은 모델, 설정 2종)로 `text2sql-eval eval`이 실행 파일을 만든다
-- [ ] 공식 호환 모드의 EX가 같은 예측에 대한 BIRD 공식 평가 스크립트의 EX와 일치한다(확인 결과를 문서에 기록)
-- [ ] 모든 오답 케이스에 "무엇이 다른가" 사실 목록과 근거가 붙는다. 사용자 분류는 CSV의 `my_category` 열로 이어 간다 (매핑 파일은 로드맵, ADR 0042)
-- [ ] 판정 신뢰도 플래그 6개(ADR 0034)가 근거와 함께 표시된다
-- [ ] `report`가 오프라인에서 열리는 HTML 한 파일과 엑셀에서 한글이 깨지지 않는 CSV를 만든다
-- [ ] `compare`가 분할표, 뒤집힌 케이스, 차이 분포 변화를 내고, 설정한 기준보다 나빠지면 종료 코드 1을 낸다
-- [ ] README에 문제 정의, 설치, 3분 사용법, 실측 결과 표, AI 협업 방식이 있다
-- [ ] 결정 기록 10개 이상, 모두 결정자가 "사용자"
-- [ ] 모든 모듈에 대해 설명 노트와 면접식 질문 답변을 마쳤다
+- [x] 깨끗한 환경에서 설치·린트·타입 검사·테스트가 성공하고, GitHub Actions CI가 녹색 → [CI](../.github/workflows/ci.yml)가 PR마다 wheel을 새 환경에 설치해 CLI까지 돌린다([ADR 0044](decisions/0044-ci-dogfooding.md)). 깨끗한 clone에서 README대로 53초([개발 기록](dev-log/2026-11-13.md))
+- [x] `examples/bird-mini`에서 baseline 예측 2개(같은 모델, 설정 2종)로 `text2sql-eval eval`이 실행 파일을 만든다 → [examples/results](../examples/results/README.md)
+- [x] 공식 호환 모드의 EX가 같은 예측에 대한 BIRD 공식 평가 스크립트의 EX와 일치한다(확인 결과를 문서에 기록) → 8개 숫자 일치([기록](../examples/results/README.md#bird-공식-스크립트와의-일치-2026-11-09))
+- [x] 모든 오답 케이스에 "무엇이 다른가" 사실 목록과 근거가 붙는다. 사용자 분류는 CSV의 `my_category` 열로 이어 간다 (매핑 파일은 로드맵, ADR 0042) → 출력 차이 6종, SQL 구조 차이 5종([결과 읽기](guides/reading-results.md#2-차이-무엇이-다른가))
+- [x] 판정 신뢰도 플래그 6개(ADR 0034)가 근거와 함께 표시된다 → [결과 읽기](guides/reading-results.md#3-판정-신뢰도-플래그)
+- [x] `report`가 오프라인에서 열리는 HTML 한 파일과 엑셀에서 한글이 깨지지 않는 CSV를 만든다 → [CLI 레퍼런스](reference/cli.md#report), [예제 리포트](../examples/results/report.html)
+- [x] `compare`가 분할표, 뒤집힌 케이스, 차이 분포 변화를 내고, 설정한 기준보다 나빠지면 종료 코드 1을 낸다 → [실행 비교하기](guides/comparing-runs.md), 기준은 `--max-drop`([ADR 0036](decisions/0036-compare-gate-opt-in.md))
+- [x] README에 문제 정의, 설치, 3분 사용법, 실측 결과 표, AI 협업 방식이 있다 → [README](../README.md), [AI와 함께 개발한 방식](ai-workflow.md)
+- [x] 결정 기록 10개 이상, 모두 결정자가 "사용자" → 45개([색인](decisions/README.md))
+- [ ] 모든 모듈에 대해 설명 노트와 면접식 질문 답변을 마쳤다 → 사용자가 `/explain`으로 진행 중(`.study/`, 비공개)
 
 ## 내가 겪은 문제 (README "왜 필요한가"의 원재료)
 
