@@ -32,6 +32,8 @@ text2sql-eval = "text2sql_eval.cli.main:main"
 
 [project.urls]
 Repository = "https://github.com/cheolkim02/text2sql-eval"
+Documentation = "https://github.com/cheolkim02/text2sql-eval/tree/main/docs"
+Issues = "https://github.com/cheolkim02/text2sql-eval/issues"
 
 [build-system]
 requires = ["uv_build>=0.13.7,<0.14.0"]
