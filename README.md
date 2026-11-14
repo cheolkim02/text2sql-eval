@@ -29,6 +29,10 @@ text-to-SQL 연구를 하면서 실험을 돌리는 것보다 결과를 판단�
 
 판정과 분석에 LLM, 무작위, 시간에 따라 달라지는 값을 쓰지 않는다. 같은 입력이면 같은 결과가 나온다.
 
+![HTML 리포트에서 #247 케이스를 펼친 화면. 정답·예측 SQL이 절마다 줄을 나눠 나란히 보이고, 서로 다른 WHERE 절과 정답에 없는 예측 결과 행 cl, h가 노랗게 칠해져 있다](docs/images/report-case.png)
+
+HTML 리포트에서 오답 하나(#247)를 펼친 화면이다. 정답과 예측 SQL에서 다른 절(WHERE)과, 정답에 없는 예측 결과 행(`cl`, `h`)을 칠한다. 출력 차이(`row_count_differs`, `row_set_differs`)와 SQL 구조 차이(`tables_joins`)를 근거와 함께 보여 준다. 리포트 전체는 [examples/results/report.html](examples/results/report.html)이다. 내려받아 브라우저로 열면 된다.
+
 ## 3분 사용법
 
 Python 3.11 이상이 필요하다. 저장소에 BIRD dev의 DB 3개와 문제 432개, gpt-4o-mini의 예측 두 벌이 들어 있어서 받자마자 돌려 볼 수 있다.
