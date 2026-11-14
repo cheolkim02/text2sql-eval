@@ -50,3 +50,4 @@
 | [0044](0044-ci-dogfooding.md) | CI에서 빌드한 wheel을 새 환경에 설치해 CLI를 돌림 | D40 | 2026-11-12 | 채택 |
 | [0045](0045-docs-images-folder.md) | 문서용 이미지는 `docs/images/` | D41 | 2026-11-14 | 채택 |
 | [0046](0046-pypi-trusted-publishing.md) | PyPI는 태그 push 시 GitHub Actions + Trusted Publishing | D42 | 2026-11-14 | 채택 |
+| [0047](0047-remove-unrelated-personal-content.md) | 공개 전 프로젝트와 무관한 개인 정보를 현재 파일에서 지움 | D43 | 2026-11-15 | 채택 |
