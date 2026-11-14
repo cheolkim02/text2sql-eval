@@ -370,20 +370,26 @@ def _flag_counts(cases: Iterable[CaseRecord]) -> tuple[CountRow, ...]:
 
 
 def _filters(cases: tuple[CaseRecord, ...]) -> tuple[Filter, ...]:
-    everything = FilterOption("", "전체")
     databases = sorted({case.db_id for case in cases})
     difficulties = sorted(
         {case.difficulty or "none" for case in cases}, key=_difficulty_key
     )
-    outputs = _output_kinds(cases)
-    structures = _structure_kinds(cases)
     flags = Counter(flag.kind for case in cases for flag in case.verdict.flags)
+    flag_groups = tuple(
+        FilterOption(group, f"{label} (모두)")
+        for group, label in FLAG_GROUP_LABELS_KO.items()
+        if group != "info"
+    )
+    flag_kinds = tuple(
+        FilterOption(kind, f"{kind} {flags[kind]}")
+        for kind in FLAG_LABELS_KO
+        if flags[kind]
+    )
     return (
-        Filter(
+        _filter(
             "status",
             "판정",
             (
-                everything,
                 FilterOption("wrong", "오답·오류"),
                 FilterOption("correct", "정답"),
                 FilterOption("incorrect", "오답"),
@@ -391,63 +397,43 @@ def _filters(cases: tuple[CaseRecord, ...]) -> tuple[Filter, ...]:
             ),
             default="wrong",
         ),
-        Filter(
-            "db",
-            "데이터베이스",
-            (everything, *(FilterOption(db, db) for db in databases)),
-        ),
-        Filter(
+        _filter("db", "데이터베이스", tuple(FilterOption(db, db) for db in databases)),
+        _filter(
             "difficulty",
             "난이도",
-            (
-                everything,
-                *(
-                    FilterOption(d, "(없음)" if d == "none" else d)
-                    for d in difficulties
-                ),
+            tuple(
+                FilterOption(d, "(없음)" if d == "none" else d) for d in difficulties
             ),
         ),
-        Filter(
+        _filter(
             "output",
             "출력 차이",
-            (
-                everything,
-                *(
-                    FilterOption(row.code, f"{row.code} ({row.label}) {row.count}")
-                    for row in _count_rows(outputs, OUTPUT_LABELS_KO)
-                    if row.count
-                ),
-            ),
+            _kind_options(_output_kinds(cases), OUTPUT_LABELS_KO),
         ),
-        Filter(
+        _filter(
             "structure",
             "SQL 구조 차이",
-            (
-                everything,
-                *(
-                    FilterOption(row.code, f"{row.code} ({row.label}) {row.count}")
-                    for row in _count_rows(structures, STRUCTURE_LABELS_KO)
-                    if row.count
-                ),
-            ),
+            _kind_options(_structure_kinds(cases), STRUCTURE_LABELS_KO),
         ),
-        Filter(
-            "flag",
-            "플래그",
-            (
-                everything,
-                *(
-                    FilterOption(group, f"{label} (모두)")
-                    for group, label in FLAG_GROUP_LABELS_KO.items()
-                    if group != "info"
-                ),
-                *(
-                    FilterOption(kind, f"{kind} {flags[kind]}")
-                    for kind in FLAG_LABELS_KO
-                    if flags[kind]
-                ),
-            ),
-        ),
+        _filter("flag", "플래그", flag_groups + flag_kinds),
+    )
+
+
+def _filter(
+    key: str, label: str, options: tuple[FilterOption, ...], default: str = ""
+) -> Filter:
+    """A filter whose first option, 전체 (all), turns it off."""
+    return Filter(key, label, (FilterOption("", "전체"), *options), default)
+
+
+def _kind_options(
+    counts: Counter[str], labels: Mapping[_Kind, str]
+) -> tuple[FilterOption, ...]:
+    """One option per kind that occurs, with its description and count."""
+    return tuple(
+        FilterOption(row.code, f"{row.code} ({row.label}) {row.count}")
+        for row in _count_rows(counts, labels)
+        if row.count
     )
 
 
