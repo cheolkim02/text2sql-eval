@@ -48,3 +48,4 @@
 | [0042](0042-category-mapping-roadmap.md) | 사용자 카테고리 매핑 파일은 로드맵 | D20 | 2026-11-12 | 채택 |
 | [0043](0043-public-api-scope.md) | 공개 API: CLI 흐름의 함수와 결과 타입 | D39 | 2026-11-12 | 채택 |
 | [0044](0044-ci-dogfooding.md) | CI에서 빌드한 wheel을 새 환경에 설치해 CLI를 돌림 | D40 | 2026-11-12 | 채택 |
+| [0045](0045-docs-images-folder.md) | 문서용 이미지는 `docs/images/` | D41 | 2026-11-14 | 채택 |

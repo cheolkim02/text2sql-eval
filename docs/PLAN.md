@@ -378,6 +378,7 @@ text2sql-eval/
 │  ├─ architecture.md         모듈 경계와 데이터 흐름
 │  ├─ decisions/              0000-template.md, README.md(색인), 0001-… 
 │  ├─ dev-log/                날짜별 개발 기록
+│  ├─ images/                 README·가이드용 스크린샷 (ADR 0045)
 │  ├─ guides/                 (ADR 0012로 6개에서 4개로 줄임)
 │  │  ├─ getting-started.md   3분 시작
 │  │  ├─ prediction-format.md 내 파이프라인 결과를 예측 파일로 만들기
@@ -443,8 +444,9 @@ text2sql-eval/
 | D38 | CSV 수식 주입 대응 | 그대로 두고 문서에 경고 / 위험한 첫 글자 앞에 `'` / 위험한 첫 글자 앞에 탭 | **결정됨: 위험한 첫 글자 앞에 `'` (ADR 0040)** | 11/11 |
 | D39 | 공개 API 범위 (`__init__.py`에서 내보낼 것) | CLI 흐름의 함수와 결과 타입 / CLI와 실행 파일 형식만 / 모듈 전부 | **결정됨: CLI 흐름의 함수와 결과 타입 (ADR 0043)** | 11/12 |
 | D40 | CI 도그푸딩 | 넣음 / 넣지 않음 | **결정됨: wheel을 새 환경에 설치해 `eval → report` 실행 (ADR 0044)** | 11/12 |
+| D41 | 문서용 이미지 위치 | `docs/images/` / `examples/results/` / 외부 URL | **결정됨: `docs/images/` (ADR 0045)** | 11/14 |
 
-라이선스는 코드 MIT, 예제 데이터 CC BY-SA 4.0으로 정하고 0001번 ADR에 함께 적는다. 이 목록에 없는 결정이 나오면 Claude가 D41부터 새 번호를 붙여 물어본다.
+라이선스는 코드 MIT, 예제 데이터 CC BY-SA 4.0으로 정하고 0001번 ADR에 함께 적는다. 이 목록에 없는 결정이 나오면 Claude가 D42부터 새 번호를 붙여 물어본다.
 
 ## AI 협업 규칙
 
