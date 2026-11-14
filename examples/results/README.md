@@ -107,6 +107,7 @@ SQL structure difference: columns 155 -> 79, where_value 132 -> 25, tables_joins
 | `gpt-4o-mini-no-evidence.jsonl` | 예측 (evidence 없음) |
 | `gpt-4o-mini-evidence.run.json` | `text2sql-eval eval` 실행 파일 (`schema_version` 3, 오답 분석 포함) |
 | `gpt-4o-mini-no-evidence.run.json` | 같은 형식 |
+| `report.html` | evidence 있음 실행의 HTML 리포트. 내려받아 브라우저로 열면 인터넷 없이 열린다 |
 
 ## 다시 만들기
 
@@ -121,6 +122,13 @@ uv run text2sql-eval eval \
   --meta model=gpt-4o-mini-2024-07-18 --meta prompt=single-prompt-v1 \
   --meta evidence=yes --meta generated=2026-11-09 \
   --out examples/results/gpt-4o-mini-evidence.run.json
+```
+
+리포트는 실행 파일에서 다시 만든다. 리포트 코드를 바꾸면 이 파일도 다시 만들어야 한다(`tests/test_results.py`가 확인한다).
+
+```sh
+uv run text2sql-eval report examples/results/gpt-4o-mini-evidence.run.json \
+  --html examples/results/report.html
 ```
 
 예측까지 다시 만드는 방법은 [examples/baseline/README.md](../baseline/README.md)에 있다.

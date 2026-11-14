@@ -92,8 +92,11 @@ table { border-collapse: collapse; }
 .counts td, .counts th { padding: 4px 6px; border-top: 1px solid var(--line); vertical-align: top; }
 .counts tr:first-child td, .counts tr:first-child th { border-top: 0; }
 .counts .zero { color: var(--muted); }
-.info td { padding: 2px 12px 2px 0; vertical-align: top; overflow-wrap: anywhere; }
-.info td:first-child { white-space: nowrap; }
+.info { display: grid; grid-template-columns: max-content minmax(0, 1fr) max-content minmax(0, 1fr); gap: 2px 12px; margin: 0; }
+.info dt { color: var(--muted); white-space: nowrap; }
+.info dd { margin: 0; overflow-wrap: anywhere; }
+@media (max-width: 720px) { .info { grid-template-columns: max-content minmax(0, 1fr); } }
+.run-info { margin-bottom: 12px; }
 .filters { position: sticky; top: 0; z-index: 1; display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; padding: 10px 12px; margin: 0 -12px; background: var(--panel); border-bottom: 1px solid var(--line); }
 .filters label { display: flex; gap: 6px; align-items: center; }
 .filters select, .filters button { font: inherit; color: inherit; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 2px 6px; max-width: 100%; }
@@ -134,15 +137,16 @@ pre.sql { margin: 0; padding: 8px; background: var(--panel); border: 1px solid v
 <main>
 <h1>{{ page.title }}</h1>
 
-<section class="grid">
-<section class="card">
+<section class="card run-info">
 <h3>실행 정보</h3>
-<table class="info">
+<dl class="info">
 {% for label, value in page.info %}
-<tr><td class="muted">{{ label }}</td><td>{{ value }}</td></tr>
+<dt>{{ label }}</dt><dd>{{ value }}</dd>
 {% endfor %}
-</table>
+</dl>
 </section>
+
+<section class="grid">
 <section class="card">
 <h3>EX (실행 정확도)</h3>
 <div class="ex">{{ page.ex }}</div>

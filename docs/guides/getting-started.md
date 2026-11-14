@@ -66,6 +66,8 @@ text2sql-eval report runs/evidence.json --html runs/evidence.html --csv runs/evi
 
 `runs/evidence.html`을 브라우저로 연다. 인터넷 연결이 없어도 열린다.
 
+![HTML 리포트 맨 위의 요약: 실행 정보, EX 61.8%, 난이도별·데이터베이스별 EX, 출력 차이·SQL 구조 차이·판정 신뢰도 플래그의 개수](../images/report-summary.png)
+
 - 처음 화면은 오답과 실행 실패 165개만 보여 준다.
 - 위쪽 필터로 DB, 난이도, 차이 종류, 플래그를 고른다. 예: 플래그에서 "거짓 오답 의심 (모두)"를 고르면 38개가 남는다.
 - 케이스를 펼치면 정답·예측 SQL이 절마다 줄을 나눠 나란히 보이고, 다른 절과 다른 행이 색칠돼 있다.
