@@ -65,3 +65,21 @@ ADR에는 결정한 사람의 말을 그대로 인용한다.
 - AI가 함께 쓴 커밋은 본문 끝에 `Co-Authored-By` 줄을 붙인다([ADR 0017](docs/decisions/0017-commit-conventions.md)).
 - 이미 push한 커밋은 고치지 않는다.
 - `main`에는 PR로만 반영하고, CI가 모두 통과해야 merge한다.
+
+## 릴리스
+
+PyPI 배포는 태그로 한다([ADR 0046](docs/decisions/0046-pypi-trusted-publishing.md)).
+
+1. `pyproject.toml`의 `version`을 올리고 PR로 merge한다.
+2. `main`에서 같은 버전의 태그를 만들어 push한다. 예: `git tag v0.1.0` 다음에 `git push origin v0.1.0`
+3. `.github/workflows/release.yml`이 작업 두 개로 나눠 돈다.
+   - **검사 작업** (PyPI 권한 없음):
+     1. 태그와 버전이 같은지 확인한다.
+     2. 빌드한다.
+     3. 깨끗한 환경에 설치해 CLI를 돌려 본다(`scripts/smoke_wheel.sh`).
+   - **배포 작업** (검사가 통과해야만 돈다):
+     1. 같은 커밋을 다시 빌드한다.
+     2. 파일 해시가 검사한 것과 같은지 확인한다.
+     3. Trusted Publishing으로 PyPI에 올린다.
+
+API 토큰은 쓰지 않는다. PyPI는 이 저장소의 `release.yml`이 GitHub environment `pypi`에서 보낸 요청만 받는다. 한 번 올린 버전은 지워도 같은 번호로 다시 올릴 수 없으므로, 고칠 것이 있으면 버전을 올린다.

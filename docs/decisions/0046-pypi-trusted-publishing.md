@@ -38,6 +38,9 @@
 - pending publisher는 이름을 미리 확보하지 않는다. 첫 배포 전에 다른 사람이 이름을 쓰면 무효가 된다.
 - GitHub Free 플랜에서는 environment를 공개 저장소에서만 설정할 수 있다. 그래서 environment를 쓰는 배포 작업은 저장소를 공개한 뒤에만 돌릴 수 있다. 첫 배포를 공개 후로 정한 이유이기도 하다.
 - API 토큰을 저장소나 GitHub Secrets에 두지 않는다(AGENTS.md 절대 규칙 5).
+- 구현에서 검사와 배포를 작업 두 개로 나눴다(Claude가 자가 검토에서 정함).
+  - 깨끗한 환경 검사는 PyPI에서 의존성을 받아 실행한다. 그래서 PyPI 권한(`id-token`)이 없는 검사 작업에서 돈다.
+  - 배포 작업은 같은 커밋을 다시 빌드하고, 파일 해시가 검사 작업의 것과 같을 때만 올린다. uv_build는 같은 소스에서 바이트 단위로 같은 파일을 만든다(2026-11-14 확인).
 - 출처 (2026-11-14 확인):
   - [PyPI Trusted Publishers](https://docs.pypi.org/trusted-publishers/)
   - [PyPI: pending publisher로 프로젝트 만들기](https://docs.pypi.org/trusted-publishers/creating-a-project-through-oidc/)
