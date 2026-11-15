@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/cheolkim02/text2sql-eval/actions/workflows/ci.yml/badge.svg)](https://github.com/cheolkim02/text2sql-eval/actions/workflows/ci.yml)
 
-**English summary.** `text2sql-eval` is a Python library and CLI for the error analysis of text-to-SQL experiments. Given a BIRD-style dataset, SQLite databases and a file of predicted SQL, it judges execution accuracy (EX) exactly like BIRD's official script; on the bundled example its numbers match the official script to two decimals. It then explains every wrong case without using an LLM: how the executed results differ, and where the SQL differs, with evidence. It flags verdicts that the official rule may get wrong, such as an answer that returns every gold row plus an extra column. It also compares two runs case by case and writes an offline HTML report and an Excel-ready CSV. Everything is deterministic: the same inputs give the same output. Documentation is in Korean.
+**English summary.** `text2sql-eval` is a Python library and CLI for the error analysis of text-to-SQL experiments. Given a BIRD-style dataset, SQLite databases and a file of predicted SQL, it judges execution accuracy (EX) exactly like BIRD's official script; on the bundled example its numbers match the official script to two decimals. It then explains every wrong case without using an LLM: how the executed results differ, and where the SQL differs, with evidence. It flags verdicts that the official rule may get wrong, such as an answer that returns every gold row plus an extra column. It also compares two runs case by case and writes an offline HTML report and an Excel-ready CSV. Everything is deterministic: the same inputs give the same output. Install it with `pip install text2sql-eval` (Python 3.11+). Documentation is in Korean.
 
 text-to-SQL 실험의 예측 파일을 받아 **EX(실행 정확도)를 판정하고, 오답이 정답과 무엇이 다른지를 AI 없이 근거와 함께 보여 주는** Python 라이브러리이자 CLI다.
 
@@ -77,6 +77,12 @@ text2sql-eval compare examples/results/gpt-4o-mini-no-evidence.run.json runs/evi
 
 uv를 쓰면 `pip install .` 대신 `uv sync`를 하고, 명령 앞에 `uv run`을 붙인다. 자세한 안내는 [시작하기](docs/guides/getting-started.md)에 있다.
 
+예제 없이 내 실험에만 쓰려면 저장소를 받지 않고 PyPI에서 설치하면 된다.
+
+```sh
+pip install text2sql-eval
+```
+
 내 실험의 결과를 넣으려면 예측을 한 줄에 SQL 하나인 텍스트나 JSONL로 쓰면 된다([예측 파일 만들기](docs/guides/prediction-format.md)). 같은 일을 Python에서 하려면 `text2sql_eval.evaluate_files`를 쓴다([API](docs/reference/api.md)).
 
 ## 실측 결과
@@ -140,7 +146,6 @@ uv를 쓰면 `pip install .` 대신 `uv sync`를 하고, 명령 앞에 `uv run`�
 - **판정:** BIRD 공식 규칙 하나로만 판정한다. 행 순서와 중복까지 따지는 엄격 모드는 로드맵이다.
 - **정규화:** SQL 구조 차이의 정규화는 최소한이다. 조건 순서, `IN`과 `EXISTS`, 서브쿼리와 JOIN처럼 뜻은 같고 모양이 다른 SQL은 다르게 본다.
 - **카테고리 매핑:** 사용자가 정한 카테고리를 파일로 자동으로 붙이는 기능은 로드맵이다. 지금은 CSV의 `my_category` 열에 손으로 적는다.
-- **설치:** PyPI에는 아직 배포하지 않았다. 저장소에서 설치한다.
 
 ## 라이선스
 
