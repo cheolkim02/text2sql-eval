@@ -15,7 +15,7 @@
 | [0009](0009-python-version.md) | 지원 Python 3.11+ | D8 | 2026-11-07 | 채택 |
 | [0010](0010-uv-and-uv-build.md) | 프로젝트 관리 uv, 빌드 백엔드 uv_build | D9 | 2026-11-07 | 채택 |
 | [0011](0011-ruff.md) | 린트·포맷 Ruff | D10 | 2026-11-07 | 채택 |
-| [0012](0012-schedule-adjustment-1107.md) | 일정 지연에 따른 일정·범위 조정 | — | 2026-11-07 | 일부 대체됨(0034) |
+| [0012](0012-schedule-adjustment-1107.md) | 11/7 일정·범위 조정 | — | 2026-11-07 | 일부 대체됨(0034) |
 | [0013](0013-pyright-strict.md) | 타입 검사 pyright strict + 규칙 1개 | D11 | 2026-11-07 | 채택 |
 | [0014](0014-pytest-hypothesis-syrupy.md) | 테스트 pytest + Hypothesis + syrupy | D12 | 2026-11-07 | 채택 |
 | [0015](0015-ruff-default-rules.md) | Ruff 기본 규칙, 줄 길이 88자 | D28 | 2026-11-07 | 채택 |
@@ -50,3 +50,4 @@
 | [0044](0044-ci-dogfooding.md) | CI에서 빌드한 wheel을 새 환경에 설치해 CLI를 돌림 | D40 | 2026-11-12 | 채택 |
 | [0045](0045-docs-images-folder.md) | 문서용 이미지는 `docs/images/` | D41 | 2026-11-14 | 채택 |
 | [0046](0046-pypi-trusted-publishing.md) | PyPI는 태그 push 시 GitHub Actions + Trusted Publishing | D42 | 2026-11-14 | 채택 |
+| [0047](0047-remove-unrelated-personal-content.md) | 공개 전 프로젝트와 무관한 개인 정보를 현재 파일에서 지움 | D43 | 2026-11-15 | 채택 |

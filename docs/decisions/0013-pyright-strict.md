@@ -5,9 +5,10 @@
 - 결정자: 사용자
 - AI 관여: 선택지 조사·추천 (Claude 추천: pyright strict + `reportUnnecessaryTypeIgnoreComment`, 채택 여부: 예). 사용자가 도구를 잘 모른다고 밝혀 추천을 따른 결정이다.
 - 관련 결정 ID: D11
+- 편집: 2026-11-15, 공개 전에 프로젝트와 무관한 개인 정보를 지움([0047](0047-remove-unrelated-personal-content.md))
 
 ## 맥락
-서류 지원 가이드의 "타입을 정확하게 쓰려는 고민"(0003)을 보여줄 타입 검사기를 정해야 했다. 판정 결과를 `Correct | Incorrect | ExecError` 같은 판별 유니언으로 표현할 계획이라, 빠진 경우를 잡아 주는 검사가 중요하다.
+"타입을 정확하게 쓰려는 고민"(0003)을 보여줄 타입 검사기를 정해야 했다. 판정 결과를 `Correct | Incorrect | ExecError` 같은 판별 유니언으로 표현할 계획이라, 빠진 경우를 잡아 주는 검사가 중요하다.
 
 ## 선택지
 | 안 | 장점 | 단점 |

@@ -5,9 +5,10 @@
 - 결정자: 사용자
 - AI 관여: 선택지 조사·추천 (Claude 추천: Markdown만, 채택 여부: 예)
 - 관련 결정 ID: D23
+- 편집: 2026-11-15, 공개 전에 프로젝트와 무관한 개인 정보를 지움([0047](0047-remove-unrelated-personal-content.md))
 
 ## 맥락
-가이드 4개, `architecture.md`, `reference/`(CLI, API, 실행 파일 형식)를 어떤 형태로 낼지 정해야 했다. 서류 검토자는 GitHub에서 저장소를 열어 본다.
+가이드 4개, `architecture.md`, `reference/`(CLI, API, 실행 파일 형식)를 어떤 형태로 낼지 정해야 했다. 독자는 대부분 GitHub에서 저장소를 열어 본다.
 
 ## 선택지
 | 안 | 장점 | 단점 |
