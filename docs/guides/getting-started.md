@@ -6,7 +6,7 @@
 
 ## 1. 설치
 
-Python 3.11 이상이 필요하다. 저장소를 받아 설치한다.
+Python 3.11 이상이 필요하다. 이 가이드는 저장소에 든 예제 데이터를 쓰므로 저장소를 받아 설치한다. 예제 없이 내 실험에만 쓸 거라면 PyPI에서 `pip install text2sql-eval`로 설치해도 된다.
 
 ```sh
 git clone https://github.com/cheolkim02/text2sql-eval.git
