@@ -47,6 +47,7 @@ CI(`.github/workflows/ci.yml`)는 여기에 더해 Python 3.11~3.15에서 테스
 - 언어: README 본문, `docs/` 아래 문서, ADR은 한국어로 쓴다. 코드 식별자, 주석, docstring, 커밋 메시지, CLI 출력은 영어로 쓴다([ADR 0016](docs/decisions/0016-documentation-language.md)).
 - Markdown으로만 쓴다([ADR 0041](docs/decisions/0041-markdown-docs.md)). `tests/test_docs.py`가 레퍼런스와 코드가 맞는지, 링크가 살아 있는지 검사한다. 옵션이나 실행 파일 필드를 더하면 레퍼런스도 함께 고친다.
 - 숫자와 출력 예시는 실제로 돌린 결과를 붙인다.
+- `README.md`는 PyPI 프로젝트 페이지에도 그대로 나온다. PyPI는 저장소 안의 상대 경로를 따라가지 못하므로, README의 링크와 이미지는 `https://github.com/cheolkim02/text2sql-eval/blob/main/...`(이미지는 `https://raw.githubusercontent.com/cheolkim02/text2sql-eval/main/...`) 같은 절대 주소로 쓴다. 테스트가 이 주소의 파일과 제목이 실제로 있는지도 검사한다.
 
 ## 설계 결정
 

@@ -106,16 +106,74 @@ def anchors(path: Path) -> set[str]:
     return {anchor(heading) for heading in headings}
 
 
+# Absolute links to this repository's main branch, as README.md must use them.
+# Group 1 is the path inside the repository.
+SELF_LINK = re.compile(
+    r"https://(?:github\.com/cheolkim02/text2sql-eval/(?:blob|tree)/main"
+    r"|raw\.githubusercontent\.com/cheolkim02/text2sql-eval/main)/([^#]+)"
+)
+
+
+def links(text: str) -> list[str]:
+    """Link and image targets outside code blocks: [text](target), ![alt](target)."""
+    return re.findall(r"\]\(([^)\s]+)\)", without_code(text))
+
+
+def broken_links(path: Path) -> list[str]:
+    """Links in a Markdown file whose file or heading does not exist.
+
+    Relative links resolve from the file. Absolute links to this repository
+    are checked as files in the checkout; other URLs are not checked.
+    """
+    broken: list[str] = []
+    for link in links(read(path)):
+        if match := SELF_LINK.match(link):
+            target = ROOT / match.group(1)
+        elif re.match(r"[a-z]+:", link):  # other http:, https:, mailto:
+            continue
+        else:
+            relative = link.partition("#")[0]
+            target = (path.parent / relative).resolve() if relative else path
+        fragment = link.partition("#")[2]
+        if not target.exists():
+            broken.append(f"{link}: no such file")
+        elif fragment and target.suffix == ".md" and fragment not in anchors(target):
+            broken.append(f"{link}: no such heading")
+    return broken
+
+
 @pytest.mark.parametrize(
     "path", markdown_files(), ids=lambda p: str(p.relative_to(ROOT))
 )
-def test_relative_links_point_at_existing_files_and_headings(path: Path) -> None:
-    links = re.findall(r"\]\(([^)\s]+)\)", without_code(read(path)))
-    for link in links:
-        if re.match(r"[a-z]+:", link):  # http:, https:, mailto:
-            continue
-        target, _, fragment = link.partition("#")
-        file = (path.parent / target).resolve() if target else path
-        assert file.exists(), f"{link}: no such file"
-        if fragment and file.suffix == ".md":
-            assert fragment in anchors(file), f"{link}: no such heading"
+def test_links_point_at_existing_files_and_headings(path: Path) -> None:
+    assert broken_links(path) == []
+
+
+def test_broken_links_finds_missing_files_and_headings(tmp_path: Path) -> None:
+    blob = "https://github.com/cheolkim02/text2sql-eval/blob/main"
+    raw = "https://raw.githubusercontent.com/cheolkim02/text2sql-eval/main"
+    page = tmp_path / "page.md"
+    page.write_text(
+        f"[ok]({blob}/README.md#3분-사용법) [ok](https://example.com/x)\n"
+        f"[gone]({blob}/docs/missing.md) [gone]({blob}/README.md#no-such)\n"
+        f"![gone]({raw}/docs/images/missing.png) [gone](missing.md)\n",
+        encoding="utf-8",
+    )
+
+    assert broken_links(page) == [
+        f"{blob}/docs/missing.md: no such file",
+        f"{blob}/README.md#no-such: no such heading",
+        f"{raw}/docs/images/missing.png: no such file",
+        "missing.md: no such file",
+    ]
+
+
+def test_readme_links_are_absolute() -> None:
+    # README.md is also the project page on PyPI, which cannot follow links
+    # relative to the repository.
+    relative = [
+        link
+        for link in links(read(ROOT / "README.md"))
+        if not link.startswith("https://")
+    ]
+    assert relative == []

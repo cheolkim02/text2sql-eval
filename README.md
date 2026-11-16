@@ -29,13 +29,21 @@ text-to-SQL 연구를 하면서 실험을 돌리는 것보다 결과를 판단�
 
 판정과 분석에 LLM, 무작위, 시간에 따라 달라지는 값을 쓰지 않는다. 같은 입력이면 같은 결과가 나온다.
 
-![HTML 리포트에서 #247 케이스를 펼친 화면. 정답·예측 SQL이 절마다 줄을 나눠 나란히 보이고, 서로 다른 WHERE 절과 정답에 없는 예측 결과 행 cl, h가 노랗게 칠해져 있다](docs/images/report-case.png)
+![HTML 리포트에서 #247 케이스를 펼친 화면. 정답·예측 SQL이 절마다 줄을 나눠 나란히 보이고, 서로 다른 WHERE 절과 정답에 없는 예측 결과 행 cl, h가 노랗게 칠해져 있다](https://raw.githubusercontent.com/cheolkim02/text2sql-eval/main/docs/images/report-case.png)
 
-HTML 리포트에서 오답 하나(#247)를 펼친 화면이다. 정답과 예측 SQL에서 다른 절(WHERE)과, 정답에 없는 예측 결과 행(`cl`, `h`)을 칠한다. 출력 차이(`row_count_differs`, `row_set_differs`)와 SQL 구조 차이(`tables_joins`)를 근거와 함께 보여 준다. 리포트 전체는 [examples/results/report.html](examples/results/report.html)이다. 내려받아 브라우저로 열면 된다.
+HTML 리포트에서 오답 하나(#247)를 펼친 화면이다. 정답과 예측 SQL에서 다른 절(WHERE)과, 정답에 없는 예측 결과 행(`cl`, `h`)을 칠한다. 출력 차이(`row_count_differs`, `row_set_differs`)와 SQL 구조 차이(`tables_joins`)를 근거와 함께 보여 준다. 리포트 전체는 [examples/results/report.html](https://github.com/cheolkim02/text2sql-eval/blob/main/examples/results/report.html)이다. GitHub 화면에서는 HTML 소스로 보이니, 파일을 내려받아 브라우저로 연다.
+
+## 설치
+
+Python 3.11 이상이 필요하다.
+
+```sh
+pip install text2sql-eval
+```
 
 ## 3분 사용법
 
-Python 3.11 이상이 필요하다. 저장소에 BIRD dev의 DB 3개와 문제 432개, gpt-4o-mini의 예측 두 벌이 들어 있어서 받자마자 돌려 볼 수 있다.
+예제 데이터는 패키지가 아니라 저장소에 들어 있다. BIRD dev의 DB 3개와 문제 432개, gpt-4o-mini의 예측 두 벌이다. 저장소를 받아 설치하면 바로 돌려 볼 수 있다.
 
 ```sh
 git clone https://github.com/cheolkim02/text2sql-eval.git
@@ -75,15 +83,9 @@ evidence를 뺀 실행과 비교하기:
 text2sql-eval compare examples/results/gpt-4o-mini-no-evidence.run.json runs/evidence.json
 ```
 
-uv를 쓰면 `pip install .` 대신 `uv sync`를 하고, 명령 앞에 `uv run`을 붙인다. 자세한 안내는 [시작하기](docs/guides/getting-started.md)에 있다.
+uv를 쓰면 `pip install .` 대신 `uv sync`를 하고, 명령 앞에 `uv run`을 붙인다. 자세한 안내는 [시작하기](https://github.com/cheolkim02/text2sql-eval/blob/main/docs/guides/getting-started.md)에 있다.
 
-예제 없이 내 실험에만 쓰려면 저장소를 받지 않고 PyPI에서 설치하면 된다.
-
-```sh
-pip install text2sql-eval
-```
-
-내 실험의 결과를 넣으려면 예측을 한 줄에 SQL 하나인 텍스트나 JSONL로 쓰면 된다([예측 파일 만들기](docs/guides/prediction-format.md)). 같은 일을 Python에서 하려면 `text2sql_eval.evaluate_files`를 쓴다([API](docs/reference/api.md)).
+내 실험의 결과를 넣으려면 예측을 한 줄에 SQL 하나인 텍스트나 JSONL로 쓰면 된다([예측 파일 만들기](https://github.com/cheolkim02/text2sql-eval/blob/main/docs/guides/prediction-format.md)). 같은 일을 Python에서 하려면 `text2sql_eval.evaluate_files`를 쓴다([API](https://github.com/cheolkim02/text2sql-eval/blob/main/docs/reference/api.md)).
 
 ## 실측 결과
 
@@ -98,21 +100,21 @@ pip install text2sql-eval
 - **거짓 오답 의심:** evidence 있음 실행의 오답 161개 중 38개(24%)에 플래그가 붙었다. 공식 규칙으로는 오답이지만 사람이 보면 맞다고 할 만한 답이다. 예를 들어 #1445는 이름과 성을 한 컬럼으로 이어 붙였고, #300은 원자 id에 원소 컬럼을 덧붙였다.
 - **두 실행 비교:** evidence를 넣자 123개가 맞게 바뀌고 18개가 틀리게 바뀌었다(+24.3%p). `where_value` 차이가 132개에서 25개로 가장 많이 줄었다. evidence가 주로 WHERE에 들어갈 값(철자, 대소문자, 코드값)을 알려 주기 때문이다.
 
-생성 조건, 비용, 시간 제한에 민감한 케이스는 [examples/results](examples/results/README.md)에 있다.
+생성 조건, 비용, 시간 제한에 민감한 케이스는 [examples/results](https://github.com/cheolkim02/text2sql-eval/tree/main/examples/results)에 있다.
 
 ## 문서
 
 | 문서 | 내용 |
 | --- | --- |
-| [시작하기](docs/guides/getting-started.md) | 설치부터 예제로 `eval → report → compare`까지 |
-| [예측 파일 만들기](docs/guides/prediction-format.md) | 내 파이프라인의 결과를 넣는 법 |
-| [결과 읽기](docs/guides/reading-results.md) | 판정 규칙, 차이와 플래그의 뜻, HTML 리포트, CSV로 손 분류하기 |
-| [실행 비교하기](docs/guides/comparing-runs.md) | 비교 결과 해석, CI에서 쓰기 |
-| [CLI 레퍼런스](docs/reference/cli.md) | 명령과 옵션, 종료 코드, 출력 형식 |
-| [API 레퍼런스](docs/reference/api.md) | 공개 Python API 38개 |
-| [실행 파일 형식](docs/reference/run-file.md) | `eval`이 쓰는 JSON |
-| [아키텍처](docs/architecture.md) | 모듈 경계, 의존 방향, 설계 원칙 |
-| [기여 안내](CONTRIBUTING.md) | 개발 환경, 검사, 커밋 규칙 |
+| [시작하기](https://github.com/cheolkim02/text2sql-eval/blob/main/docs/guides/getting-started.md) | 설치부터 예제로 `eval → report → compare`까지 |
+| [예측 파일 만들기](https://github.com/cheolkim02/text2sql-eval/blob/main/docs/guides/prediction-format.md) | 내 파이프라인의 결과를 넣는 법 |
+| [결과 읽기](https://github.com/cheolkim02/text2sql-eval/blob/main/docs/guides/reading-results.md) | 판정 규칙, 차이와 플래그의 뜻, HTML 리포트, CSV로 손 분류하기 |
+| [실행 비교하기](https://github.com/cheolkim02/text2sql-eval/blob/main/docs/guides/comparing-runs.md) | 비교 결과 해석, CI에서 쓰기 |
+| [CLI 레퍼런스](https://github.com/cheolkim02/text2sql-eval/blob/main/docs/reference/cli.md) | 명령과 옵션, 종료 코드, 출력 형식 |
+| [API 레퍼런스](https://github.com/cheolkim02/text2sql-eval/blob/main/docs/reference/api.md) | 공개 Python API 38개 |
+| [실행 파일 형식](https://github.com/cheolkim02/text2sql-eval/blob/main/docs/reference/run-file.md) | `eval`이 쓰는 JSON |
+| [아키텍처](https://github.com/cheolkim02/text2sql-eval/blob/main/docs/architecture.md) | 모듈 경계, 의존 방향, 설계 원칙 |
+| [기여 안내](https://github.com/cheolkim02/text2sql-eval/blob/main/CONTRIBUTING.md) | 개발 환경, 검사, 커밋 규칙 |
 
 ## 품질
 
@@ -127,9 +129,9 @@ pip install text2sql-eval
 
 ## AI와 함께 만든 방식
 
-이 저장소는 Claude Code와 함께 만들었다. 역할은 [AGENTS.md](AGENTS.md)에 정해 두었다. 사람이 설계를 결정하고 리뷰하며, 에이전트는 선택지를 제시하고 구현·테스트·문서 초안을 맡는다.
+이 저장소는 Claude Code와 함께 만들었다. 역할은 [AGENTS.md](https://github.com/cheolkim02/text2sql-eval/blob/main/AGENTS.md)에 정해 두었다. 사람이 설계를 결정하고 리뷰하며, 에이전트는 선택지를 제시하고 구현·테스트·문서 초안을 맡는다.
 
-- **설계 결정은 모두 사람이 했다.** 공개 API, 의존성, 파일 형식, 판정·차이·플래그 규칙, 도구 선택이 결정 대상이다. 에이전트가 선택지와 장단점을 표로 제시하고, 사람이 고르면 그 자리에서 결정 기록(ADR)을 남긴다. [결정 기록 48개](docs/decisions/README.md)는 모두 결정자가 사람이고, 결정 이유를 함께 적었다. 에이전트의 추천을 고르지 않은 결정도 그대로 적었다. 예를 들어 Ruff 규칙 세트, baseline 모델, 통계 검정을 넣지 않기로 한 것이 그렇다.
+- **설계 결정은 모두 사람이 했다.** 공개 API, 의존성, 파일 형식, 판정·차이·플래그 규칙, 도구 선택이 결정 대상이다. 에이전트가 선택지와 장단점을 표로 제시하고, 사람이 고르면 그 자리에서 결정 기록(ADR)을 남긴다. [결정 기록 48개](https://github.com/cheolkim02/text2sql-eval/blob/main/docs/decisions/README.md)는 모두 결정자가 사람이고, 결정 이유를 함께 적었다. 에이전트의 추천을 고르지 않은 결정도 그대로 적었다. 예를 들어 Ruff 규칙 세트, baseline 모델, 통계 검정을 넣지 않기로 한 것이 그렇다.
 - **작게 나눠 검토했다.** 기능마다 순서를 지켰다.
   1. 계획 승인
   2. 테스트와 구현
@@ -138,7 +140,7 @@ pip install text2sql-eval
   5. PR, CI 통과 후 merge
 - **기록:** AI가 함께 쓴 커밋에는 `Co-Authored-By`를 붙였다.
 
-역할 분담, 사람이 기각한 추천, AI가 틀린 대표 사례와 그것을 잡은 방법은 [AI와 함께 개발한 방식](docs/ai-workflow.md)에 정리했다.
+역할 분담, 사람이 기각한 추천, AI가 틀린 대표 사례와 그것을 잡은 방법은 [AI와 함께 개발한 방식](https://github.com/cheolkim02/text2sql-eval/blob/main/docs/ai-workflow.md)에 정리했다.
 
 ## 한계와 로드맵
 
@@ -149,5 +151,5 @@ pip install text2sql-eval
 
 ## 라이선스
 
-- 코드: [MIT](LICENSE)
-- 예제 데이터 `examples/bird-mini`: [BIRD](https://bird-bench.github.io/) dev의 일부, [CC BY-SA 4.0](examples/bird-mini/LICENSE)(출처와 바꾼 점은 [SOURCE.md](examples/bird-mini/SOURCE.md))
+- 코드: [MIT](https://github.com/cheolkim02/text2sql-eval/blob/main/LICENSE)
+- 예제 데이터 `examples/bird-mini`: [BIRD](https://bird-bench.github.io/) dev의 일부, [CC BY-SA 4.0](https://github.com/cheolkim02/text2sql-eval/blob/main/examples/bird-mini/LICENSE)(출처와 바꾼 점은 [SOURCE.md](https://github.com/cheolkim02/text2sql-eval/blob/main/examples/bird-mini/SOURCE.md))
