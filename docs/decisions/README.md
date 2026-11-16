@@ -51,3 +51,4 @@
 | [0045](0045-docs-images-folder.md) | 문서용 이미지는 `docs/images/` | D41 | 2026-11-14 | 채택 |
 | [0046](0046-pypi-trusted-publishing.md) | PyPI는 태그 push 시 GitHub Actions + Trusted Publishing | D42 | 2026-11-14 | 채택 |
 | [0047](0047-remove-unrelated-personal-content.md) | 공개 전 프로젝트와 무관한 개인 정보를 현재 파일에서 지움 | D43 | 2026-11-15 | 채택 |
+| [0048](0048-adr-reasons-without-quotes.md) | ADR의 이유는 대화를 인용하지 않고 평서문으로 | D44 | 2026-11-16 | 채택 |

@@ -40,7 +40,7 @@ text-to-SQL 연구에서 직접 겪은 **오답 분석의 병목**을 푸는 **P
 - [x] `report`가 오프라인에서 열리는 HTML 한 파일과 엑셀에서 한글이 깨지지 않는 CSV를 만든다 → [CLI 레퍼런스](reference/cli.md#report), [예제 리포트](../examples/results/report.html)
 - [x] `compare`가 분할표, 뒤집힌 케이스, 차이 분포 변화를 내고, 설정한 기준보다 나빠지면 종료 코드 1을 낸다 → [실행 비교하기](guides/comparing-runs.md), 기준은 `--max-drop`([ADR 0036](decisions/0036-compare-gate-opt-in.md))
 - [x] README에 문제 정의, 설치, 3분 사용법, 실측 결과 표, AI 협업 방식이 있다 → [README](../README.md), [AI와 함께 개발한 방식](ai-workflow.md)
-- [x] 결정 기록 10개 이상, 모두 결정자가 "사용자" → 45개([색인](decisions/README.md))
+- [x] 결정 기록 10개 이상, 모두 결정자가 "사용자" → 48개([색인](decisions/README.md))
 - [ ] 모든 모듈에 대해 설명 노트와 질문 답변을 마쳤다 → 사용자가 `/explain`으로 진행 중(`.study/`, 비공개)
 
 ## 내가 겪은 문제 (README "왜 필요한가"의 원재료)
@@ -421,6 +421,7 @@ text2sql-eval/
 | D41 | 문서용 이미지 위치 | `docs/images/` / `examples/results/` / 외부 URL | **결정됨: `docs/images/` (ADR 0045)** | 11/14 |
 | D42 | PyPI 배포 | 배포하지 않음 / 태그 push 시 GitHub Actions + Trusted Publishing / 로컬에서 토큰으로 수동 | **결정됨: 태그 push 시 GitHub Actions + Trusted Publishing, 저장소 공개 후 첫 배포 (ADR 0046)** | 11/14 |
 | D43 | 공개 전 개인 정보 | 그대로 / 현재 파일에서 지움 / 기록까지 지움 | **결정됨: 현재 파일에서 프로젝트와 무관한 것 모두 지움 (ADR 0047)** | 11/15 |
+| D44 | ADR 이유 작성 방식 | 평서문으로 쓰고 규칙도 바꿈 / 규칙 유지(인용) / 평서문 + 사용자 확인 | **결정됨: 대화를 인용하지 않고 평서문으로 씀 (ADR 0048)** | 11/16 |
 
 라이선스는 코드 MIT, 예제 데이터 CC BY-SA 4.0으로 정하고 0001번 ADR에 함께 적는다. 이 목록에 없는 결정이 나오면 Claude가 D44부터 새 번호를 붙여 물어본다.
 
@@ -460,7 +461,7 @@ text2sql-eval/
 고른 안 한 문장.
 
 ## 이유
-사용자가 말한 이유를 그대로 인용하고, 필요하면 보충.
+사용자가 밝힌 이유를 평서문으로 쓰고(대화를 인용하지 않음), 필요하면 보충. 이유 없이 추천을 따랐으면 "추천안(<안>)을 채택했다".
 
 ## 결과
 이 결정으로 생기는 제약, 후속 작업, 다시 볼 조건.
