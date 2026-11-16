@@ -20,9 +20,7 @@
 Python으로 구현한다.
 
 ## 이유
-> "솔직히 typescript가 아니어도 무방하다고 생각하기도 해."
->
-> "Python으로 가자."
+TypeScript를 꼭 써야 할 이유는 없다고 보고 Python을 골랐다.
 
 보충: 타입을 정확하게 쓰려는 고민은 Python의 strict 타입 검사, `Literal` 기반 판별 유니언, `py.typed` 배포로 보여준다.
 

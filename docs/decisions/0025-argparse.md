@@ -20,7 +20,7 @@
 argparse로 하위 명령(`eval`, `report`, `compare`)을 만든다.
 
 ## 이유
-> "D14 argparse"
+추천안(argparse)을 채택했다.
 
 ## 결과
 - 런타임 의존성 0개를 유지한다. 첫 런타임 의존성은 SQL 파서(D15)가 된다.

@@ -56,7 +56,7 @@ CI(`.github/workflows/ci.yml`)는 여기에 더해 Python 3.11~3.15에서 테스
 2. 결정하면 [`docs/decisions/0000-template.md`](docs/decisions/0000-template.md) 형식으로 ADR을 쓴다.
 3. [색인](docs/decisions/README.md)에 한 줄을 더한다.
 
-ADR에는 결정한 사람의 말을 그대로 인용한다.
+ADR의 이유에는 결정한 사람이 밝힌 이유를 평서문으로 쓴다. 대화를 그대로 옮기지 않는다([ADR 0048](docs/decisions/0048-adr-reasons-without-quotes.md)).
 
 ## 커밋과 PR
 

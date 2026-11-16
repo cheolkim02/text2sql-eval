@@ -44,7 +44,7 @@
 답을 받으면 다음을 한다.
 
 1. `docs/decisions/0000-template.md` 형식으로 `docs/decisions/NNNN-<slug>.md`를 쓴다.
-   - "이유"에는 사용자가 한 말을 그대로 인용한다.
+   - "이유"에는 사용자가 밝힌 이유를 평서문으로 쓴다. 대화를 인용하지 않는다. 이유 없이 추천을 따랐으면 "추천안(…)을 채택했다"고 쓴다([0048](docs/decisions/0048-adr-reasons-without-quotes.md)).
    - 사용자가 추천을 고르지 않았으면 "AI 관여"에 그 사실을 적는다.
    - 사용자가 잘 모른다고 하고 추천을 따랐다면, 그 사실과 학습할 거리를 적는다.
 2. `docs/decisions/README.md` 색인에 한 줄을 추가하고, PLAN.md의 결정 표에 "결정됨"을 표시한다.

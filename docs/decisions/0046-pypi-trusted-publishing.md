@@ -26,7 +26,7 @@
 `v*` 태그를 push하면 `.github/workflows/release.yml`이 패키지를 빌드하고 검사한 뒤, GitHub environment `pypi`에서 Trusted Publishing(OIDC)으로 PyPI에 올린다. 첫 배포(`v0.1.0`)는 저장소를 공개한 뒤에 한다.
 
 ## 이유
-> "D42 추천대로 태그 자동 배포로 하자."
+추천안(태그를 push하면 GitHub Actions가 Trusted Publishing으로 배포)을 채택했다.
 
 ## 결과
 - PyPI pending publisher 값은 다음과 같다. 워크플로와 정확히 맞아야 한다.

@@ -20,7 +20,7 @@
 커밋 제목은 Conventional Commits 형식(`feat`, `fix`, `docs`, `test`, `refactor`, `build`, `ci`, `chore`, 필요하면 범위 표시)으로 쓰고, AI가 함께 쓴 커밋에는 본문 끝에 `Co-Authored-By` 줄을 붙인다.
 
 ## 이유
-> "둘 다 사용"
+추천안(Conventional Commits 형식과 AI 참여 표시를 둘 다 사용)을 채택했다.
 
 ## 결과
 - 이미 push한 커밋은 고치지 않는다(계획서의 "커밋 기록은 있는 그대로").

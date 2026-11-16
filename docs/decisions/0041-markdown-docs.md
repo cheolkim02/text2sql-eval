@@ -21,7 +21,7 @@
 `docs/` 아래 Markdown 파일로만 쓴다. 문서 사이트 생성기와 배포는 쓰지 않는다.
 
 ## 이유
-> "D23 Markdown"
+추천안(Markdown만)을 채택했다.
 
 ## 결과
 - `docs/reference/api.md`는 손으로 쓴다. 문서와 코드가 어긋나지 않도록, `api.md`에 적힌 이름과 `text2sql_eval.__all__`이 같은지 테스트로 검사한다.

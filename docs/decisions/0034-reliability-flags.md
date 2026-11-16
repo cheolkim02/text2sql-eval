@@ -34,7 +34,7 @@
 | `tied_alternative_exists` | 모두 | 동점 대체 정답이 있는 문제 | 정보 |
 
 ## 이유
-> "추천대로 구현하고 PR 올려서 CI 확인 후 merge해줘"
+추천안을 채택했다.
 
 보충: 제외 이유는 다음과 같다.
 - `superset_rows`: 동점 때문인 경우는 `matches_tied_alternative_only`가 이미 잡는다. 나머지는 대부분 필터나 LIMIT이 빠진 진짜 오답이다.
