@@ -21,9 +21,7 @@
 BIRD dev(2024-06-27 판)의 `superhero`(0.2MB, 129문제), `student_club`(2.6MB, 158문제), `toxicology`(2.7MB, 145문제) 전체 432문제와 DB 파일을 `examples/bird-mini`에 넣는다.
 
 ## 이유
-> "네 추천대로 하자. 데이터를 저장소에 넣어도 되는걸로 알고 있는데, 한번 확인해서 정해줘."
->
-> "데이터 3개 확정"
+추천안을 채택했다. 데이터를 저장소에 넣어도 되는지 라이선스를 확인한 뒤 DB 3개를 확정했다.
 
 확인한 내용: BIRD 공식 사이트가 데이터 라이선스를 CC BY-SA 4.0으로 바꿨다고 공지했고, 원 논문은 원본 DB가 퍼블릭 도메인·CC-BY·CC-BY-SA 중 하나라고 밝힌다. 큰 DB(`card_games` 261.8MB, `european_football_2` 597.8MB, `codebase_community` 481.4MB)는 저장소에 넣기 어렵다.
 

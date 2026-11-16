@@ -22,7 +22,7 @@
 pyright를 `typeCheckingMode = "strict"`로 쓰고, strict에서도 꺼져 있는 `reportUnnecessaryTypeIgnoreComment`를 `"error"`로 켠다.
 
 ## 이유
-> "추천대로 pyright strict + 규칙 1개 추가. 다 뭔지 몰라."
+추천안(pyright strict + 규칙 1개)을 채택했다.
 
 보충: 사용자는 타입 검사가 무엇인지 모른다고 밝혔다. 이 결정은 Claude의 추천을 따른 것이고, 타입 검사의 역할과 이 프로젝트에서 잡아 주는 실수를 `/explain`으로 학습해야 한다. 추가 규칙은 "근거 없는 `# type: ignore` 금지" 규칙을 사람이 아니라 도구가 강제하게 하려는 것이다.
 

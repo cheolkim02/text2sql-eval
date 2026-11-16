@@ -20,7 +20,7 @@
 `examples/baseline`은 같은 모델, 같은 프롬프트 틀로 두 번 예측한다. 한 번은 BIRD의 `evidence`를 프롬프트에 넣고, 한 번은 넣지 않는다.
 
 ## 이유
-> "D24 추천대로"
+추천안(같은 모델로 evidence 있음·없음 두 번 예측)을 채택했다.
 
 ## 결과
 - 두 예측 파일과 실행 파일을 `examples/results/`에 커밋해, API 키 없이도 `eval`·`report`·`compare`를 재현할 수 있게 한다.

@@ -20,7 +20,7 @@
 pytest(테스트 실행), Hypothesis(속성 기반 테스트), syrupy(스냅샷 테스트)를 개발용 의존성으로 쓴다. 커버리지 측정은 이번에 넣지 않는다.
 
 ## 이유
-> "추천대로 pytest + Hypothesis + syrupy. 다 뭔지 몰라."
+추천안(pytest + Hypothesis + syrupy)을 채택했다.
 
 보충: 사용자는 세 도구를 모른다고 밝혔다. 이 결정은 Claude의 추천을 따른 것이고, 각 도구가 무엇을 검사하는지 `/explain`으로 학습해야 한다.
 

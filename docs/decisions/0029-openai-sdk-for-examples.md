@@ -19,7 +19,7 @@
 `pyproject.toml`의 `[dependency-groups]`에 `examples` 그룹을 만들고 `openai`를 넣는다. 패키지의 런타임 의존성(`[project] dependencies`)에는 넣지 않는다.
 
 ## 이유
-> "D34 공식 SDK"
+추천안(공식 SDK를 `examples` 그룹에만)을 채택했다.
 
 ## 결과
 - 예제 실행은 `uv run --group examples python examples/baseline/predict.py ...` 형태가 된다.

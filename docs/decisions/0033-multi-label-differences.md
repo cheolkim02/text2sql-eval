@@ -39,9 +39,7 @@
 - 코드: `facts/result.py` → `facts/output.py`, `ResultDiff` → `OutputDiff`
 
 ## 이유
-> "오답마다 하나 이상의 카테고리가 있을 수 있고, 잘못된 테이블 혹은 잘못된 컬럼 사용도 있으면 좋겠어. 이미 있나?"
->
-> "그리고, "wrong by category" -> "output difference", "structural facts" -> "SQL structure difference" 이렇게 명칭 바꿔줘."
+오답 하나에 카테고리가 하나 이상 있을 수 있고, 잘못된 테이블이나 잘못된 컬럼을 쓴 경우도 잡아야 한다. 이름도 "wrong by category"는 "output difference"로, "structural facts"는 "SQL structure difference"로 바꾼다.
 
 ## 결과
 - 라벨 수의 합은 오답 수보다 크다. CLI 요약 옆에 이 점을 적는다.
