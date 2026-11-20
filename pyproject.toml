@@ -1,6 +1,6 @@
 [project]
 name = "text2sql-eval"
-version = "0.1.1"
+version = "0.1.2"
 description = "Deterministic error analysis and run comparison for text-to-SQL experiments, with BIRD-compatible EX"
 readme = "README.md"
 license = "MIT"
