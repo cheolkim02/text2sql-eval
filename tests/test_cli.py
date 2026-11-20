@@ -274,7 +274,7 @@ def test_compare_summarizes_the_committed_baselines(tmp_path: Path) -> None:
         "Both correct 144 | Fixed 123 | Regressed 18 | Both wrong 147" in result.stdout
     )
     assert "By difficulty: challenging 29.1% -> 47.3%" in result.stdout
-    assert "where_value 132 -> 25" in result.stdout
+    assert "where_value 129 -> 22" in result.stdout
     assert "WARNING" not in result.stdout
     # Count records with a CSV reader: some BIRD fields contain line breaks.
     with flips.open(encoding="utf-8-sig", newline="") as file:

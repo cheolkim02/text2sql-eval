@@ -119,10 +119,14 @@ def shape_of(query: Expr) -> Shape:
         for column in query.find_all(exp.Column)
         if column.name and column.name.lower() not in aliases
     )
+    # An outer WHERE also contains its subqueries' WHERE, so the same condition
+    # is found twice; keep each once (dict.fromkeys keeps the order).
     conditions = tuple(
-        condition
-        for where in query.find_all(exp.Where)
-        for condition in _conditions(where)
+        dict.fromkeys(
+            condition
+            for where in query.find_all(exp.Where)
+            for condition in _conditions(where)
+        )
     )
     aggregates = frozenset(unqualified(agg) for agg in query.find_all(exp.AggFunc))
     order = query.args.get("order")
@@ -179,13 +183,27 @@ def compare(gold: Shape, pred: Shape) -> list[Fact]:
 
 
 def _where_value_facts(gold: Shape, pred: Shape) -> list[Fact]:
-    """Same column and operator on both sides, different value."""
+    """Same column and operator on both sides, different value.
+
+    A column can have several conditions (``year = 2010 OR year = 2011``), so
+    a gold value counts as matched if any predicted condition on that column
+    and operator uses it, and the evidence lists the predicted values the gold
+    does not use.
+    """
     facts: list[Fact] = []
-    pred_by_key = {(c.column, c.operator): c for c in pred.conditions}
     for condition in gold.conditions:
-        other = pred_by_key.get((condition.column, condition.operator))
-        if other is not None and other.value != condition.value:
-            facts.append(Fact("where_value", gold=condition.text, pred=other.text))
+        key = (condition.column, condition.operator)
+        gold_values = {
+            c.value for c in gold.conditions if (c.column, c.operator) == key
+        }
+        others = [c for c in pred.conditions if (c.column, c.operator) == key]
+        if condition.value in {c.value for c in others}:
+            continue
+        unmatched = [c.text for c in others if c.value not in gold_values]
+        if unmatched:
+            facts.append(
+                Fact("where_value", gold=condition.text, pred=", ".join(unmatched))
+            )
     return facts
 
 

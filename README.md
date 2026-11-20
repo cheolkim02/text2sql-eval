@@ -64,7 +64,7 @@ text2sql-eval eval \
 ```text
 Evaluated 432 cases: EX 61.8% (267 correct, 161 incorrect, 4 errors)
 Output difference: 62 column_mismatch, 58 row_set_differs, 44 single_value_differs, 34 empty_result, 31 row_count_differs, 4 execution_failed
-SQL structure difference: 79 columns, 72 tables_joins, 66 aggregation, 25 where_value, 23 order_limit
+SQL structure difference: 79 columns, 72 tables_joins, 66 aggregation, 23 order_limit, 22 where_value
 Flags: 8 gold_columns_concatenated, 25 gold_rows_with_extra_columns, 5 matches_tied_alternative_only, 13 tied_alternative_exists
 Run file: runs/evidence.json
 ```
@@ -88,7 +88,7 @@ Both correct 144 | Fixed 123 | Regressed 18 | Both wrong 147
 By difficulty: challenging 29.1% -> 47.3%, moderate 27.7% -> 54.6%, simple 43.8% -> 68.2%
 By database: student_club 43.0% -> 57.0%, superhero 57.4% -> 79.8%, toxicology 13.8% -> 51.0%
 Output difference: empty_result 100 -> 34, single_value_differs 94 -> 44, column_mismatch 78 -> 62, row_set_differs 46 -> 58, row_count_differs 26 -> 31, execution_failed 9 -> 4
-SQL structure difference: columns 155 -> 79, where_value 132 -> 25, tables_joins 130 -> 72, aggregation 121 -> 66, order_limit 40 -> 23
+SQL structure difference: columns 155 -> 79, tables_joins 130 -> 72, where_value 129 -> 22, aggregation 121 -> 66, order_limit 40 -> 23
 ```
 
 ## 내 실험에 쓰기
@@ -142,7 +142,7 @@ write_html_report(run, Path("runs/my-run.html"), run_name="my-run")
 
 - **공식 스크립트와 일치:** 공식 평가 스크립트를 수정하지 않고 같은 예측을 채점했다. 난이도별 숫자까지 8개가 모두 소수점 둘째 자리까지 같다.
 - **거짓 오답 의심:** evidence 있음 실험의 오답 161개 중 38개(24%)에 플래그가 붙었다. 공식 규칙으로는 오답이지만 사람이 보면 맞다고 할 만한 답이다. 예를 들어 #1445는 이름과 성을 한 컬럼으로 이어 붙였고, #300은 원자 id에 원소 컬럼을 덧붙였다.
-- **두 실험 비교:** evidence를 넣자 123개가 맞게 바뀌고 18개가 틀리게 바뀌었다(+24.3%p). `where_value` 차이가 132개에서 25개로 가장 많이 줄었다. evidence가 주로 WHERE에 들어갈 값(철자, 대소문자, 코드값)을 알려 주기 때문이다.
+- **두 실험 비교:** evidence를 넣자 123개가 맞게 바뀌고 18개가 틀리게 바뀌었다(+24.3%p). `where_value` 차이가 129개에서 22개로 가장 많이 줄었다. evidence가 주로 WHERE에 들어갈 값(철자, 대소문자, 코드값)을 알려 주기 때문이다.
 
 생성 조건, 비용, 시간 제한에 민감한 케이스는 [examples/results](https://github.com/cheolkim02/text2sql-eval/tree/main/examples/results)에 있다.
 

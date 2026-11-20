@@ -88,8 +88,8 @@ pre.sql { margin: 0; padding: 8px; background: var(--panel); border: 1px solid v
 <h3>실행 정보</h3>
 <dl class="info">
 <dt>실행 파일</dt><dd>gpt-4o-mini-evidence.run.json</dd>
-<dt>만든 시각</dt><dd>2026-11-11T09:03:51Z</dd>
-<dt>도구 버전</dt><dd>0.1.0</dd>
+<dt>만든 시각</dt><dd>2026-11-20T02:18:38Z</dd>
+<dt>도구 버전</dt><dd>0.1.1</dd>
 <dt>데이터셋</dt><dd>examples/bird-mini/dev.json</dd>
 <dt>예측 파일</dt><dd>examples/results/gpt-4o-mini-evidence.jsonl (jsonl)</dd>
 <dt>동점 대체 정답</dt><dd>examples/bird-mini/dev_tied_append.json</dd>
@@ -155,8 +155,8 @@ pre.sql { margin: 0; padding: 8px; background: var(--panel); border: 1px solid v
 <tr><td><code>columns</code><br><span class="muted">사용한 컬럼이 다름</span></td><td class="num">79</td></tr>
 <tr><td><code>tables_joins</code><br><span class="muted">테이블·JOIN 구성이 다름</span></td><td class="num">72</td></tr>
 <tr><td><code>aggregation</code><br><span class="muted">집계 함수가 다름</span></td><td class="num">66</td></tr>
-<tr><td><code>where_value</code><br><span class="muted">WHERE 조건의 값이 다름</span></td><td class="num">25</td></tr>
 <tr><td><code>order_limit</code><br><span class="muted">ORDER BY/LIMIT이 다름</span></td><td class="num">23</td></tr>
+<tr><td><code>where_value</code><br><span class="muted">WHERE 조건의 값이 다름</span></td><td class="num">22</td></tr>
 </table>
 </section>
 
@@ -219,8 +219,8 @@ pre.sql { margin: 0; padding: 8px; background: var(--panel); border: 1px solid v
 <option value="columns">columns (사용한 컬럼이 다름) 79</option>
 <option value="tables_joins">tables_joins (테이블·JOIN 구성이 다름) 72</option>
 <option value="aggregation">aggregation (집계 함수가 다름) 66</option>
-<option value="where_value">where_value (WHERE 조건의 값이 다름) 25</option>
 <option value="order_limit">order_limit (ORDER BY/LIMIT이 다름) 23</option>
+<option value="where_value">where_value (WHERE 조건의 값이 다름) 22</option>
 </select>
 </label>
 <label>플래그
@@ -5426,7 +5426,7 @@ JOIN molecule AS m
 </div>
 </div>
 </details>
-<details class="case" data-status="incorrect wrong" data-db="toxicology" data-difficulty="challenging" data-output="column_mismatch row_count_differs row_set_differs" data-structure="where_value tables_joins aggregation" data-flag="">
+<details class="case" data-status="incorrect wrong" data-db="toxicology" data-difficulty="challenging" data-output="column_mismatch row_count_differs row_set_differs" data-structure="tables_joins aggregation" data-flag="">
 <summary>
 <span class="id">#281</span>
 <span class="badge status-incorrect">오답</span>
@@ -5475,7 +5475,6 @@ INNER JOIN molecule AS T2
 <h4>SQL 구조 차이</h4>
 <table class="facts">
 <tr><th>차이</th><th>정답 SQL</th><th>예측 SQL</th></tr>
-<tr><td><code>where_value</code><br><span class="muted">WHERE 조건의 값이 다름</span></td><td><code>LENGTH(atom.atom_id) = 7</code></td><td><code>SUBSTRING(atom_id, 7, 1) = &#39;4&#39;</code></td></tr>
 <tr><td><code>tables_joins</code><br><span class="muted">테이블·JOIN 구성이 다름</span></td><td><code>tables: atom, molecule; joins: 1</code></td><td><code>tables: atom, molecule; joins: 0</code></td></tr>
 <tr><td><code>aggregation</code><br><span class="muted">집계 함수가 다름</span></td><td><code>(none)</code></td><td><code>COUNT(*)</code></td></tr>
 </table>
@@ -7952,7 +7951,7 @@ JOIN bond AS b
 </div>
 </div>
 </details>
-<details class="case" data-status="incorrect wrong" data-db="toxicology" data-difficulty="simple" data-output="column_mismatch" data-structure="where_value tables_joins columns" data-flag="gold_rows_with_extra_columns suspect_incorrect">
+<details class="case" data-status="incorrect wrong" data-db="toxicology" data-difficulty="simple" data-output="column_mismatch" data-structure="tables_joins columns" data-flag="gold_rows_with_extra_columns suspect_incorrect">
 <summary>
 <span class="id">#321</span>
 <span class="badge status-incorrect">오답</span>
@@ -7993,7 +7992,6 @@ JOIN atom AS a2
 <h4>SQL 구조 차이</h4>
 <table class="facts">
 <tr><th>차이</th><th>정답 SQL</th><th>예측 SQL</th></tr>
-<tr><td><code>where_value</code><br><span class="muted">WHERE 조건의 값이 다름</span></td><td><code>connected.atom_id = &#39;TR000_2&#39;</code></td><td><code>atom.atom_id = &#39;TR000_4&#39;</code></td></tr>
 <tr><td><code>tables_joins</code><br><span class="muted">테이블·JOIN 구성이 다름</span></td><td><code>tables: bond, connected; joins: 1</code></td><td><code>tables: atom, molecule; joins: 2</code></td></tr>
 <tr><td><code>columns</code><br><span class="muted">사용한 컬럼이 다름</span></td><td><code>atom_id2, bond_id</code></td><td><code>*</code></td></tr>
 </table>
@@ -17968,7 +17966,7 @@ JOIN event AS e
 </div>
 </div>
 </details>
-<details class="case" data-status="incorrect wrong" data-db="student_club" data-difficulty="simple" data-output="empty_result" data-structure="where_value columns" data-flag="">
+<details class="case" data-status="incorrect wrong" data-db="student_club" data-difficulty="simple" data-output="empty_result" data-structure="columns" data-flag="">
 <summary>
 <span class="id">#1336</span>
 <span class="badge status-incorrect">오답</span>
@@ -18003,7 +18001,6 @@ JOIN major AS m
 <h4>SQL 구조 차이</h4>
 <table class="facts">
 <tr><th>차이</th><th>정답 SQL</th><th>예측 SQL</th></tr>
-<tr><td><code>where_value</code><br><span class="muted">WHERE 조건의 값이 다름</span></td><td><code>member.last_name = &#39;Pierce&#39;</code></td><td><code>member.last_name = &#39;Guidi&#39;</code></td></tr>
 <tr><td><code>columns</code><br><span class="muted">사용한 컬럼이 다름</span></td><td><code>(none)</code></td><td><code>first_name</code></td></tr>
 </table>
 <div class="pair">

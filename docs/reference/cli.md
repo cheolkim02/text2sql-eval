@@ -65,7 +65,7 @@ $ text2sql-eval eval --dataset examples/bird-mini/dev.json \
     --meta model=gpt-4o-mini-2024-07-18 --out runs/evidence.json
 Evaluated 432 cases: EX 61.8% (267 correct, 161 incorrect, 4 errors)
 Output difference: 62 column_mismatch, 58 row_set_differs, 44 single_value_differs, 34 empty_result, 31 row_count_differs, 4 execution_failed
-SQL structure difference: 79 columns, 72 tables_joins, 66 aggregation, 25 where_value, 23 order_limit
+SQL structure difference: 79 columns, 72 tables_joins, 66 aggregation, 23 order_limit, 22 where_value
 Flags: 8 gold_columns_concatenated, 25 gold_rows_with_extra_columns, 5 matches_tied_alternative_only, 13 tied_alternative_exists
 Run file: runs/evidence.json
 ```
@@ -145,7 +145,7 @@ Both correct 144 | Fixed 123 | Regressed 18 | Both wrong 147
 By difficulty: challenging 29.1% -> 47.3%, moderate 27.7% -> 54.6%, simple 43.8% -> 68.2%
 By database: student_club 43.0% -> 57.0%, superhero 57.4% -> 79.8%, toxicology 13.8% -> 51.0%
 Output difference: empty_result 100 -> 34, single_value_differs 94 -> 44, column_mismatch 78 -> 62, row_set_differs 46 -> 58, row_count_differs 26 -> 31, execution_failed 9 -> 4
-SQL structure difference: columns 155 -> 79, where_value 132 -> 25, tables_joins 130 -> 72, aggregation 121 -> 66, order_limit 40 -> 23
+SQL structure difference: columns 155 -> 79, tables_joins 130 -> 72, where_value 129 -> 22, aggregation 121 -> 66, order_limit 40 -> 23
 ```
 
 `--max-drop`을 넘으면 표준 오류에 `FAILED: EX dropped by 24.3 pp, more than --max-drop 5`처럼 나온다. 읽는 법은 [실행 비교 가이드](../guides/comparing-runs.md)에 있다.
