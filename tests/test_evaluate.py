@@ -11,7 +11,7 @@ from text2sql_eval.datasets.bird import Case, Dataset, load_bird, load_bird_tied
 from text2sql_eval.datasets.predictions import Prediction
 from text2sql_eval.errors import InputError
 from text2sql_eval.evaluate import evaluate, evaluate_files
-from text2sql_eval.execution.executor import QueryFailure
+from text2sql_eval.execution.executor import DEFAULT_MAX_ROWS, QueryFailure
 from text2sql_eval.judge.ex import Correct, ExecError, Incorrect, status_of
 from text2sql_eval.runfile import (
     SAMPLE_ROWS,
@@ -203,7 +203,7 @@ def test_evaluate_files_records_inputs_settings_and_meta(
     assert run.tied is None
     assert run.db_dir == str(db_dir)
     assert run.settings == RunSettings(
-        timeout_seconds=5.0, max_rows=None, allow_missing=False
+        timeout_seconds=5.0, max_rows=DEFAULT_MAX_ROWS, allow_missing=False
     )
     assert run.meta == {"model": "m"}
     assert run.tool_version == text2sql_eval.__version__

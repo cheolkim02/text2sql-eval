@@ -34,7 +34,7 @@ print(comparison.counts()["fixed"], round(comparison.delta_pp, 1))  # 123 24.3
 evaluate_files(dataset: Path, predictions: Path, *, db_dir: Path,
                prediction_format: PredictionFormat | None = None,
                allow_missing: bool = False, tied: Path | None = None,
-               timeout: float = 30.0, max_rows: int | None = None,
+               timeout: float = 30.0, max_rows: int | None = 1_000_000,
                workers: int | None = None,
                meta: Mapping[str, str] | None = None) -> Run
 ```

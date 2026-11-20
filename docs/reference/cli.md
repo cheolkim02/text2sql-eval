@@ -48,7 +48,7 @@ text2sql-eval eval --dataset DATASET --db-dir DB_DIR --pred PRED --out OUT
 | `--allow-missing` | | 끔 | JSONL 전용. 줄이 없는 케이스를 빈 예측으로 판정한다. 없으면 빠진 케이스가 하나라도 있을 때 입력 오류로 멈춘다 |
 | `--tied TIED` | | 없음 | BIRD의 동점 대체 정답 파일(`dev_tied_append.json`). 판정에는 쓰지 않고 플래그에만 쓴다 |
 | `--timeout TIMEOUT` | | `30` | 쿼리 하나에 허용하는 초. 넘으면 `timeout` 실패로 기록한다 |
-| `--max-rows MAX_ROWS` | | 제한 없음 | 결과 행이 이보다 많으면 `row_limit` 실패로 기록한다 |
+| `--max-rows MAX_ROWS` | | 1,000,000 | 결과 행이 이보다 많으면 `row_limit` 실패로 기록한다([ADR 0051](../decisions/0051-default-row-limit.md)) |
 | `--workers WORKERS` | | `min(8, CPU 수)` | 동시에 실행할 쿼리 수 |
 | `--meta KEY=VALUE` | | 없음 | 실행에 대한 사실(모델, 프롬프트 버전 등)을 실행 파일에 기록한다. 여러 번 줄 수 있다. 첫 `=`에서 나누므로 `note=a=b`의 값은 `a=b`다 |
 | `--json` | | 끔 | 요약을 사람이 읽는 글 대신 JSON 한 줄로 출력한다 |

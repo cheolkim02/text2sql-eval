@@ -24,7 +24,7 @@ from text2sql_eval.compare.runs import (
 )
 from text2sql_eval.errors import InputError
 from text2sql_eval.evaluate import evaluate_files
-from text2sql_eval.execution.executor import DEFAULT_TIMEOUT_SECONDS
+from text2sql_eval.execution.executor import DEFAULT_MAX_ROWS, DEFAULT_TIMEOUT_SECONDS
 from text2sql_eval.report import csv_report, html_report
 from text2sql_eval.runfile import PredictionFormat, Run, read_run, write_run
 
@@ -160,7 +160,8 @@ def _build_parser() -> argparse.ArgumentParser:
     run.add_argument(
         "--max-rows",
         type=_positive_int,
-        help="fail queries returning more rows than this (default: no limit)",
+        default=DEFAULT_MAX_ROWS,
+        help=f"fail queries returning more rows than this (default: {DEFAULT_MAX_ROWS:,})",
     )
     run.add_argument(
         "--workers", type=_positive_int, help="parallel queries (default: min(8, CPUs))"
