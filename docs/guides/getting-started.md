@@ -47,7 +47,7 @@ text2sql-eval eval \
 ```text
 Evaluated 432 cases: EX 61.8% (267 correct, 161 incorrect, 4 errors)
 Output difference: 62 column_mismatch, 58 row_set_differs, 44 single_value_differs, 34 empty_result, 31 row_count_differs, 4 execution_failed
-SQL structure difference: 79 columns, 72 tables_joins, 66 aggregation, 25 where_value, 23 order_limit
+SQL structure difference: 79 columns, 72 tables_joins, 66 aggregation, 23 order_limit, 22 where_value
 Flags: 8 gold_columns_concatenated, 25 gold_rows_with_extra_columns, 5 matches_tied_alternative_only, 13 tied_alternative_exists
 Run file: runs/evidence.json
 ```

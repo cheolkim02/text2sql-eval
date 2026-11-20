@@ -2,9 +2,9 @@
   "schema_version": 3,
   "tool": {
     "name": "text2sql-eval",
-    "version": "0.1.0"
+    "version": "0.1.1"
   },
-  "created_at": "2026-11-11T09:04:16Z",
+  "created_at": "2026-11-20T02:19:00Z",
   "inputs": {
     "dataset": {
       "path": "examples/bird-mini/dev.json",
@@ -2334,7 +2334,7 @@
             {
               "kind": "where_value",
               "gold": "bond.bond_type = '#'",
-              "pred": "bond_type = 'triple'"
+              "pred": "bond.bond_type = 'triple', bond_type = 'triple'"
             },
             {
               "kind": "tables_joins",
@@ -4147,17 +4147,12 @@
             {
               "kind": "where_value",
               "gold": "atom.element = 'n'",
-              "pred": "atom.element = 'Nitrogen'"
+              "pred": "atom.element = 'Phosphorus', atom.element = 'Nitrogen'"
             },
             {
               "kind": "where_value",
               "gold": "atom.element = 'p'",
-              "pred": "atom.element = 'Nitrogen'"
-            },
-            {
-              "kind": "where_value",
-              "gold": "atom.element = 'p'",
-              "pred": "atom.element = 'Nitrogen'"
+              "pred": "atom.element = 'Phosphorus', atom.element = 'Nitrogen'"
             },
             {
               "kind": "tables_joins",
@@ -4233,7 +4228,7 @@
             {
               "kind": "where_value",
               "gold": "bond.bond_type = '='",
-              "pred": "bond_type = 'double'"
+              "pred": "bond_type = 'double', bond.bond_type = 'double'"
             },
             {
               "kind": "tables_joins",
@@ -10808,11 +10803,6 @@
         "sql_structure": {
           "differences": [
             {
-              "kind": "where_value",
-              "gold": "connected.atom_id = 'TR000_2'",
-              "pred": "atom.atom_id = 'TR000_4'"
-            },
-            {
               "kind": "tables_joins",
               "gold": "tables: bond, connected; joins: 1",
               "pred": "tables: atom, molecule; joins: 2"
@@ -13126,12 +13116,12 @@
             {
               "kind": "where_value",
               "gold": "colour.colour = 'Blue'",
-              "pred": "colour = 'blond'"
+              "pred": "colour = 'blue', colour = 'blond'"
             },
             {
               "kind": "where_value",
               "gold": "colour.colour = 'Blond'",
-              "pred": "colour = 'blond'"
+              "pred": "colour = 'blue', colour = 'blond'"
             },
             {
               "kind": "tables_joins",
@@ -14439,11 +14429,6 @@
         },
         "sql_structure": {
           "differences": [
-            {
-              "kind": "where_value",
-              "gold": "attribute.attribute_name = 'Durability'",
-              "pred": "attribute.attribute_name = 'durability'"
-            },
             {
               "kind": "where_value",
               "gold": "attribute.attribute_name = 'Durability'",
@@ -18692,12 +18677,12 @@
             {
               "kind": "where_value",
               "gold": "colour.colour = 'Blue'",
-              "pred": "colour.colour = 'brown'"
+              "pred": "colour.colour = 'blue', colour.colour = 'brown'"
             },
             {
               "kind": "where_value",
               "gold": "colour.colour = 'Brown'",
-              "pred": "colour.colour = 'brown'"
+              "pred": "colour.colour = 'blue', colour.colour = 'brown'"
             }
           ],
           "parse_failed": null

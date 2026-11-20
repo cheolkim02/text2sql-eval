@@ -61,6 +61,39 @@ def test_where_value_handles_in_lists_and_wrapped_columns() -> None:
     ) == ["where_value"]
 
 
+def test_where_value_compares_every_condition_on_the_same_column() -> None:
+    # Two conditions on one column and operator: all of them count, not the last.
+    same = "SELECT 1 FROM t WHERE year = 2010 OR year = 2011"
+    assert kinds(same, same.replace("1 FROM", "2 FROM")) == []
+    # Case #321: the prediction does use atom_id = 'TR000_2'.
+    assert "where_value" not in kinds(
+        "SELECT 1 FROM c WHERE c.atom_id = 'TR000_2' AND c.atom_id2 = 'TR000_4'",
+        "SELECT 1 FROM a AS a1, a AS a2 "
+        "WHERE a1.atom_id = 'TR000_2' AND a2.atom_id = 'TR000_4'",
+    )
+
+
+def test_where_value_counts_a_condition_inside_a_subquery_once() -> None:
+    # The outer WHERE contains the subquery's WHERE; its condition is one fact.
+    report = structural_facts(
+        "SELECT name FROM hero WHERE eye_id = (SELECT id FROM colour WHERE c = 'Blue')",
+        "SELECT name FROM hero WHERE eye_id = (SELECT id FROM colour WHERE c = 'blue')",
+    )
+
+    assert report.facts == (Fact("where_value", gold="c = 'Blue'", pred="c = 'blue'"),)
+
+
+def test_where_value_lists_every_predicted_value_the_gold_does_not_use() -> None:
+    report = structural_facts(
+        "SELECT 1 FROM t WHERE year = 2010",
+        "SELECT 1 FROM t WHERE year = 2011 OR year = 2012",
+    )
+
+    assert report.facts == (
+        Fact("where_value", gold="year = 2010", pred="year = 2011, year = 2012"),
+    )
+
+
 def test_where_value_ignores_conditions_without_a_literal_or_with_other_columns() -> (
     None
 ):

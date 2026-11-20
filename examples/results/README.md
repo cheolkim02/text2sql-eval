@@ -40,11 +40,11 @@ evidence 있음 설정의 오답 161개 중 38개(24%)에 거짓 오답 의심 �
 | `columns` (사용한 컬럼이 다름) | 79 | 155 |
 | `tables_joins` (테이블·JOIN 구성이 다름) | 72 | 130 |
 | `aggregation` (집계 함수가 다름) | 66 | 121 |
-| `where_value` (WHERE 조건의 값이 다름) | 25 | 132 |
 | `order_limit` (ORDER BY/LIMIT이 다름) | 23 | 40 |
+| `where_value` (WHERE 조건의 값이 다름) | 22 | 129 |
 
 - evidence 있음 오답 165건 중 61건(37%)이 출력 차이를 2개 이상 가진다. 가장 흔한 조합은 `row_count_differs + row_set_differs`(23건)와 `column_mismatch + row_set_differs`(20건)다.
-- evidence를 빼면 `empty_result`가 34건에서 100건으로, `where_value`가 25건에서 132건으로 늘어난다. evidence는 주로 WHERE에 들어갈 값(철자, 대소문자, 코드값)을 알려 주므로, 없으면 모델이 값을 틀리고 결과가 비는 경우가 늘어난다.
+- evidence를 빼면 `empty_result`가 34건에서 100건으로, `where_value`가 22건에서 129건으로 늘어난다. evidence는 주로 WHERE에 들어갈 값(철자, 대소문자, 코드값)을 알려 주므로, 없으면 모델이 값을 틀리고 결과가 비는 경우가 늘어난다.
 - 오답 수(165, 270)가 incorrect 판정 수(161, 261)보다 큰 이유는 예측 SQL이 실패한 `error` 판정(4, 9)도 오답 분석 대상이기 때문이다.
 
 ## 두 실행 비교 (`compare`)
@@ -60,7 +60,7 @@ Both correct 144 | Fixed 123 | Regressed 18 | Both wrong 147
 By difficulty: challenging 29.1% -> 47.3%, moderate 27.7% -> 54.6%, simple 43.8% -> 68.2%
 By database: student_club 43.0% -> 57.0%, superhero 57.4% -> 79.8%, toxicology 13.8% -> 51.0%
 Output difference: empty_result 100 -> 34, single_value_differs 94 -> 44, column_mismatch 78 -> 62, row_set_differs 46 -> 58, row_count_differs 26 -> 31, execution_failed 9 -> 4
-SQL structure difference: columns 155 -> 79, where_value 132 -> 25, tables_joins 130 -> 72, aggregation 121 -> 66, order_limit 40 -> 23
+SQL structure difference: columns 155 -> 79, tables_joins 130 -> 72, where_value 129 -> 22, aggregation 121 -> 66, order_limit 40 -> 23
 ```
 
 - evidence를 넣자 123건이 맞게 바뀌었고(Fixed), 18건은 오히려 틀리게 바뀌었다(Regressed).
