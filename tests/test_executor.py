@@ -78,6 +78,27 @@ def test_write_attempt_leaves_the_database_unchanged(db: Path) -> None:
     )
 
 
+@pytest.mark.parametrize(
+    "statement",
+    [
+        "VACUUM INTO '{target}'",
+        "ATTACH DATABASE '{target}' AS other",
+        "ATTACH DATABASE 'file:{target}?mode=rwc' AS other",
+    ],
+)
+def test_cannot_create_files_through_attach_or_vacuum_into(
+    db: Path, tmp_path: Path, statement: str
+) -> None:
+    # A read-only connection still lets these write a new file anywhere.
+    target = tmp_path / "written.sqlite"
+
+    result = execute_query(db, statement.format(target=target.as_posix()))
+
+    assert isinstance(result, QueryFailure)
+    assert result.kind == "error"
+    assert not target.exists()
+
+
 def test_empty_sql_runs_and_returns_no_rows(db: Path) -> None:
     # Same as BIRD's official script; how to judge it is decided by D16.
     assert execute_query(db, "  ") == Rows(columns=(), rows=())
