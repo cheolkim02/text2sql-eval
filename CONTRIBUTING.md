@@ -40,7 +40,7 @@ CI(`.github/workflows/ci.yml`)는 여기에 더해 Python 3.11~3.15에서 테스
 - **결정성:** 판정과 차이 계산에 LLM, 무작위, 시간에 따라 달라지는 값을 쓰지 않는다.
 - **오류:** 사용자 입력 문제는 `InputError(path, problem, location=..., hint=...)`로 낸다. 무엇이 잘못됐고 어떻게 고치는지를 영어로 쓴다.
 - **공개 API:** `src/text2sql_eval/__init__.py`의 `__all__`에 있는 것만 공개다. 바꾸면 `tests/test_public_api.py`와 [API 레퍼런스](docs/reference/api.md)를 함께 고친다.
-- **테스트:** 기능과 함께, 실패하는 경로까지 쓴다. syrupy 스냅샷은 바뀐 내용을 사람이 확인한 뒤에만 갱신한다.
+- **테스트:** 기능과 함께, 실패하는 경로까지 쓴다.
 
 ## 문서
 
