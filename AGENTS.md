@@ -70,6 +70,17 @@
 - 한 번에 바꾸는 파일은 되도록 5개 이하로 한다. 커지면 나눈다.
 - 구현을 마치면 "이 변경을 설명할 때 받을 만한 질문" 2개를 덧붙인다.
 
+## ponytail
+
+`.claude/skills/`의 `ponytail`, `ponytail-review`, `ponytail-audit`은 [ponytail](https://github.com/DietrichGebert/ponytail) v5.3.3을 고치지 않고 복사한 것이다(MIT, 출처는 `.claude/skills/ponytail/SOURCE.md`, [0049](docs/decisions/0049-ponytail-vendored-skills.md)). 모든 코딩 작업에 적용한다. 이미 있는 것을 먼저 쓰고, 필요한 만큼만, 가장 작은 변경으로 끝낸다.
+
+ponytail과 이 파일이 다르면 이 파일을 따른다([0050](docs/decisions/0050-ponytail-precedence.md)).
+
+- ponytail이 빼거나 줄이자고 하는 것이 결정 대상(절대 규칙 1)이면, 결정 절차로 사용자에게 묻는다.
+- 작업 단위(계획 승인, 테스트, `check.sh`, `review` 자가 검토, 파일 5개 이하)는 그대로다.
+- `/ponytail-review`와 `/ponytail-audit`의 보고는 한국어로 쓴다. 형식(Must fix / Should fix / Nice to have, 항목마다 네 부분)은 원본을 따른다.
+- ponytail의 `shortcut: <한계>, <언제 고칠지>` 주석은 다른 주석처럼 영어로 쓴다.
+
 ## 명령어
 
 ```sh

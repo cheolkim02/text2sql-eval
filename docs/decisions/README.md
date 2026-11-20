@@ -52,3 +52,5 @@
 | [0046](0046-pypi-trusted-publishing.md) | PyPI는 태그 push 시 GitHub Actions + Trusted Publishing | D42 | 2026-11-14 | 채택 |
 | [0047](0047-remove-unrelated-personal-content.md) | 공개 전 프로젝트와 무관한 개인 정보를 현재 파일에서 지움 | D43 | 2026-11-15 | 채택 |
 | [0048](0048-adr-reasons-without-quotes.md) | ADR의 이유는 대화를 인용하지 않고 평서문으로 | D44 | 2026-11-16 | 채택 |
+| [0049](0049-ponytail-vendored-skills.md) | ponytail skill 파일 3개를 저장소에 복사해 씀 | D45 | 2026-11-20 | 채택 |
+| [0050](0050-ponytail-precedence.md) | ponytail은 항상 적용, AGENTS.md 우선, 보고는 한국어 | D46 | 2026-11-20 | 채택 |
