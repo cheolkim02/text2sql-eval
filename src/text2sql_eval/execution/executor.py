@@ -101,6 +101,9 @@ def execute_query(
     # as_uri() percent-encodes the path, so names with spaces or '#' work.
     connection = sqlite3.connect(db_path.resolve().as_uri() + "?mode=ro", uri=True)
     try:
+        # mode=ro still lets ATTACH and VACUUM INTO create files anywhere;
+        # with no attached databases allowed, both fail.
+        connection.setlimit(sqlite3.SQLITE_LIMIT_ATTACHED, 0)
         connection.set_progress_handler(stop_after_deadline, _PROGRESS_INTERVAL)
         cursor = connection.execute(sql)
         columns = tuple(str(column[0]) for column in cursor.description or ())
