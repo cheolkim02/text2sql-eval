@@ -8,7 +8,7 @@ rows). Decided from executed rows alone, so no SQL parser is needed.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from itertools import permutations
+from itertools import product
 from typing import Literal
 
 from text2sql_eval.execution.executor import QueryFailure, QueryResult, Rows, SqlValue
@@ -161,7 +161,20 @@ def gold_rows_in_projection(
         return False
     if width > _MAX_PROJECTION_COLUMNS:
         return None
-    for columns in permutations(range(width), gold_width):
+    # A gold column can only come from a predicted column that holds all of its
+    # values; trying only those keeps wide, long results from taking seconds.
+    pred_values = [{row[index] for row in pred.rows} for index in range(width)]
+    candidates = [
+        [
+            index
+            for index in range(width)
+            if {g[j] for g in gold_set} <= pred_values[index]
+        ]
+        for j in range(gold_width)
+    ]
+    for columns in product(*candidates):
+        if len(set(columns)) < gold_width:
+            continue  # the same predicted column cannot fill two gold columns
         projected = {tuple(row[index] for index in columns) for row in pred.rows}
         if projected == gold_set:
             return True
