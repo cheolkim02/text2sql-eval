@@ -75,6 +75,42 @@ def test_eval_with_text_predictions_writes_a_run_file(
     assert run.tied is not None
 
 
+def test_counts_one_case_in_the_singular(
+    tmp_path: Path, gold_rows: list[dict[str, object]]
+) -> None:
+    dataset = tmp_path / "one.json"
+    dataset.write_text(json.dumps(gold_rows[:1]), encoding="utf-8")
+    pred = tmp_path / "one.txt"
+    pred.write_text(f"{gold_rows[0]['SQL']}\n", encoding="utf-8")
+    run = tmp_path / "one-run.json"
+
+    evaluated = run_cli(
+        "eval",
+        "--dataset",
+        dataset,
+        "--db-dir",
+        BIRD_MINI / "dev_databases",
+        "--pred",
+        pred,
+        "--out",
+        run,
+    )
+    reported = run_cli("report", run, "--csv", tmp_path / "one.csv")
+
+    assert "Evaluated 1 case: EX 100.0%" in evaluated.stdout, evaluated.stderr
+    assert ": 1 case, EX 100.0%" in reported.stdout, reported.stderr
+
+
+def test_out_that_is_a_folder_fails_before_evaluating(tmp_path: Path) -> None:
+    # The prediction file does not exist either; the folder is reported first,
+    # so a long run is not lost at the end.
+    result = run_cli(*eval_args(tmp_path / "missing.jsonl", tmp_path))
+
+    assert result.returncode == 3  # the code for an unwritable output
+    assert "Is a directory" in result.stderr
+    assert "missing.jsonl" not in result.stderr
+
+
 def test_eval_with_jsonl_predictions_and_allow_missing_prints_json(
     tmp_path: Path, gold_rows: list[dict[str, object]]
 ) -> None:

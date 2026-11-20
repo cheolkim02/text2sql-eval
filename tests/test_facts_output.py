@@ -1,5 +1,15 @@
+from itertools import permutations
+
+from hypothesis import given
+from hypothesis import strategies as st
+
 from text2sql_eval.execution.executor import QueryFailure, Rows, SqlValue
-from text2sql_eval.facts.output import OUTPUT_LABELS_KO, OutputDiff, compare_outputs
+from text2sql_eval.facts.output import (
+    OUTPUT_LABELS_KO,
+    OutputDiff,
+    compare_outputs,
+    gold_rows_in_projection,
+)
 
 
 def rows(*values: tuple[SqlValue, ...], columns: tuple[str, ...] = ("c",)) -> Rows:
@@ -115,6 +125,40 @@ def test_empty_gold_with_rows_predicted_makes_no_containment_claim() -> None:
 
     assert diff.differences == ("row_count_differs", "row_set_differs")
     assert diff.gold_contained is None
+
+
+VALUES = st.sampled_from([0, 1, 1.0, 2, "a", None])
+
+
+def brute_force_projection(gold_set: set[tuple[SqlValue, ...]], pred: Rows) -> bool:
+    """Every ordered choice of predicted columns, with no shortcut."""
+    gold_width = len(next(iter(gold_set)))
+    return any(
+        {tuple(row[i] for i in columns) for row in pred.rows} == gold_set
+        for columns in permutations(range(len(pred.columns)), gold_width)
+    )
+
+
+@given(st.data())
+def test_projection_search_agrees_with_trying_every_projection(
+    data: st.DataObject,
+) -> None:
+    gold_width = data.draw(st.integers(min_value=1, max_value=3))
+    width = data.draw(st.integers(min_value=gold_width, max_value=5))
+    pred_rows = data.draw(st.lists(st.tuples(*[VALUES] * width), max_size=6))
+    # Half the time take gold from a projection of pred, so matches do occur.
+    if pred_rows and data.draw(st.booleans()):
+        columns = data.draw(st.permutations(range(width)))[:gold_width]
+        gold_set = {tuple(row[i] for i in columns) for row in pred_rows}
+    else:
+        gold_set = set(
+            data.draw(st.lists(st.tuples(*[VALUES] * gold_width), min_size=1))
+        )
+    pred = Rows(tuple(f"c{i}" for i in range(width)), tuple(pred_rows))
+
+    assert gold_rows_in_projection(gold_set, pred) is brute_force_projection(
+        gold_set, pred
+    )
 
 
 def test_every_difference_has_a_korean_label() -> None:

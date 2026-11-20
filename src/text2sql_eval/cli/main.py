@@ -7,6 +7,7 @@ Exit codes: 0 success, 1 a check failed (``compare --max-drop``),
 from __future__ import annotations
 
 import argparse
+import errno
 import json
 import os
 import sys
@@ -221,6 +222,10 @@ def _build_parser() -> argparse.ArgumentParser:
 
 def _run_eval(args: argparse.Namespace, out: TextIO) -> int:
     out_path: Path = args.out
+    if out_path.is_dir():
+        # The same error writing would raise (exit 3), but before every query
+        # runs: the run file is only written at the end.
+        raise IsADirectoryError(errno.EISDIR, os.strerror(errno.EISDIR), str(out_path))
     pred_format: PredictionFormat | None = args.pred_format
     run = evaluate_files(
         args.dataset,
@@ -249,7 +254,10 @@ def _run_report(args: argparse.Namespace, out: TextIO) -> int:
     if csv_path is not None:
         csv_report.write_report_csv(run, csv_path)
     summary = run.summary
-    print(f"Report of {run_path}: {summary.total} cases, EX {summary.ex:.1%}", file=out)
+    print(
+        f"Report of {run_path}: {_count(summary.total, 'case')}, EX {summary.ex:.1%}",
+        file=out,
+    )
     if html_path is not None:
         print(f"HTML: {html_path}", file=out)
     if csv_path is not None:
@@ -307,10 +315,13 @@ def _print_comparison(
         ("head", comparison.only_in_head),
     ):
         if ids:
-            print(f"WARNING: {len(ids)} cases only in {label}, left out", file=out)
+            print(
+                f"WARNING: {_count(len(ids), 'case')} only in {label}, left out",
+                file=out,
+            )
     counts = comparison.counts()
     print(
-        f"Comparing {base_path} -> {head_path} ({len(comparison.cases)} common cases)",
+        f"Comparing {base_path} -> {head_path} ({_count(len(comparison.cases), 'common case')})",
         file=out,
     )
     print(
@@ -415,9 +426,9 @@ def _print_summary(run: Run, out_path: Path, out: TextIO, *, as_json: bool) -> N
         print(json.dumps(document), file=out)
         return
     print(
-        f"Evaluated {summary.total} cases: EX {summary.ex:.1%} "
+        f"Evaluated {_count(summary.total, 'case')}: EX {summary.ex:.1%} "
         f"({summary.correct} correct, {summary.incorrect} incorrect, "
-        f"{summary.error} {'error' if summary.error == 1 else 'errors'})",
+        f"{_count(summary.error, 'error')})",
         file=out,
     )
     if states["missing"] or states["empty"]:
@@ -469,6 +480,11 @@ def _positive_int(text: str) -> int:
     if value < 1:
         raise argparse.ArgumentTypeError(f"must be at least 1, got {text}")
     return value
+
+
+def _count(number: int, noun: str) -> str:
+    """``1 case``, ``2 cases``: messages read naturally for any count."""
+    return f"{number} {noun}" if number == 1 else f"{number} {noun}s"
 
 
 def _key_value(text: str) -> tuple[str, str]:
