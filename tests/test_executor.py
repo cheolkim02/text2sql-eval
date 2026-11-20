@@ -7,6 +7,7 @@ import pytest
 from text2sql_eval.datasets.bird import load_bird
 from text2sql_eval.errors import InputError
 from text2sql_eval.execution.executor import (
+    DEFAULT_MAX_ROWS,
     Query,
     QueryFailure,
     Rows,
@@ -125,6 +126,18 @@ def test_enforces_the_row_limit(
         assert len(result.rows) == 3
     else:
         assert result == QueryFailure("row_limit", f"more than {max_rows} rows")
+
+
+def test_default_row_limit_stops_a_huge_result(db: Path) -> None:
+    # One row more than the default, as a missing join condition can produce.
+    sql = (
+        "WITH RECURSIVE n(i) AS (SELECT 1 UNION ALL SELECT i + 1 FROM n "
+        f"WHERE i <= {DEFAULT_MAX_ROWS}) SELECT i FROM n"
+    )
+
+    assert execute_query(db, sql) == QueryFailure(
+        "row_limit", f"more than {DEFAULT_MAX_ROWS} rows"
+    )
 
 
 def test_handles_paths_with_spaces_and_hash_signs(tmp_path: Path) -> None:

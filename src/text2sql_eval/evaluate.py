@@ -16,6 +16,7 @@ from text2sql_eval.datasets.predictions import (
 )
 from text2sql_eval.errors import InputError
 from text2sql_eval.execution.executor import (
+    DEFAULT_MAX_ROWS,
     DEFAULT_TIMEOUT_SECONDS,
     Query,
     QueryResult,
@@ -59,7 +60,7 @@ def evaluate_files(
     allow_missing: bool = False,
     tied: Path | None = None,
     timeout: float = DEFAULT_TIMEOUT_SECONDS,
-    max_rows: int | None = None,
+    max_rows: int | None = DEFAULT_MAX_ROWS,
     workers: int | None = None,
     meta: Mapping[str, str] | None = None,
 ) -> Run:
@@ -161,7 +162,7 @@ def evaluate(
     db_dir: Path,
     tied: Mapping[str, str] | None = None,
     timeout: float = DEFAULT_TIMEOUT_SECONDS,
-    max_rows: int | None = None,
+    max_rows: int | None = DEFAULT_MAX_ROWS,
     workers: int | None = None,
 ) -> tuple[CaseRecord, ...]:
     """Run gold, predicted and tied-alternative SQL for every case and judge it.

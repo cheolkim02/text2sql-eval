@@ -20,6 +20,10 @@ from text2sql_eval.errors import InputError
 DEFAULT_TIMEOUT_SECONDS = 30.0
 """Same value as BIRD's official script, but applied to each query separately."""
 
+DEFAULT_MAX_ROWS = 1_000_000
+"""Rows allowed per query (ADR 0051). A query that drops a join condition can
+return millions of rows and exhaust memory; gold results are far smaller."""
+
 # SQLite virtual machine instructions between deadline checks. Small enough to
 # stop within milliseconds, large enough that the check costs nothing visible.
 _PROGRESS_INTERVAL = 10_000
@@ -71,7 +75,7 @@ def execute_query(
     sql: str,
     *,
     timeout: float = DEFAULT_TIMEOUT_SECONDS,
-    max_rows: int | None = None,
+    max_rows: int | None = DEFAULT_MAX_ROWS,
 ) -> QueryResult:
     """Run one statement on a read-only connection and collect its rows.
 
@@ -125,7 +129,7 @@ def execute_all(
     queries: Sequence[Query],
     *,
     timeout: float = DEFAULT_TIMEOUT_SECONDS,
-    max_rows: int | None = None,
+    max_rows: int | None = DEFAULT_MAX_ROWS,
     workers: int | None = None,
 ) -> list[QueryResult]:
     """Run many queries in parallel threads; results come back in input order.
