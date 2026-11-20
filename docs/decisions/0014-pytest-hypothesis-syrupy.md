@@ -1,7 +1,7 @@
 # 0014. 테스트는 pytest, Hypothesis, syrupy로 한다
 
 - 날짜: 2026-11-07
-- 상태: 채택
+- 상태: 일부 대체됨(0052, syrupy를 뺌)
 - 결정자: 사용자
 - AI 관여: 선택지 조사·추천 (Claude 추천: pytest + Hypothesis + syrupy, 채택 여부: 예). 사용자가 도구를 잘 모른다고 밝혀 추천을 따른 결정이다.
 - 관련 결정 ID: D12

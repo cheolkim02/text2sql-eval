@@ -103,7 +103,7 @@ uv build                    # wheel과 sdist 빌드 (dist/)
 | uv, uv_build | `pyproject.toml`, `uv.lock` 커밋 | [0010](docs/decisions/0010-uv-and-uv-build.md) |
 | Ruff | 기본 규칙, 줄 길이 88자. Markdown 안의 Python 코드 블록도 포맷한다 | [0011](docs/decisions/0011-ruff.md), [0015](docs/decisions/0015-ruff-default-rules.md) |
 | pyright | strict + `reportUnnecessaryTypeIgnoreComment`, 대상 `src`·`tests`·`examples` | [0013](docs/decisions/0013-pyright-strict.md) |
-| pytest, Hypothesis, syrupy | 단위·속성 기반·스냅샷 테스트. 스냅샷은 사용자가 diff를 승인한 뒤에만 갱신한다 | [0014](docs/decisions/0014-pytest-hypothesis-syrupy.md) |
+| pytest, Hypothesis | 단위·속성 기반 테스트 | [0014](docs/decisions/0014-pytest-hypothesis-syrupy.md), [0052](docs/decisions/0052-remove-syrupy.md) |
 
 규칙을 바꾸려면 새 ADR이 필요하다.
 
